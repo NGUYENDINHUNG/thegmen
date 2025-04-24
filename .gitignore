@@ -1,0 +1,6 @@
+.qodo
+# Ignore environment variables
+.env
+
+# Ignore node_modules
+node_modules/
