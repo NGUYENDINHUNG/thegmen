@@ -1,6 +1,5 @@
 import User from "../model/userModel.schema.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 const saltRounds = 10;
 
 export const CreateUsersService = async (
@@ -10,7 +9,6 @@ export const CreateUsersService = async (
   phoneNumber
 ) => {
   try {
-    //check user exist
     const Usersexis = await User.findOne({ email });
     if (Usersexis) {
       console.log(`Email ${email} đã tồn tại`);
@@ -30,58 +28,51 @@ export const CreateUsersService = async (
   }
 };
 
-export const LoginUserService = async (email, password) => {
+export const GetUserById = async (userId) => {
   try {
-    const user = await User.findOne({ email: email });
-    if (user) {
-      const isMatchPassword = await bcrypt.compare(password, user.password);
-      if (!isMatchPassword) {
-        return {
-          EC: 2,
-          EM: " mật khẩu không hợp lệ",
-        };
-      } else {
-        const payload = {
-          _id: user.id,
-          email: user.email,
-          name: user.name,
-        };
-        const refreshToken = CreateRefreshToken(payload);
-        const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
-          expiresIn: process.env.JWT_EXPIRE,
-        });
-
-        return {
-          EC: 0,
-          EM: "Đăng nhập thành công",
-          accessToken,
-          user: {
-            email: user.email,
-            name: user.name,
-          },
-        };
-      }
-    } else {
-      return {
-        EC: 1,
-        EM: "Email không hợp lệ",
-      };
+    if (!userId) {
+      return null;
     }
+    const user = await User.findById(userId);
+    return user;
   } catch (error) {
-    console.log("««««« error »»»»»", error);
-    return {
-      EC: 500,
-      EM: "Email hoặc mật khẩu của bạn sai",
-    };
+    console.error("Lỗi khi tìm user theo ID:", error);
+    throw error;
   }
 };
 
-export const CreateRefreshToken = (payload) => {
-  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: process.env.JWT_REFRESH_EXPIRE,
-  });
+export const updateUserById = async (userId, updateData) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+    return updatedUser;
+  } catch (error) {
+    throw error;
+  }
 };
-
-export const UpdateUserRefreshToken = async (refreshToken, _id) => {
-  await User.updateOne({ _id }, { refreshToken });
+export const UpdateUserRefreshToken = async (userId, refreshToken) => {
+  try {
+    const result = await User.findByIdAndUpdate(
+      userId,
+      { refreshToken: refreshToken },
+      { new: true }
+    );
+    return result;
+  } catch (error) {
+    console.log("Lỗi khi cập nhật refresh token:", error);
+    return null;
+  }
+};
+export const FindUserByToken = async (refreshToken) => {
+  try {
+    const UserByToken = await User.findOne({ refreshToken });
+    return UserByToken;
+  } catch (error) {
+    console.error("Error finding user by token:", error);
+    throw error;
+  }
 };

@@ -1,9 +1,13 @@
 import express from "express";
-import { CreateUsers, LoginUsers } from "../Controller/UserController.js";
-
+import {
+  CreateUsers,
+  UserFindById,
+  updateUser,
+} from "../Controller/UserController.js";
+import verifyToken from "../middleware/auth.js";
 const userRouter = express.Router();
 
 userRouter.post("/createUser", CreateUsers);
-userRouter.post("/login", LoginUsers);
-
+userRouter.get("/:id", verifyToken, UserFindById);
+userRouter.patch("/:id", verifyToken, updateUser);
 export default userRouter;

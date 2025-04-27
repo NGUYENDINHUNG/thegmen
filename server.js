@@ -2,11 +2,19 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
+import hbs from "hbs";
+import path from "path";
 import connection from "./src/config/database.js";
 import userRouter from "./src/routes/userRoutes.js";
+import AuthRouter from "./src/routes/AuthRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
+
+//view enginee
+app.set("view engine", "hbs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "public")));
 
 app.use(cookieParser());
 app.use(express.json());
@@ -19,6 +27,7 @@ app.get("/", (req, res) => {
 });
 
 // User routes
+app.use("/v1/api/auth", AuthRouter);
 app.use("/v1/api/user", userRouter);
 
 // Kết nối DB và start server

@@ -7,13 +7,13 @@ const UserSchema = new Schema(
     email: { type: String, unique: true }, // thêm lowercase nếu muốn
     name: String,
     password: String,
-    phoneNumber: String,
+    phoneNumber: { type: String, unique: true },
     address: String,
     avatar: String,
     facebookId: String,
     googleId: String,
     avatar: String,
-    refeshToken: String,
+    refreshToken: String,
   },
   { timestamps: true }
 );
