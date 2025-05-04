@@ -8,7 +8,7 @@ const saltRounds = 10;
 export const RegisterSevice = async (email, name, password, phoneNumber) => {
   try {
     //check user exist
-    const Usersexis = await User.findOne({ email, phoneNumber });
+    const Usersexis = await User.findOne({ email });
     if (Usersexis) {
       console.log(`Email hoặc số điện thoại đã tồn tại`);
     }
@@ -73,6 +73,105 @@ export const LoginUserService = async (phoneNumber, password) => {
       EM: "Đã có lỗi xảy ra, vui lòng thử lại",
     };
   }
+};
+
+//   if (!profile?.id) {
+//     throw new Error("Không có thông tin người dùng Google");
+//   }
+//   let user = await User.findOne({ googleId: profile.id });
+//   if (!user) {
+//     user = await User.create({
+//       googleId: profile.id,
+//       email: profile.emails?.[0]?.value,
+//       name: `${profile.name?.familyName} ${profile.name?.givenName}`,
+//       avatar: profile.photos?.[0]?.value,
+//     });
+//     const payload = {
+//       id: user._id,
+//       email: user.email,
+//       name: user.name,
+//     };
+
+//     const refreshToken = CreateRefreshToken(payload);
+//     const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+//       expiresIn: process.env.JWT_EXPIRE,
+//     });
+//     await UpdateUserRefreshToken(user._id, refreshToken);
+//     return {
+//       EC: 0,
+//       EM: "Đăng nhập thành công",
+//       accessToken,
+//       refreshToken,
+//       user: {
+//         email: user.email,
+//         name: user.name,
+//       },
+//     };
+//   }
+// };
+export const handleGoogleLogin = async (profile) => {
+  if (!profile?.id) {
+    throw new Error("Không có thông tin người dùng Google");
+  }
+
+  const googleId = profile.id;
+  const email = profile.emails?.[0]?.value;
+  const name =
+    profile.displayName ||
+    `${profile.name?.familyName} ${profile.name?.givenName}`;
+  const avatar = profile.photos?.[0]?.value;
+
+  let user = await User.findOne({ googleId });
+  if (!user) {
+    user = await User.create({ googleId, email, name, avatar });
+  }
+
+  const payload = { id: user._id, email: user.email, name: user.name };
+  const refreshToken = CreateRefreshToken(payload);
+  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
+
+  await UpdateUserRefreshToken(user._id, refreshToken);
+
+  return {
+    EC: 0,
+    EM: "Đăng nhập thành công",
+    accessToken,
+    refreshToken,
+    user: {
+      email: user.email,
+      name: user.name,
+    },
+  };
+};
+export const handleFacebookLogin = async (profile) => {
+  if (!profile?.id) throw new Error("Không có thông tin Facebook");
+
+  const facebookId = profile.id;
+  const email = profile.emails?.[0]?.value || "";
+  const name =
+    profile.displayName ||
+    `${profile.name?.givenName} ${profile.name?.familyName}`;
+  const avatar = profile.photos?.[0]?.value;
+
+  let user = await User.findOne({ facebookId });
+  if (!user) {
+    user = await User.create({ facebookId, email, name, avatar });
+  }
+
+  const payload = { id: user._id, email: user.email, name: user.name };
+  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
+  const refreshToken = CreateRefreshToken(payload);
+  await UpdateUserRefreshToken(user._id, refreshToken);
+
+  return {
+    accessToken,
+    refreshToken,
+    user: { email: user.email, name: user.name },
+  };
 };
 
 export const CreateRefreshToken = (payload) => {

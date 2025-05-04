@@ -3,8 +3,11 @@ import {
   LoginUsers,
   Register,
   RefreshTokenUser,
+  loginSuccess,
+  loginFaceBookSuccess,
 } from "../Controller/AuthController.js";
 import verifyToken from "../middleware/auth.js";
+import passport from "../config/passport.js";
 
 const AuthRouter = express.Router();
 
@@ -17,4 +20,31 @@ AuthRouter.get("/account", verifyToken, async (req, res) => {
   });
 });
 AuthRouter.get("/refreshToken", RefreshTokenUser);
+AuthRouter.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+AuthRouter.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "/login",
+  }),
+  loginSuccess
+);
+
+AuthRouter.get(
+  "/facebook",
+  passport.authenticate("facebook", { scope: ["public_profile"] })
+);
+
+AuthRouter.get(
+  "/facebook/callback",
+  passport.authenticate("facebook", {
+    session: false,
+    failureRedirect: "/login",
+  }),
+  loginFaceBookSuccess
+);
 export default AuthRouter;

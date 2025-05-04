@@ -2,8 +2,10 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
-import hbs from "hbs";
 import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import connection from "./src/config/database.js";
 import userRouter from "./src/routes/userRoutes.js";
 import AuthRouter from "./src/routes/AuthRoutes.js";
@@ -12,14 +14,16 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 //view enginee
-app.set("view engine", "hbs");
-app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "src/views"));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+
+//view
 
 // Test route
 app.get("/", (req, res) => {

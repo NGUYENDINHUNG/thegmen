@@ -4,15 +4,14 @@ const { Schema } = mongoose;
 
 const UserSchema = new Schema(
   {
-    email: { type: String, unique: true }, // thêm lowercase nếu muốn
+    email: { type: String, unique: true },
     name: String,
     password: String,
-    phoneNumber: { type: String, unique: true },
+    phoneNumber: String,
     address: String,
     avatar: String,
     facebookId: String,
     googleId: String,
-    avatar: String,
     refreshToken: String,
   },
   { timestamps: true }
