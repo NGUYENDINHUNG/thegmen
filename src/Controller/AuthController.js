@@ -7,6 +7,7 @@ import {
   handleFacebookLogin,
   ForgetPasswordService,
   resetPasswordService,
+  LogoutService,
 } from "../service/authService.js";
 
 export const Register = async (req, res) => {
@@ -99,5 +100,14 @@ export const resetPassword = async (req, res) => {
     res.json(result);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+export const logout = async (req, res) => {
+  try {
+    const refreshToken = req.cookies["refresh_token"];
+    await LogoutService(req, res);
+  } catch (error) {
+    console.error("Logout error:", error.message);
+    res.status(500).json({ message: "Đăng xuất thất bại." });
   }
 };

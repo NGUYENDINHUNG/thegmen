@@ -7,6 +7,7 @@ import {
   loginFaceBookSuccess,
   requestPasswordReset,
   resetPassword,
+  logout,
 } from "../Controller/AuthController.js";
 import verifyToken from "../middleware/auth.js";
 import passport from "../config/passport.js";
@@ -52,4 +53,5 @@ AuthRouter.get(
 
 AuthRouter.post("/forgot-password", requestPasswordReset);
 AuthRouter.post("/reset-password", resetPassword);
+AuthRouter.post("/logout", verifyToken, logout);
 export default AuthRouter;

@@ -254,9 +254,7 @@ export const ForgetPasswordService = async (email) => {
     throw new Error(error.message || "Something went wrong");
   }
 };
-
 export const resetPasswordService = async (token, newPassword) => {
-  console.log(token);
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded._id);
@@ -267,5 +265,21 @@ export const resetPasswordService = async (token, newPassword) => {
     return { message: "Đặt lại mật khẩu thành công." };
   } catch (error) {
     throw new Error("Token không hợp lệ hoặc đã hết hạn.");
+  }
+};
+export const LogoutService = async (refreshToken, res) => {
+  try {
+    if (!refreshToken) {
+      res.clearCookie("refresh_token");
+      return res
+        .status(200)
+        .json({ message: "Không có token, nhưng đã xóa cookie." });
+    }
+    res.clearCookie("refresh_token");
+    return res
+      .status(200)
+      .json({ message: "Đăng xuất thành công (cookie đã bị xóa)." });
+  } catch (error) {
+    throw new Error("Lỗi khi xóa cookie.");
   }
 };
