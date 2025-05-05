@@ -1,7 +1,6 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as FacebookStrategy } from "passport-facebook";
-// Không gọi handleGoogleLogin ở đây
 passport.use(
   new GoogleStrategy(
     {
@@ -22,11 +21,10 @@ passport.use(
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
       callbackURL: "http://localhost:8000/v1/api/auth/facebook/callback",
-      profileFields: ["displayName", "photos", "name"], // thông tin cần lấy
+      profileFields: ["displayName", "photos", "name"], 
     },
     async (accessToken, refreshToken, profile, cb) => {
       try {
-        console.log("Facebook Profile:", profile);
         return cb(null, profile);
       } catch (error) {
         return cb(error, null);

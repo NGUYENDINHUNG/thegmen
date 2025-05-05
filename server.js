@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 import connection from "./src/config/database.js";
 import userRouter from "./src/routes/userRoutes.js";
 import AuthRouter from "./src/routes/AuthRoutes.js";
+import CategoryRouter from "./src/routes/CategoryRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -33,7 +34,7 @@ app.get("/", (req, res) => {
 // User routes
 app.use("/v1/api/auth", AuthRouter);
 app.use("/v1/api/user", userRouter);
-
+app.use("/v1/api/category", CategoryRouter);
 // Kết nối DB và start server
 const startServer = async () => {
   try {
