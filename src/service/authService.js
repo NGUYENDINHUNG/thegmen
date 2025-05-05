@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import User from "../model/userModel.schema.js";
 import { UpdateUserRefreshToken, FindUserByToken } from "./userService.js";
+import sendEmail from "../util/email.util.js";
 import ms from "ms";
 const saltRounds = 10;
 
@@ -26,7 +27,6 @@ export const RegisterSevice = async (email, name, password, phoneNumber) => {
     return null;
   }
 };
-
 export const LoginUserService = async (phoneNumber, password) => {
   try {
     const user = await User.findOne({ phoneNumber: phoneNumber });
@@ -74,41 +74,6 @@ export const LoginUserService = async (phoneNumber, password) => {
     };
   }
 };
-
-//   if (!profile?.id) {
-//     throw new Error("Không có thông tin người dùng Google");
-//   }
-//   let user = await User.findOne({ googleId: profile.id });
-//   if (!user) {
-//     user = await User.create({
-//       googleId: profile.id,
-//       email: profile.emails?.[0]?.value,
-//       name: `${profile.name?.familyName} ${profile.name?.givenName}`,
-//       avatar: profile.photos?.[0]?.value,
-//     });
-//     const payload = {
-//       id: user._id,
-//       email: user.email,
-//       name: user.name,
-//     };
-
-//     const refreshToken = CreateRefreshToken(payload);
-//     const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
-//       expiresIn: process.env.JWT_EXPIRE,
-//     });
-//     await UpdateUserRefreshToken(user._id, refreshToken);
-//     return {
-//       EC: 0,
-//       EM: "Đăng nhập thành công",
-//       accessToken,
-//       refreshToken,
-//       user: {
-//         email: user.email,
-//         name: user.name,
-//       },
-//     };
-//   }
-// };
 export const handleGoogleLogin = async (profile) => {
   if (!profile?.id) {
     throw new Error("Không có thông tin người dùng Google");
@@ -173,13 +138,11 @@ export const handleFacebookLogin = async (profile) => {
     user: { email: user.email, name: user.name },
   };
 };
-
 export const CreateRefreshToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
     expiresIn: process.env.JWT_REFRESH_EXPIRE,
   });
 };
-
 export const processNewToken = async (refreshToken, res) => {
   try {
     if (!refreshToken) {
@@ -262,5 +225,47 @@ export const processNewToken = async (refreshToken, res) => {
       EC: 500,
       EM: "Đã có lỗi xảy ra: " + error.message,
     };
+  }
+};
+export const ForgetPasswordService = async (email) => {
+  try {
+    const Users = await User.findOne({ email });
+    if (!Users) {
+      console.log(`Email ${email} không tồn tại`);
+    }
+    const payload = {
+      _id: Users.id,
+      email: Users.email,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE_PASSWORD,
+    });
+    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    const html = `
+    <h2>Hello ${Users.name || "User"},</h2>
+    <p>nhấn vào link sau để đặt lại mật khẩu:</p>
+    <a href="${resetLink}">${resetLink}</a>
+  `;
+    await sendEmail(Users.email, "Reset Your Password", html);
+
+    return { message: "Reset link sent to email" };
+  } catch (error) {
+    console.error(error);
+    throw new Error(error.message || "Something went wrong");
+  }
+};
+
+export const resetPasswordService = async (token, newPassword) => {
+  console.log(token);
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded._id);
+    if (!user) throw new Error("Người dùng không tồn tại.");
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+    return { message: "Đặt lại mật khẩu thành công." };
+  } catch (error) {
+    throw new Error("Token không hợp lệ hoặc đã hết hạn.");
   }
 };

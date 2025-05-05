@@ -5,6 +5,8 @@ import {
   processNewToken,
   handleGoogleLogin,
   handleFacebookLogin,
+  ForgetPasswordService,
+  resetPasswordService,
 } from "../service/authService.js";
 
 export const Register = async (req, res) => {
@@ -80,4 +82,22 @@ export const RefreshTokenUser = async (req, res) => {
   const result = await processNewToken(refreshToken, res);
   console.log(result);
   return res.status(200).json(result);
+};
+export const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const response = await ForgetPasswordService(email);
+    return res.json(response);
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+export const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+  try {
+    const result = await resetPasswordService(token, newPassword);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 };

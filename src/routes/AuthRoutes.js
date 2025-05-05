@@ -5,6 +5,8 @@ import {
   RefreshTokenUser,
   loginSuccess,
   loginFaceBookSuccess,
+  requestPasswordReset,
+  resetPassword,
 } from "../Controller/AuthController.js";
 import verifyToken from "../middleware/auth.js";
 import passport from "../config/passport.js";
@@ -47,4 +49,7 @@ AuthRouter.get(
   }),
   loginFaceBookSuccess
 );
+
+AuthRouter.post("/forgot-password", requestPasswordReset);
+AuthRouter.post("/reset-password", resetPassword);
 export default AuthRouter;
