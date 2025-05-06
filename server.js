@@ -10,6 +10,7 @@ import connection from "./src/config/database.js";
 import userRouter from "./src/routes/userRoutes.js";
 import AuthRouter from "./src/routes/AuthRoutes.js";
 import CategoryRouter from "./src/routes/CategoryRoutes.js";
+import SlidersRouter from "./src/routes/SliderRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -35,6 +36,8 @@ app.get("/", (req, res) => {
 app.use("/v1/api/auth", AuthRouter);
 app.use("/v1/api/user", userRouter);
 app.use("/v1/api/category", CategoryRouter);
+app.use("/v1/api/sliders", SlidersRouter);
+
 // Kết nối DB và start server
 const startServer = async () => {
   try {
