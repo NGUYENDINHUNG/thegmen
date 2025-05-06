@@ -84,7 +84,7 @@ export const handleGoogleLogin = async (profile) => {
   const name =
     profile.displayName ||
     `${profile.name?.familyName} ${profile.name?.givenName}`;
-  const avatar = profile.photos?.[0]?.value;
+    const avatar = profile.photos?.[0]?.value;
 
   let user = await User.findOne({ googleId });
   if (!user) {
@@ -114,11 +114,11 @@ export const handleFacebookLogin = async (profile) => {
   if (!profile?.id) throw new Error("Không có thông tin Facebook");
 
   const facebookId = profile.id;
-  const email = profile.emails?.[0]?.value || "";
+  const email = profile.emails || "";
   const name =
     profile.displayName ||
     `${profile.name?.givenName} ${profile.name?.familyName}`;
-  const avatar = profile.photos?.[0]?.value;
+  const avatar = profile.photos;
 
   let user = await User.findOne({ facebookId });
   if (!user) {
@@ -135,7 +135,7 @@ export const handleFacebookLogin = async (profile) => {
   return {
     accessToken,
     refreshToken,
-    user: { email: user.email, name: user.name },
+    user: { email: user.email, name: user.name, avatar: user.avatar },
   };
 };
 export const CreateRefreshToken = (payload) => {

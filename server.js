@@ -12,6 +12,7 @@ import AuthRouter from "./src/routes/AuthRoutes.js";
 import CategoryRouter from "./src/routes/CategoryRoutes.js";
 import SlidersRouter from "./src/routes/SliderRoutes.js";
 import SupplierRouter from "./src/routes/SupplierRoutes.js";
+import Addressrouter from "./src/routes/AddressRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -39,7 +40,7 @@ app.use("/v1/api/user", userRouter);
 app.use("/v1/api/category", CategoryRouter);
 app.use("/v1/api/sliders", SlidersRouter);
 app.use("/v1/api/suppliers", SupplierRouter);
-
+app.use("/v1/api/address", Addressrouter);
 // Kết nối DB và start server
 const startServer = async () => {
   try {
