@@ -13,6 +13,7 @@ import CategoryRouter from "./src/routes/CategoryRoutes.js";
 import SlidersRouter from "./src/routes/SliderRoutes.js";
 import SupplierRouter from "./src/routes/SupplierRoutes.js";
 import Addressrouter from "./src/routes/AddressRoutes.js";
+import ConllectionRouter from "./src/routes/ConllectionRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -27,13 +28,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-//view
-
-// Test route
-app.get("/", (req, res) => {
-  res.json("hello");
-});
-
 // User routes
 app.use("/v1/api/auth", AuthRouter);
 app.use("/v1/api/user", userRouter);
@@ -41,6 +35,8 @@ app.use("/v1/api/category", CategoryRouter);
 app.use("/v1/api/sliders", SlidersRouter);
 app.use("/v1/api/suppliers", SupplierRouter);
 app.use("/v1/api/address", Addressrouter);
+app.use("/v1/api/conllection", ConllectionRouter);
+
 // Kết nối DB và start server
 const startServer = async () => {
   try {
