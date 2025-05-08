@@ -9,11 +9,30 @@ import {
   resetPasswordService,
   LogoutService,
 } from "../service/authService.js";
+import { uploadSingleFile } from "../service/fileService.js";
 
 export const Register = async (req, res) => {
   const { email, name, password, phoneNumber } = req.body;
-  const data = await RegisterSevice(email, name, password, phoneNumber);
-  return res.status(data.EC === 0 ? 200 : 400).json(data);
+  let imageUrl = " ";
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send("No files were uploaded.");
+  } else {
+    let results = await uploadSingleFile(req.files.avatar);
+    imageUrl = results.path;
+  }
+  console.log("imageUrl", imageUrl);
+  const data = await RegisterSevice(
+    email,
+    name,
+    password,
+    phoneNumber,
+    imageUrl
+  );
+  return res.status(200).json({
+    statusCode: 200,
+    message: "Register successfully",
+    data: data,
+  });
 };
 
 export const LoginUsers = async (req, res) => {
@@ -24,8 +43,8 @@ export const LoginUsers = async (req, res) => {
     maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
   });
   return res.status(200).json({
-    EC: data.EC,
-    EM: data.EM,
+    statusCode: 200,
+    message: "Login successfully",
     accessToken: data.accessToken,
     user: data.user,
   });
@@ -41,8 +60,8 @@ export const loginSuccess = async (req, res) => {
     });
 
     return res.status(200).json({
-      EC: data.EC,
-      EM: data.EM,
+      statusCode: 200,
+      message: "Login successfully",
       accessToken: data.accessToken,
       user: data.user,
     });

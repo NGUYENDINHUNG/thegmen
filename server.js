@@ -3,6 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
 import path from "path";
+import fileUpload from "express-fileupload";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,9 +15,13 @@ import SlidersRouter from "./src/routes/SliderRoutes.js";
 import SupplierRouter from "./src/routes/SupplierRoutes.js";
 import Addressrouter from "./src/routes/AddressRoutes.js";
 import ConllectionRouter from "./src/routes/ConllectionRoutes.js";
+import FileRouter from "./src/routes/fileRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
+
+//config file upload
+app.use(fileUpload(), express.static("public/images"));
 
 //view enginee
 app.set("view engine", "ejs");
@@ -36,7 +41,7 @@ app.use("/v1/api/sliders", SlidersRouter);
 app.use("/v1/api/suppliers", SupplierRouter);
 app.use("/v1/api/address", Addressrouter);
 app.use("/v1/api/conllection", ConllectionRouter);
-
+app.use("/v1/api/upload", FileRouter);
 // Kết nối DB và start server
 const startServer = async () => {
   try {

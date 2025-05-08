@@ -6,7 +6,13 @@ import sendEmail from "../util/email.util.js";
 import ms from "ms";
 const saltRounds = 10;
 
-export const RegisterSevice = async (email, name, password, phoneNumber) => {
+export const RegisterSevice = async (
+  email,
+  name,
+  password,
+  phoneNumber,
+  avatar
+) => {
   try {
     //check user exist
     const Usersexis = await User.findOne({ email });
@@ -20,6 +26,7 @@ export const RegisterSevice = async (email, name, password, phoneNumber) => {
       name: name,
       password: hashPassword,
       phoneNumber: phoneNumber,
+      avatar: avatar,
     });
     return result;
   } catch (error) {
@@ -64,6 +71,8 @@ export const LoginUserService = async (phoneNumber, password) => {
       user: {
         email: user.email,
         name: user.name,
+        phoneNumber: user.phoneNumber,
+        avatar: user.avatar,
       },
     };
   } catch (error) {
@@ -84,7 +93,7 @@ export const handleGoogleLogin = async (profile) => {
   const name =
     profile.displayName ||
     `${profile.name?.familyName} ${profile.name?.givenName}`;
-    const avatar = profile.photos?.[0]?.value;
+  const avatar = profile.photos?.[0]?.value;
 
   let user = await User.findOne({ googleId });
   if (!user) {

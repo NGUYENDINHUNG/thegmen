@@ -1,3 +1,4 @@
+import { uploadSingleFile } from "../service/fileService.js";
 import {
   CreateUsersService,
   GetUserById,
@@ -31,7 +32,7 @@ export const UserFindById = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 };
 
