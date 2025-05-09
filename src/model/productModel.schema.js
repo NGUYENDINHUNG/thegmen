@@ -15,10 +15,16 @@ const ProductSchema = new Schema(
       type: Number,
     },
     images: {
-      type: String,
+      type: [String],
+      default: [],
     },
     description: {
       type: String,
+    },
+    variants: {
+      type: [Schema.Types.ObjectId],
+      ref: "variants",
+      default: [],
     },
     supplierId: {
       type: Schema.Types.ObjectId,
@@ -30,12 +36,12 @@ const ProductSchema = new Schema(
     },
     isDeleted: {
       type: Boolean,
-      default: false
+      default: false,
     },
     deletedAt: {
       type: Date,
-      default: null
-    }
+      default: null,
+    },
   },
   { timestamps: true }
 );
