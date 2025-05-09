@@ -16,6 +16,7 @@ import SupplierRouter from "./src/routes/SupplierRoutes.js";
 import Addressrouter from "./src/routes/AddressRoutes.js";
 import ConllectionRouter from "./src/routes/ConllectionRoutes.js";
 import FileRouter from "./src/routes/fileRoutes.js";
+import ProductRouter from "./src/routes/ProductRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -42,6 +43,7 @@ app.use("/v1/api/suppliers", SupplierRouter);
 app.use("/v1/api/address", Addressrouter);
 app.use("/v1/api/conllection", ConllectionRouter);
 app.use("/v1/api/upload", FileRouter);
+app.use("/v1/api/product", ProductRouter);
 // Kết nối DB và start server
 const startServer = async () => {
   try {
