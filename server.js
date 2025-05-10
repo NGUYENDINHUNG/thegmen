@@ -18,6 +18,7 @@ import CollectionRouter from "./src/routes/ConllectionRoutes.js";
 import FileRouter from "./src/routes/fileRoutes.js";
 import ProductRouter from "./src/routes/ProductRoutes.js";
 import VariantRouter from "./src/routes/VariantRoutes.js";
+import Cartrouter from "./src/routes/CartRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -46,6 +47,7 @@ app.use("/v1/api/collection", CollectionRouter);
 app.use("/v1/api/upload", FileRouter);
 app.use("/v1/api/product", ProductRouter);
 app.use("/v1/api/variant", VariantRouter);
+app.use("/v1/api/cart", Cartrouter);
 // Kết nối DB và start server
 const startServer = async () => {
   try {
