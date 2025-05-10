@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const ConllectionSchema = new Schema(
+const CollectionSchema = new Schema(
   {
     name: {
       type: String,
@@ -15,12 +15,27 @@ const ConllectionSchema = new Schema(
       type: String,
       unique: true,
     },
-    products: String,
-    images: String,
+    products: {
+      type: [Schema.Types.ObjectId],
+      ref: "products",
+      default: [],
+    },
+    images: {
+      type: [String],
+      default: [],
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
 
-const Conllection = mongoose.model("conlection", ConllectionSchema);
+const Collection = mongoose.model("conlection", CollectionSchema);
 
-export default Conllection;
+export default Collection;

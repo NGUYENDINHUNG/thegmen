@@ -121,15 +121,46 @@ export const getAllUserAddressService = async (userId) => {
     throw error;
   }
 };
+
 export const deleteAddressService = async (addressId) => {
   try {
     const deletedAddress = await Address.findByIdAndDelete(addressId);
 
     if (!deletedAddress) {
       console.log("Địa chỉ không tồn tại hoặc đã bị xóa");
+      return null;
+    }
+
+    await User.updateOne(
+      { addresses: addressId },
+      { $pull: { addresses: addressId } }
+    );
+    if (deletedAddress.isDefault) {
+      const user = await User.findById(deletedAddress.userId).populate(
+        "addresses"
+      );
+      if (user && user.addresses.length > 0) {
+        const newDefault = user.addresses[0];
+        await Address.findByIdAndUpdate(newDefault._id, { isDefault: true });
+        await User.findByIdAndUpdate(user._id, {
+          address: {
+            id: newDefault._id,
+            fullname: newDefault.fullname,
+            phoneNumber: newDefault.phoneNumber,
+            address: newDefault.address,
+            provinceName: newDefault.provinceName,
+            districtName: newDefault.districtName,
+            wardName: newDefault.wardName,
+            isDefault: true,
+          },
+        });
+      } else {
+        await User.findByIdAndUpdate(deletedAddress.userId, { address: null });
+      }
     }
     return deletedAddress;
   } catch (error) {
     console.error("Error in deleteAddressService:", error);
+    throw error;
   }
 };

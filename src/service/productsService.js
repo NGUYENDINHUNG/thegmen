@@ -2,6 +2,7 @@ import Product from "../model/productModel.schema.js";
 import aqp from "api-query-params";
 import Supplier from "../model/supplierModel.schema.js";
 import Category from "../model/categoryModel.schema.js";
+import Variants from "../model/variantsModel.schema.js";
 
 export const ProductsConllectionService = async (
   name,
@@ -61,7 +62,10 @@ export const GetProductsByIdService = async (ProductId) => {
     if (!ProductId) {
       return null;
     }
-    const results = await Product.findById(ProductId);
+    const results = await Product.findById(ProductId).populate({
+      path: "variants",
+      match: { isDeleted: false },
+    });
     return results;
   } catch (error) {
     console.error("Lỗi khi tìm sản phẩm theo ID:", error);
@@ -95,9 +99,9 @@ export const SoftDeleteProductService = async (ProductId) => {
   try {
     const deletedProduct = await Product.findByIdAndUpdate(
       ProductId,
-      { 
+      {
         isDeleted: true,
-        deletedAt: new Date()
+        deletedAt: new Date(),
       },
       { new: true }
     );
@@ -105,6 +109,12 @@ export const SoftDeleteProductService = async (ProductId) => {
     if (!deletedProduct) {
       throw new Error("Sản phẩm không tồn tại hoặc đã bị xóa");
     }
+
+    await Variants.updateMany(
+      { productId: ProductId },
+      { isDeleted: true, deletedAt: new Date() }
+    );
+
     return deletedProduct;
   } catch (error) {
     console.error("Lỗi khi xóa sản phẩm:", error);
@@ -115,9 +125,9 @@ export const RestoreProductService = async (ProductId) => {
   try {
     const restoredProduct = await Product.findByIdAndUpdate(
       ProductId,
-      { 
+      {
         isDeleted: false,
-        deletedAt: null
+        deletedAt: null,
       },
       { new: true }
     );

@@ -26,6 +26,11 @@ const ProductSchema = new Schema(
       ref: "variants",
       default: [],
     },
+    collections: {
+      type: [Schema.Types.ObjectId],
+      ref: "conlection",
+      default: [],
+    },
     supplierId: {
       type: Schema.Types.ObjectId,
       ref: "suppliers",
