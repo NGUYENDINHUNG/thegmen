@@ -9,8 +9,7 @@ import {
 } from "../service/productsService.js";
 
 export const CreateProduct = async (req, res) => {
-  const { name, price, discount, description, supplierId, categoryId } =
-    req.body;
+  const { name, price, description, supplierId, categoryId } = req.body;
   let imageUrl = " ";
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).send("No files were uploaded.");

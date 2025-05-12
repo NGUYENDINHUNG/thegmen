@@ -33,7 +33,6 @@ export const ProductsConllectionService = async (
     let result = await Product.create({
       name: name,
       price: price,
-      discount: discount,
       images: images,
       description: description,
       supplierId: supplierId,

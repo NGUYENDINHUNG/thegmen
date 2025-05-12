@@ -19,6 +19,8 @@ import FileRouter from "./src/routes/fileRoutes.js";
 import ProductRouter from "./src/routes/ProductRoutes.js";
 import VariantRouter from "./src/routes/VariantRoutes.js";
 import Cartrouter from "./src/routes/CartRoutes.js";
+import VoucherRouter from "./src/routes/VoucherRoutes.js";
+import OrderRouter from "./src/routes/orderRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -48,6 +50,8 @@ app.use("/v1/api/upload", FileRouter);
 app.use("/v1/api/product", ProductRouter);
 app.use("/v1/api/variant", VariantRouter);
 app.use("/v1/api/cart", Cartrouter);
+app.use("/v1/api/voucher", VoucherRouter);
+app.use("/v1/api/order", OrderRouter);
 // Kết nối DB và start server
 const startServer = async () => {
   try {

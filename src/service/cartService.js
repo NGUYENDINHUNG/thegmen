@@ -1,4 +1,4 @@
-import Cart from "../model/CartModel.schema.js";
+import Cart from "../model/cartModel.schema.js";
 import Variants from "../model/variantsModel.schema.js";
 import Product from "../model/productModel.schema.js";
 

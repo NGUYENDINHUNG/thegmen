@@ -15,9 +15,8 @@ const CartSchema = new Schema({
     unique: true,
   },
   items: [CartItemSchema],
-  voucher: { type: Schema.Types.ObjectId, ref: "voucher", default: null },
   updatedAt: { type: Date, default: Date.now },
 });
 
-const Cart = mongoose.model("cart", CartSchema);
+const Cart = mongoose.models.cart || mongoose.model("cart", CartSchema);
 export default Cart;
