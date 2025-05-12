@@ -6,7 +6,7 @@ const OrderItemSchema = new Schema({
   variantId: { type: Schema.Types.ObjectId, ref: "variants" },
   quantity: { type: Number, required: true, min: 1 },
   price: { type: Number, required: true, min: 0 },
-  name: { type: String, required: true }
+  name: { type: String, required: true },
 });
 
 const OrderSchema = new Schema(
@@ -15,21 +15,28 @@ const OrderSchema = new Schema(
     items: [OrderItemSchema],
     totalAmount: { type: Number, required: true, min: 0 },
     voucherDiscount: { type: Number, default: 0 },
-    voucherId: { 
+    voucherId: {
       id: { type: Schema.Types.ObjectId, ref: "voucher" },
       code: { type: String },
       discountType: { type: String },
       discountValue: { type: Number },
-      discountAmount: { type: Number }
+      discountAmount: { type: Number },
     },
     addressId: { type: Schema.Types.ObjectId, ref: "address", required: true },
-    orderCode: { type: String, required: true, unique: true },
-    status: { 
-      type: String,
-      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
-      default: "pending"
+    shippingAddress: {
+      fullName: String,
+      phoneNumber: String,
+      province: String,
+      district: String,
+      ward: String,
+      address: String,
     },
-    paymentMethod: { type: String, default: "COD" }
+    orderCode: { type: String, required: true, unique: true },
+    status: {
+      type: String,
+      default: "pending",
+    },
+    paymentMethod: { type: String, default: "COD" },
   },
   { timestamps: true }
 );

@@ -8,8 +8,8 @@ import {
   ForgetPasswordService,
   resetPasswordService,
   LogoutService,
-} from "../service/authService.js";
-import { uploadSingleFile } from "../service/fileService.js";
+} from "../services/authService.js";
+import { uploadSingleFile } from "../services/fileService.js";
 
 export const Register = async (req, res) => {
   const { email, name, password, phoneNumber } = req.body;

@@ -4,8 +4,8 @@ import {
   UpdateCategory,
   GetCategoryById,
   GetAllCategory,
-} from "../Controller/CategoryController.js";
-import verifyToken from "../middleware/auth.js";
+} from "../Controller/categoryController.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const CategoryRouter = express.Router();
 

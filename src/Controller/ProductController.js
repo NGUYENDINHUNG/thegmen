@@ -1,4 +1,4 @@
-import { uploadSingleFile } from "../service/fileService.js";
+import { uploadSingleFile } from "../services/fileService.js";
 import {
   ProductsConllectionService,
   UpdateProductsService,
@@ -6,7 +6,7 @@ import {
   GetAllProductsService,
   SoftDeleteProductService,
   RestoreProductService,
-} from "../service/productsService.js";
+} from "../services/productsService.js";
 
 export const CreateProduct = async (req, res) => {
   const { name, price, description, supplierId, categoryId } = req.body;

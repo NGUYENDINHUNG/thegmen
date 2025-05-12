@@ -1,9 +1,8 @@
-import { uploadSingleFile } from "../service/fileService.js";
 import {
   CreateUsersService,
   GetUserById,
   updateUserById,
-} from "../service/userService.js";
+} from "../services/userService.js";  
 
 export const CreateUsers = async (req, res) => {
   const { email, name, password, phoneNumber } = req.body;

@@ -1,8 +1,14 @@
 import Order from "../model/orderModel.Schema.js";
 import Cart from "../model/cartModel.schema.js";
-import Product from "../model/productModel.schema.js";
 import Address from "../model/addressModel.schema.js";
 import { validateAndApplyVoucherService } from "./VouchersSevice.js";
+import User from "../model/userModel.schema.js";
+
+const generateOrderCode = () => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 7).toUpperCase();
+  return `ORD-${timestamp}-${random}`;
+};
 
 export const createOrderService = async (userId, addressId, voucherCode) => {
   try {
@@ -10,16 +16,19 @@ export const createOrderService = async (userId, addressId, voucherCode) => {
     if (!address) {
       throw new Error("Địa chỉ không tồn tại");
     }
+
     const cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart || !cart.items || cart.items.length === 0) {
       throw new Error("Giỏ hàng trống");
     }
+
     const orderItems = [];
-    let totalAmount = 0;
+    let originalTotal = 0;
+
     cart.items.forEach((item) => {
       const product = item.productId;
       const itemPrice = product.price * item.quantity;
-      totalAmount += itemPrice;
+      originalTotal += itemPrice;
 
       orderItems.push({
         productId: product._id,
@@ -29,43 +38,40 @@ export const createOrderService = async (userId, addressId, voucherCode) => {
         name: product.name,
       });
     });
-  
 
     let voucherDiscount = 0;
     let voucherInfo = null;
-    let originalTotal = totalAmount;
+    let totalAmount = originalTotal;
 
     if (voucherCode) {
       try {
         const result = await validateAndApplyVoucherService(
           voucherCode,
-          totalAmount,
+          originalTotal,
           userId
         );
-        voucherDiscount = result.discountAmount; //10,000
-        totalAmount = result.finalAmount; // 40,000
+        voucherDiscount = result.discountAmount;
+        totalAmount = result.finalAmount;
         voucherInfo = {
           id: result.voucher._id,
           code: result.voucher.code,
-          discountType: result.voucher.discountType,//loại giảm
-          discountValue: result.voucher.discountValue,//giảm được bao nhiêu phần trăm
-          discountAmount: voucherDiscount, // giảm được bao nhiêu tiền từ phần trăm
+          discountType: result.voucher.discountType,
+          discountValue: result.voucher.discountValue,
+          discountAmount: voucherDiscount,
         };
       } catch (error) {
-        // Nếu lỗi, không áp dụng voucher và tiếp tục tạo đơn hàng
         console.error("Lỗi áp dụng voucher:", error);
       }
     }
 
-    // Tạo mã đơn hàng
     const orderCode = generateOrderCode();
 
-    // Tạo đơn hàng
     const order = new Order({
       userId,
       items: orderItems,
-      voucherDiscount: voucherDiscount,
-      totalAmount: totalAmount,
+      originalTotal,
+      totalAmount,
+      voucherDiscount,
       voucherId: voucherInfo,
       addressId,
       shippingAddress: {
@@ -80,9 +86,13 @@ export const createOrderService = async (userId, addressId, voucherCode) => {
       status: "pending",
       paymentMethod: "COD",
     });
-  console.log(order)
-    // Lưu đơn hàng và xóa giỏ hàng
+
     const savedOrder = await order.save();
+    await User.findByIdAndUpdate(
+      userId,
+      { $push: { order: savedOrder._id } },
+      { new: true }
+    );
     await Cart.findOneAndDelete({ userId });
 
     return savedOrder;
@@ -91,9 +101,29 @@ export const createOrderService = async (userId, addressId, voucherCode) => {
   }
 };
 
-// Hàm tạo mã đơn hàng
-const generateOrderCode = () => {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 7).toUpperCase();
-  return `ORD-${timestamp}-${random}`;
+export const getOrdersByUserService = async (userId) => {
+  try {
+    const orders = await Order.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "items.productId",
+        select: "name images description",
+      });
+
+    if (!orders) {
+      return {
+        status: 400,
+        message: "Không có đơn hàng nào",
+        data: [],
+      };
+    }
+
+    return {
+      status: 200,
+      message: "Lấy danh sách đơn hàng thành công",
+      data: orders,
+    };
+  } catch (error) {
+    throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
+  }
 };

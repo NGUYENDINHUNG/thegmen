@@ -6,8 +6,8 @@ import {
   UpdateProduct,
   SoftDeleteProduct,
   RestoreProduct,
-} from "../Controller/ProductController.js";
-import verifyToken from "../middleware/auth.js";
+} from "../Controller/productController.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const ProductRouter = express.Router();
 

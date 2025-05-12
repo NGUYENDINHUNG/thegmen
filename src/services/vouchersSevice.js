@@ -1,12 +1,11 @@
-import { Voucher, VoucherUsage } from "../model/VouchersModel.schema.js";
-
+import Voucher from "../model/vouchersModel.schema.js";
+import User from "../model/userModel.schema.js";
 export const createVoucherService = async (voucherData) => {
   try {
     const exist = await Voucher.findOne({ code: voucherData.code });
     if (exist) {
       throw new Error("Mã voucher đã tồn tại");
     }
-
     const voucher = await Voucher.create(voucherData);
     return voucher;
   } catch (error) {
@@ -17,14 +16,6 @@ export const createVoucherService = async (voucherData) => {
 export const getAllVouchersService = async () => {
   try {
     return await Voucher.find({});
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getVoucherByIdService = async (id) => {
-  try {
-    return await Voucher.findById(id);
   } catch (error) {
     throw error;
   }
@@ -58,35 +49,31 @@ export const validateAndApplyVoucherService = async (
   userId
 ) => {
   try {
-    const voucher = await getVoucherByCodeService(code);
-
+    const voucher = await Voucher.findOne({ code });
     if (!voucher) {
       throw new Error("Voucher không tồn tại");
     }
-
-    if (voucher.status !== "active") {
-      throw new Error("Voucher không còn hiệu lực");
-    }
-
     const now = new Date();
     if (now < voucher.startDate || now > voucher.endDate) {
       throw new Error("Voucher đã hết hạn hoặc chưa đến thời gian sử dụng");
     }
-
+    if (voucher.status !== "active") {
+      throw new Error("Voucher không còn hiệu lực");
+    }
     if (voucher.quantity <= 0) {
       throw new Error("Voucher đã hết số lượng");
     }
-
-    const usage = await VoucherUsage.findOne({
-      voucherId: voucher._id,
-      userId,
-    });
-    if (usage && usage.usageCount >= voucher.maxUsagePerUser) {
-      throw new Error(
-        `Bạn đã sử dụng hết số lần được phép sử dụng voucher này (${voucher.maxUsagePerUser} lần)`
-      );
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("Người dùng không tồn tại");
     }
 
+    const usedVoucher = user.usedVouchers.find(
+      (item) => item.voucherId.toString() === voucher._id.toString()
+    );
+    if (usedVoucher && usedVoucher.usageCount >= voucher.maxUsagePerUser) {
+      throw new Error("Bạn đã sử dụng hết số lần cho phép với voucher này.");
+    }
     // Tính toán giá trị giảm giá
     let discountAmount = 0;
     if (voucher.discountType === "percentage") {
@@ -94,21 +81,28 @@ export const validateAndApplyVoucherService = async (
     } else {
       discountAmount = voucher.discountValue;
     }
-    // Cập nhật số lần sử dụng
-    await VoucherUsage.findOneAndUpdate(
-      { voucherId: voucher._id, userId },
-      { $inc: { usageCount: 1 } },
-      { upsert: true }
-    );
+    console.log(discountAmount);
+    // Cập nhật số lần sử dụng voucher cho user
+    if (usedVoucher) {
+      usedVoucher.usageCount += 1;
+    } else {
+      user.usedVouchers.push({ voucherId: voucher._id, usageCount: 1 });
+    }
 
-    // Giảm số lượng voucher
+    // Giảm số lượng voucher còn lại
     voucher.quantity -= 1;
     await voucher.save();
+
+    // Lưu người dùng với thông tin mới
+    await user.save();
+
+    // Tính toán số tiền cuối cùng
+    const finalAmount = orderValue - discountAmount;
 
     return {
       voucher,
       discountAmount,
-      finalAmount: orderValue - discountAmount,
+      finalAmount,
     };
   } catch (error) {
     throw error;

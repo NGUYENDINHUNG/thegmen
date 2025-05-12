@@ -4,7 +4,7 @@ import {
   getAllAddressService,
   getAllUserAddressService,
   deleteAddressService,
-} from "../service/addressService.js";
+} from "../services/addressService.js";
 import aqp from "api-query-params";
 export const createAddress = async (req, res) => {
   try {

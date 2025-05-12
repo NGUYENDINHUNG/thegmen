@@ -23,6 +23,13 @@ const UserSchema = new Schema(
     facebookId: String,
     googleId: String,
     refreshToken: String,
+    order: [{ type: Schema.Types.ObjectId, ref: "order" }],
+    usedVouchers: [
+      {
+        voucherId: { type: mongoose.Schema.Types.ObjectId, ref: "voucher" },
+        usageCount: { type: Number, default: 1 },
+      },
+    ],
   },
   { timestamps: true }
 );

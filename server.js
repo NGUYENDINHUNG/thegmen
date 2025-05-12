@@ -52,6 +52,8 @@ app.use("/v1/api/variant", VariantRouter);
 app.use("/v1/api/cart", Cartrouter);
 app.use("/v1/api/voucher", VoucherRouter);
 app.use("/v1/api/order", OrderRouter);
+// app.use("/v1/api/search", SearchRouter);
+
 // Kết nối DB và start server
 const startServer = async () => {
   try {

@@ -3,8 +3,8 @@ import {
   addToCart,
   getCartByUser,
   removeItemFromCart,
-} from "../Controller/CartController.js";
-import verifyToken from "../middleware/auth.js";
+} from "../Controller/cartController.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const Cartrouter = Router();
 

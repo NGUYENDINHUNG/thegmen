@@ -9,11 +9,11 @@ import {
   RemoveProductFromCollectionService,
   GetProductsByCollectionIdService,
   GetCollectionsByProductIdService,
-} from "../service/conllectionService.js";
+} from "../services/conllectionService.js";
 import {
   uploadSingleFile,
   uploadMultipleFiles,
-} from "../service/fileService.js";
+} from "../services/fileService.js";
 
 export const CreateCollection = async (req, res) => {
   try {

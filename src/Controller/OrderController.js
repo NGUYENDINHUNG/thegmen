@@ -1,8 +1,10 @@
-import { createOrderService } from "../service/ordersService.js";
+import {
+  createOrderService,
+  getOrdersByUserService,
+} from "../services/ordersService.js";
 
 export const createOrder = async (req, res) => {
   try {
-   
     const { addressId, voucherCode, paymentMethod = "COD" } = req.body;
     const userId = req.user._id;
 
@@ -14,15 +16,29 @@ export const createOrder = async (req, res) => {
     }
 
     const order = await createOrderService(userId, addressId, voucherCode);
+
     return res.status(200).json({
-      success: true,
+      status: 200,
       message: "Đặt hàng thành công",
       data: {
         orderId: order._id,
         orderCode: order.orderCode,
-        totalAmount: order.totalAmount,
-        orderDate: order.createdAt,
         status: order.status,
+        orderDate: order.createdAt,
+        paymentMethod: order.paymentMethod,
+        originalTotal: order.originalTotal,
+        totalAmount: order.totalAmount,
+        voucherDiscount: order.voucherDiscount,
+        voucher: order.voucherId || null,
+        items: order.items.map((item) => ({
+          productId: item.productId,
+          variantId: item.variantId,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          totalPrice: item.price * item.quantity,
+        })),
+        shippingAddress: order.shippingAddress,
       },
     });
   } catch (error) {
@@ -55,6 +71,19 @@ export const createOrder = async (req, res) => {
       success: false,
       message: "Có lỗi xảy ra khi tạo đơn hàng",
       error: error.message,
+    });
+  }
+};
+export const getUserOrders = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const result = await getOrdersByUserService(userId);
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };

@@ -8,8 +8,8 @@ import {
   requestPasswordReset,
   resetPassword,
   logout,
-} from "../Controller/AuthController.js";
-import verifyToken from "../middleware/auth.js";
+} from "../Controller/authController.js";
+import { verifyToken } from "../middleware/auth.js";
 import passport from "../config/passport.js";
 
 const AuthRouter = express.Router();

@@ -24,4 +24,18 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-export default verifyToken;
+const apiKeyAuth = (req, res, next) => {
+  const clientKey = req.headers["x-api-key"];
+
+  if (!clientKey) {
+    return res.status(401).json({ message: "API Key is missing" });
+  }
+
+  if (clientKey !== process.env.API_KEY) {
+    return res.status(403).json({ message: "Invalid API Key" });
+  }
+
+  next(); 
+};
+
+export { verifyToken, apiKeyAuth };

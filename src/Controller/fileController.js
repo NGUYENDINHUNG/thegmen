@@ -1,7 +1,7 @@
 import {
   uploadSingleFile,
   uploadMultipleFiles,
-} from "../service/fileService.js";
+} from "../services/fileService.js";
 
 export const postUploadSingleFileApi = async (req, res) => {
   if (!req.files || Object.keys(req.files).length === 0) {
