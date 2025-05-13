@@ -130,3 +130,23 @@ export const logout = async (req, res) => {
     res.status(500).json({ message: "Đăng xuất thất bại." });
   }
 };
+
+export const getAccount = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Không tìm thấy thông tin người dùng hoặc token đã hết hạn",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Lấy thông tin người dùng thành công",
+      user: req.user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};

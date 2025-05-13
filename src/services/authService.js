@@ -127,8 +127,7 @@ export const handleFacebookLogin = async (profile) => {
   const name =
     profile.displayName ||
     `${profile.name?.givenName} ${profile.name?.familyName}`;
-  const avatar = profile.photos;
-
+  const avatar = profile.photos?.[0]?.value || "";
   let user = await User.findOne({ facebookId });
   if (!user) {
     user = await User.create({ facebookId, email, name, avatar });
