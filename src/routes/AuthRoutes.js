@@ -3,12 +3,12 @@ import {
   LoginUsers,
   Register,
   RefreshTokenUser,
-  loginSuccess,
   loginFaceBookSuccess,
   requestPasswordReset,
   resetPassword,
   logout,
   getAccount,
+  loginGoogleSuccess,
 } from "../Controller/authController.js";
 import { verifyToken } from "../middleware/auth.js";
 import passport from "../config/passport.js";
@@ -30,7 +30,7 @@ AuthRouter.get(
     session: false,
     failureRedirect: "/login",
   }),
-  loginSuccess
+  loginGoogleSuccess
 );
 
 AuthRouter.get(

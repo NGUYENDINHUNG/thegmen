@@ -1,8 +1,8 @@
 import Order from "../model/orderModel.Schema.js";
 import Cart from "../model/cartModel.schema.js";
 import Address from "../model/addressModel.schema.js";
-import { validateAndApplyVoucherService } from "./VouchersSevice.js";
 import User from "../model/userModel.schema.js";
+import { validateAndApplyVoucherService } from "./vouchersSevice.js";
 
 const generateOrderCode = () => {
   const timestamp = Date.now();

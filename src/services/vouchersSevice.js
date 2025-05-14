@@ -88,14 +88,11 @@ export const validateAndApplyVoucherService = async (
     } else {
       user.usedVouchers.push({ voucherId: voucher._id, usageCount: 1 });
     }
-
     // Giảm số lượng voucher còn lại
     voucher.quantity -= 1;
     await voucher.save();
-
     // Lưu người dùng với thông tin mới
     await user.save();
-
     // Tính toán số tiền cuối cùng
     const finalAmount = orderValue - discountAmount;
 

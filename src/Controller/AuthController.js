@@ -50,7 +50,7 @@ export const LoginUsers = async (req, res) => {
   });
 };
 
-export const loginSuccess = async (req, res) => {
+export const loginGoogleSuccess = async (req, res) => {
   try {
     const data = await handleGoogleLogin(req.user);
 
@@ -73,6 +73,7 @@ export const loginSuccess = async (req, res) => {
     });
   }
 };
+
 export const loginFaceBookSuccess = async (req, res) => {
   try {
     const data = await handleFacebookLogin(req.user);
@@ -103,6 +104,26 @@ export const RefreshTokenUser = async (req, res) => {
   console.log(result);
   return res.status(200).json(result);
 };
+export const getAccount = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Không tìm thấy thông tin người dùng hoặc token đã hết hạn",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Lấy thông tin người dùng thành công",
+      user: req.user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Lỗi server",
+      error: error.message,
+    });
+  }
+};
+
 export const requestPasswordReset = async (req, res) => {
   const { email } = req.body;
   try {
@@ -124,29 +145,9 @@ export const resetPassword = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     const refreshToken = req.cookies["refresh_token"];
-    await LogoutService(req, res);
+    await LogoutService(refreshToken, res);
   } catch (error) {
     console.error("Logout error:", error.message);
     res.status(500).json({ message: "Đăng xuất thất bại." });
-  }
-};
-
-export const getAccount = async (req, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        message: "Không tìm thấy thông tin người dùng hoặc token đã hết hạn",
-      });
-    }
-
-    return res.status(200).json({
-      message: "Lấy thông tin người dùng thành công",
-      user: req.user,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Lỗi server",
-      error: error.message,
-    });
   }
 };

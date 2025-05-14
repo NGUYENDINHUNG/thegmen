@@ -83,11 +83,7 @@ export const removeItemFromCartService = async (
 ) => {
   const cart = await Cart.findOne({ userId });
   if (!cart) return null;
-  cart.items = cart.items.filter(
-    (item) =>
-      item.productId.toString() !== productId ||
-      (variantId && item.variantId && item.variantId.toString() !== variantId)
-  );
+  cart.items = cart.items.filter((item) => item.productId.toString() !== productId || (variantId && item.variantId && item.variantId.toString() !== variantId) );
   await cart.save();
   return cart;
 };

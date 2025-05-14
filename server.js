@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 import connection from "./src/config/database.js";
 import userRouter from "./src/routes/userRoutes.js";
 import AuthRouter from "./src/routes/AuthRoutes.js";
-import CategoryRouter from "./src/routes/CategoryRoutes.js";
+import CategoryRouter from "./src/routes/categoryRoutes.js";
 import SlidersRouter from "./src/routes/SliderRoutes.js";
 import SupplierRouter from "./src/routes/SupplierRoutes.js";
 import Addressrouter from "./src/routes/AddressRoutes.js";

@@ -101,6 +101,7 @@ export const handleGoogleLogin = async (profile) => {
   }
 
   const payload = { id: user._id, email: user.email, name: user.name };
+  console.log("payload", payload);
   const refreshToken = CreateRefreshToken(payload);
   const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
@@ -283,11 +284,17 @@ export const LogoutService = async (refreshToken, res) => {
         .status(200)
         .json({ message: "Không có token, nhưng đã xóa cookie." });
     }
+    const user = await User.findOneAndUpdate(
+      { refreshToken: refreshToken },
+      { refreshToken: null },
+      { new: true }
+    );
+
     res.clearCookie("refresh_token");
     return res
       .status(200)
       .json({ message: "Đăng xuất thành công (cookie đã bị xóa)." });
   } catch (error) {
-    throw new Error("Lỗi khi xóa cookie.");
+    throw new Error("Lỗi khi đăng xuất: " + error.message);
   }
 };
