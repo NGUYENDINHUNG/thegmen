@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { byNowOrder, createOrder, getUserOrders, removeOrder } from "../Controller/orderController.js";
+import { byNowOrder, createOrder, getUserOrders, removeOrder } from "../Controllers/orderController.js";
 import { verifyToken } from "../middleware/auth.js";
 const OrderRouter = Router();
 

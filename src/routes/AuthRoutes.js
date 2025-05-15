@@ -9,7 +9,7 @@ import {
   logout,
   getAccount,
   loginGoogleSuccess,
-} from "../Controller/authController.js";
+} from "../Controllers/authController.js";
 import { verifyToken } from "../middleware/auth.js";
 import passport from "../config/passport.js";
 

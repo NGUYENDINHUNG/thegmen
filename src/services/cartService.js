@@ -1,6 +1,6 @@
-import Cart from "../model/cartModel.schema.js";
-import Variants from "../model/variantsModel.schema.js";
-import Product from "../model/productModel.schema.js";
+import Cart from "../models/cartModel.schema.js";
+import Variants from "../models/variantsModel.schema.js";
+import Product from "../models/productModel.schema.js";
 
 export const addToCartService = async (
   userId,

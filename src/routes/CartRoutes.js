@@ -3,7 +3,7 @@ import {
   addToCart,
   getCartByUser,
   removeItemFromCart,
-} from "../Controller/cartController.js";
+} from "../Controllers/cartController.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const Cartrouter = Router();

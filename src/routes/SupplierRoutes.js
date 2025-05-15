@@ -2,7 +2,7 @@ import express from "express";
 import {
   CreateSupplier,
   UpdateCategory,
-} from "../Controller/supplierController.js";
+} from "../Controllers/supplierController.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const SupplierRouter = express.Router();

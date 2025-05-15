@@ -4,7 +4,7 @@ import {
   UpdateCategory,
   GetCategoryById,
   GetAllCategory,
-} from "../Controller/categoryController.js";
+} from "../Controllers/categoryController.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const CategoryRouter = express.Router();

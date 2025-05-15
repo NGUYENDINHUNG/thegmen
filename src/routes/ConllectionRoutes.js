@@ -10,7 +10,7 @@ import {
   RemoveProductFromCollection,
   GetProductsByCollectionId,
   GetCollectionsByProductId,
-} from "../Controller/conllectionController.js";
+} from "../Controllers/conllectionController.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const CollectionRouter = express.Router();

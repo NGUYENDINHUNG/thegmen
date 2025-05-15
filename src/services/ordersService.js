@@ -1,10 +1,10 @@
-import Order from "../model/orderModel.Schema.js";
-import Cart from "../model/cartModel.schema.js";
-import Address from "../model/addressModel.schema.js";
-import User from "../model/userModel.schema.js";
+import Order from "../models/orderModel.Schema.js";
+import Cart from "../models/cartModel.schema.js";
+import Address from "../models/addressModel.schema.js";
+import User from "../models/userModel.schema.js";
 import { validateAndApplyVoucherService } from "./vouchersSevice.js";
-import Variants from "../model/variantsModel.schema.js";
-import Product from "../model/productModel.schema.js";
+import Variants from "../models/variantsModel.schema.js";
+import Product from "../models/productModel.schema.js";
 
 const generateOrderCode = () => {
   const timestamp = Date.now();

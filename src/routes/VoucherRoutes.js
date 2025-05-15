@@ -4,7 +4,7 @@ import {
   getAllVouchers,
   updateVoucher,
   applyVoucher,
-} from "../Controller/vouchersController.js";
+} from "../Controllers/vouchersController.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const VoucherRouter = express.Router();

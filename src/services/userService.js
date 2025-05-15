@@ -1,4 +1,4 @@
-import User from "../model/userModel.schema.js";
+import User from "../models/userModel.schema.js";
 
 
 export const updateUserById = async (userId, updateData) => {

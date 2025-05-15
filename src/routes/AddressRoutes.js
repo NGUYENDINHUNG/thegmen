@@ -5,7 +5,7 @@ import {
   getAllAddress,
   getUserAddresses,
   deleteAddress,
-} from "../Controller/addressController.js";
+} from "../Controllers/addressController.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const Addressrouter = express.Router();

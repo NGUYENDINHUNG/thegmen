@@ -1,5 +1,5 @@
-import Variant from "../model/variantsModel.schema.js";
-import Product from "../model/productModel.schema.js";
+import Variant from "../models/variantsModel.schema.js";
+import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
 
 export const createVariantService = async (

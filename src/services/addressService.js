@@ -1,5 +1,5 @@
-import Address from "../model/addressModel.schema.js";
-import User from "../model/userModel.schema.js";
+import Address from "../models/addressModel.schema.js";
+import User from "../models/userModel.schema.js";
 import aqp from "api-query-params";
 
 export const createAddressService = async (userId, addressData) => {

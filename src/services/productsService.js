@@ -1,8 +1,8 @@
-import Product from "../model/productModel.schema.js";
+import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
-import Supplier from "../model/supplierModel.schema.js";
-import Category from "../model/categoryModel.schema.js";
-import Variants from "../model/variantsModel.schema.js";
+import Supplier from "../models/supplierModel.schema.js";
+import Category from "../models/categoryModel.schema.js";
+import Variants from "../models/variantsModel.schema.js";
 
 export const ProductsConllectionService = async (
   name,

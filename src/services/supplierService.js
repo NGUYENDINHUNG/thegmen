@@ -1,4 +1,4 @@
-import Supplier from "../model/supplierModel.schema.js";
+import Supplier from "../models/supplierModel.schema.js";
 
 export const CreateSupplierService = async (name, slug) => {
   try {

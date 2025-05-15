@@ -1,8 +1,8 @@
-// import Product from "../model/productModel.schema.js";
-// import Order from "../model/orderModel.Schema.js";
-// import Voucher from "../model/vouchersModel.schema.js";
-// import User from "../model/userModel.schema.js";
-// import Category from "../model/categoryModel.schema.js";
+// import Product from "../models/productModel.schema.js";
+// import Order from "../models/orderModel.Schema.js";
+// import Voucher from "../models/vouchersModel.schema.js";
+// import User from "../models/userModel.schema.js";
+// import Category from "../models/categoryModel.schema.js";
 
 // export const globalSearchService = async (searchQuery, userId, options = {}) => {
 //   try {

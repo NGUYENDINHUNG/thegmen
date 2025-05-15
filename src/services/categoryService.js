@@ -1,4 +1,4 @@
-import Category from "../model/categoryModel.schema.js";
+import Category from "../models/categoryModel.schema.js";
 import aqp from "api-query-params";
 
 export const CreateCategoryService = async (name, slug) => {

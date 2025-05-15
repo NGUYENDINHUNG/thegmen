@@ -1,5 +1,5 @@
-import Collection from "../model/collectionModel.schema.js";
-import Product from "../model/productModel.schema.js";
+import Collection from "../models/collectionModel.schema.js";
+import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
 
 export const CreateCollectionService = async (

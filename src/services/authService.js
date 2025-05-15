@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import User from "../model/userModel.schema.js";
+import User from "../models/userModel.schema.js";
 import { UpdateUserRefreshToken, FindUserByToken } from "./userService.js";
 import sendEmail from "../util/email.util.js";
 import ms from "ms";

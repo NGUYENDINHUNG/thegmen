@@ -1,4 +1,4 @@
-import Sliders from "../model/sliderModule.schema.js";
+import Sliders from "../models/sliderModule.schema.js";
 import aqp from "api-query-params";
 
 export const CreateSlidersService = async (imageUrl, linkUrl, position) => {

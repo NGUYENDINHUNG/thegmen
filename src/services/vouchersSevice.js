@@ -1,5 +1,5 @@
-import Voucher from "../model/vouchersModel.schema.js";
-import User from "../model/userModel.schema.js";
+import Voucher from "../models/vouchersModel.schema.js";
+import User from "../models/userModel.schema.js";
 export const createVoucherService = async (voucherData) => {
   try {
     const exist = await Voucher.findOne({ code: voucherData.code });
