@@ -26,12 +26,12 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 //config file upload
-app.use(fileUpload(), express.static("public/images"));
+app.use(fileUpload(), express.static(path.join(__dirname, "../public/images")));
 
 //view enginee
 app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "src/views"));
-app.use(express.static(path.join(__dirname, "public")));
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "../public")));
 
 app.use(cookieParser());
 app.use(express.json());
