@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { createOrder, getUserOrders } from "../Controller/orderController.js";
+import { byNowOrder, createOrder, getUserOrders } from "../Controller/orderController.js";
 import { verifyToken } from "../middleware/auth.js";
 const OrderRouter = Router();
 
 OrderRouter.post("/createOrder", verifyToken, createOrder);
-OrderRouter.get("/userOrders", verifyToken, getUserOrders);
+OrderRouter.post("/byNow", verifyToken, byNowOrder);
+OrderRouter.get("/byNow", verifyToken, getUserOrders);
 export default OrderRouter;
