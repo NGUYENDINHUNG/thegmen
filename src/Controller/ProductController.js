@@ -61,7 +61,7 @@ export const GetProductById = async (req, res) => {
   });
 };
 export const GetAllProducts = async (req, res) => {
-  const { pageSize, currentPage, queryString } = req.query;
+  const { pageSize, currentPage, queryString, } = req.query;
   const products = await GetAllProductsService(
     pageSize,
     currentPage,

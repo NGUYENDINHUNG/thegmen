@@ -2,6 +2,7 @@ import {
   buyNowService,
   createOrderService,
   getOrdersByUserService,
+  removeOrderService,
 } from "../services/ordersService.js";
 
 export const createOrder = async (req, res) => {
@@ -159,6 +160,23 @@ export const getUserOrders = async (req, res) => {
     const result = await getOrdersByUserService(userId);
 
     return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+export const removeOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const result = await removeOrderService(orderId);
+    return res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Đơn hàng đã được hủy bỏ thành công",
+      data: result,
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
