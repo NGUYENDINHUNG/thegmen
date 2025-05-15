@@ -28,11 +28,6 @@ const port = process.env.PORT || 4000;
 //config file upload
 app.use(fileUpload(), express.static(path.join(__dirname, "../public/images")));
 
-//view enginee
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
-app.use(express.static(path.join(__dirname, "../public")));
-
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -52,7 +47,6 @@ app.use("/v1/api/variant", VariantRouter);
 app.use("/v1/api/cart", Cartrouter);
 app.use("/v1/api/voucher", VoucherRouter);
 app.use("/v1/api/order", OrderRouter);
-// app.use("/v1/api/search", SearchRouter);
 
 // Kết nối DB và start server
 const startServer = async () => {
@@ -65,5 +59,4 @@ const startServer = async () => {
     console.log(" Error connecting to DB:", error);
   }
 };
-
 startServer();
