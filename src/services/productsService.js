@@ -7,7 +7,6 @@ import Variants from "../models/variantsModel.schema.js";
 export const ProductsConllectionService = async (
   name,
   price,
-  discount,
   images,
   description,
   supplierId,

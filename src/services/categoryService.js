@@ -19,6 +19,7 @@ export const UpdateCategoryService = async (categoryId, updateData) => {
     );
     return updatedCategory;
   } catch (error) {
+    console.log("Error in UpdateCategoryService:", error);
     throw new Error(error.message || "Lỗi khi cập nhật danh mục.");
   }
 };
@@ -42,7 +43,7 @@ export const GetAllCategoryService = async (
   try {
     let result = null;
     if (pageSize && currentPage) {
-      console.log(currentPage )
+      console.log(currentPage);
       let offset = (currentPage - 1) * pageSize;
       const { filter } = aqp(queryString);
       delete filter.pageSize;

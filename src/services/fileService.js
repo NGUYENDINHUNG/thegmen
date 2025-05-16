@@ -1,38 +1,26 @@
-import express from "express";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
 import path from "path";
-
-//config dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import s3 from "../config/s3.js";
 
 export const uploadSingleFile = async (fileObject) => {
-  let uploadPath = path.resolve(__dirname, "../public/images/upload");
-
-  //get image extension
   let extName = path.extname(fileObject.name);
-
-  //get image's name (without extension)
   let baseName = path.basename(fileObject.name, extName);
-
-
-  //create final path: eg: /upload/your-image.png
   let finalName = `${baseName}-${Date.now()}${extName}`;
 
-  let finalPath = `${uploadPath}/${finalName}`;
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET,
+    Key: `uploads/${finalName}`,
+    Body: fileObject.data,
+    ContentType: fileObject.mimetype,
+  };
 
   try {
-    await fileObject.mv(finalPath);
-
+    const data = await s3.upload(params).promise();
     return {
       status: "success",
-      path: finalName,
+      path: data.Location,
       error: null,
     };
   } catch (error) {
-    console.log("««««« check err »»»»»", error);
-
     return {
       status: "failled",
       path: null,
@@ -40,36 +28,31 @@ export const uploadSingleFile = async (fileObject) => {
     };
   }
 };
-
 export const uploadMultipleFiles = async (filesArr) => {
   try {
-    let uploadPath = path.resolve(__dirname, "../public/images/upload");
-
     let resultArr = [];
-
-    let countSuccess = 0;
-
     for (let i = 0; i < filesArr.length; i++) {
       console.log("check i = ", i);
       //get image extension
       let extName = path.extname(filesArr[i].name);
-
-      //get image's name (without extension)
       let baseName = path.basename(filesArr[i].name, extName);
-
-      //create final path: eg: /upload/your-image.png
       let finalName = `${baseName}-${Date.now()}${extName}`;
-      let finalPath = `${uploadPath}/${finalName}`;
+
+      const params = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: `uploads/${finalName}`,
+        Body: filesArr[i].data,
+        ContentType: filesArr[i].mimetype,
+      };
 
       try {
-        await filesArr[i].mv(finalPath);
+        const data = await s3.upload(params).promise();
         resultArr.push({
           status: "success",
-          path: finalName,
+          path: data.Location,
           fileName: filesArr[i].name,
           error: null,
         });
-        countSuccess++;
       } catch (err) {
         resultArr.push({
           status: "failed",
@@ -79,7 +62,6 @@ export const uploadMultipleFiles = async (filesArr) => {
         });
       }
     }
-
     return {
       detail: resultArr,
     };

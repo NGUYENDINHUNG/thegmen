@@ -10,17 +10,17 @@ import {
 
 export const CreateProduct = async (req, res) => {
   const { name, price, description, supplierId, categoryId } = req.body;
-  let imageUrl = " ";
+  let imageUrl = "";
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).send("No files were uploaded.");
   } else {
     let results = await uploadSingleFile(req.files.images);
     imageUrl = results.path;
   }
+
   const data = await ProductsConllectionService(
     name,
     price,
-    discount,
     imageUrl,
     description,
     supplierId,

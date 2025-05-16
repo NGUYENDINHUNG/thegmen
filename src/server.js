@@ -26,7 +26,7 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 //config file upload
-app.use(fileUpload(), express.static(path.join(__dirname, "../public/images")));
+app.use(fileUpload());
 
 app.use(cookieParser());
 app.use(express.json());
