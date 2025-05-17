@@ -7,17 +7,13 @@ const UserSchema = new Schema(
     email: { type: String, unique: true },
     name: String,
     password: String,
-    phoneNumber: String,
-    address: {
-      id: { type: mongoose.Schema.Types.ObjectId },
-      fullname: { type: String },
-      phoneNumber: { type: String },
-      address: { type: String },
-      provinceName: { type: String },
-      districtName: { type: String },
-      wardName: { type: String },
-      isDefault: { type: Boolean, default: false },
+    phoneNumber: { type: Number, unique: true },
+    role: {
+      type: String,
+      enum: ["USER", "ADMIN"],
+      default: "USER",
     },
+    address: { type: mongoose.Schema.Types.ObjectId, ref: "address" },
     addresses: [{ type: mongoose.Schema.Types.ObjectId, ref: "address" }],
     avatar: String,
     facebookId: String,
@@ -33,7 +29,5 @@ const UserSchema = new Schema(
   },
   { timestamps: true }
 );
-
 const User = mongoose.model("user", UserSchema);
-
 export default User;
