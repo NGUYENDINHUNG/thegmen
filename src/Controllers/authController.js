@@ -36,18 +36,26 @@ export const Register = async (req, res) => {
 };
 
 export const LoginUsers = async (req, res) => {
-  const { phoneNumber, password } = req.body;
-  const data = await LoginUserService(phoneNumber, password);
-  res.cookie("refresh_token", data.refreshToken, {
-    httpOnly: true,
-    maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
-  });
-  return res.status(200).json({
-    statusCode: 200,
-    message: "Login successfully",
-    accessToken: data.accessToken,
-    user: data.user,
-  });
+  try {
+    const { phoneNumber, password } = req.body;
+    const data = await LoginUserService(phoneNumber, password);
+    res.cookie("refresh_token", data.refreshToken, {
+      httpOnly: true,
+      maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
+    });
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Login successfully",
+      accessToken: data.accessToken,
+      user: data.user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      EC: 1,
+      EM: "Lỗi đăng nhập",
+      error: error.message,
+    });
+  }
 };
 
 export const loginGoogleSuccess = async (req, res) => {

@@ -1,39 +1,44 @@
 import path from "path";
-import s3 from "../config/s3.js";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import s3Client from "../config/s3.js";
 
-export const uploadSingleFile = async (fileObject) => {
-  let extName = path.extname(fileObject.name);
-  let baseName = path.basename(fileObject.name, extName);
+export const uploadSingleFile = async (file) => {
+  if (!file) {
+    throw new Error("No file uploaded");
+  }
+  let extName = path.extname(file.name);
+  let baseName = path.basename(file.name, extName);
   let finalName = `${baseName}-${Date.now()}${extName}`;
 
   const params = {
     Bucket: process.env.AWS_S3_BUCKET,
     Key: `uploads/${finalName}`,
-    Body: fileObject.data,
-    ContentType: fileObject.mimetype,
+    Body: file.buffer,
+    ContentType: file.mimetype,
   };
-
   try {
-    const data = await s3.upload(params).promise();
+    const command = new PutObjectCommand(params);
+    await s3Client.send(command);
+    const fileUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/uploads/${finalName}`;
+
     return {
       status: "success",
-      path: data.Location,
+      path: fileUrl,
       error: null,
     };
   } catch (error) {
     return {
-      status: "failled",
+      status: "failed",
       path: null,
       error: JSON.stringify(error),
     };
   }
 };
+
 export const uploadMultipleFiles = async (filesArr) => {
   try {
     let resultArr = [];
     for (let i = 0; i < filesArr.length; i++) {
-      console.log("check i = ", i);
-      //get image extension
       let extName = path.extname(filesArr[i].name);
       let baseName = path.basename(filesArr[i].name, extName);
       let finalName = `${baseName}-${Date.now()}${extName}`;
@@ -46,10 +51,14 @@ export const uploadMultipleFiles = async (filesArr) => {
       };
 
       try {
-        const data = await s3.upload(params).promise();
+        const command = new PutObjectCommand(params);
+        await s3Client.send(command);
+
+        const fileUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/uploads/${finalName}`;
+
         resultArr.push({
           status: "success",
-          path: data.Location,
+          path: fileUrl,
           fileName: filesArr[i].name,
           error: null,
         });
@@ -67,5 +76,9 @@ export const uploadMultipleFiles = async (filesArr) => {
     };
   } catch (error) {
     console.log(error);
+    return {
+      detail: [],
+      error: JSON.stringify(error),
+    };
   }
 };
