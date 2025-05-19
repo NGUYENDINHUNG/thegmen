@@ -3,13 +3,12 @@ import {
   addToCart,
   getCartByUser,
   removeItemFromCart,
-} from "../Controllers/cartController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+} from "./cartController.js";
 
 const Cartrouter = Router();
 
-Cartrouter.post("/add-to-cart", verifyToken, addToCart);
-Cartrouter.get("/get-cart", verifyToken, getCartByUser);
-Cartrouter.delete("/remove-item", verifyToken, removeItemFromCart);
+Cartrouter.post("/add-to-cart", addToCart);
+Cartrouter.get("/get-cart", getCartByUser);
+Cartrouter.delete("/remove-item", removeItemFromCart);
 
 export default Cartrouter;

@@ -9,11 +9,11 @@ import {
   RemoveProductFromCollectionService,
   GetProductsByCollectionIdService,
   GetCollectionsByProductIdService,
-} from "../../../services/conllectionService.js";
+} from "./conllectionService.js";
 import {
-  uploadSingleFile,
-  uploadMultipleFiles,
-} from "../../../services/fileService.js";
+  postUploadMultipleFilesAPI,
+  postUploadSingleFileApi,
+} from "../FileUpload/fileController.js";
 
 export const CreateCollection = async (req, res) => {
   try {
@@ -22,12 +22,12 @@ export const CreateCollection = async (req, res) => {
 
     if (req.files && Object.keys(req.files).length > 0) {
       if (Array.isArray(req.files.images)) {
-        const results = await uploadMultipleFiles(req.files.images);
+        const results = await postUploadMultipleFilesAPI(req.files.images);
         imageUrls = results.detail
           .filter((item) => item.status === "success")
           .map((item) => item.path);
       } else {
-        const result = await uploadSingleFile(req.files.images);
+        const result = await postUploadSingleFileApi(req.files.images);
         if (result.status === "success") {
           imageUrls.push(result.path);
         }

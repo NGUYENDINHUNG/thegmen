@@ -1,10 +1,12 @@
-import Order from "../../../../models/orderModel.Schema.js";
-import Cart from "../../../../models/cartModel.schema.js";
-import Address from "../../../../models/addressModel.schema.js";
-import User from "../../../../models/userModel.schema.js";
 import { validateAndApplyVoucherService } from "../Vouchers/vouchersSevice.js";
-import Variants from "../../../../models/variantsModel.schema.js";
-import Product from "../../../../models/productModel.schema.js";
+import {
+  OrderModel,
+  CartModel,
+  AddressModel,
+  UserModel,
+  VariantModel,
+  ProductModel,
+} from "../../../../models/index.js";
 
 const generateOrderCode = () => {
   const timestamp = Date.now();
@@ -14,17 +16,19 @@ const generateOrderCode = () => {
 
 export const createOrderService = async (userId, addressId, voucherCode) => {
   try {
-    const address = await Address.findById(addressId);
+    const address = await AddressModel.findById(addressId);
     if (!address) {
       throw new Error("Địa chỉ không tồn tại");
     }
-    const cart = await Cart.findOne({ userId }).populate("items.productId");
+    const cart = await CartModel.findOne({ userId }).populate(
+      "items.productId"
+    );
     if (!cart || !cart.items || cart.items.length === 0) {
       throw new Error("Giỏ hàng trống");
     }
     for (const item of cart.items) {
       if (item.variantId) {
-        const variant = await Variants.findById(item.variantId);
+        const variant = await VariantModel.findById(item.variantId);
         if (!variant) {
           throw new Error(`Biến thể sản phẩm không tồn tại`);
         }
@@ -79,7 +83,7 @@ export const createOrderService = async (userId, addressId, voucherCode) => {
     //create code order
     const orderCode = generateOrderCode();
     //create order
-    const order = new Order({
+    const order = new OrderModel({
       userId,
       items: orderItems,
       originalTotal,
@@ -104,18 +108,18 @@ export const createOrderService = async (userId, addressId, voucherCode) => {
     //update stock variant
     for (const item of cart.items) {
       if (item.variantId) {
-        await Variants.findByIdAndUpdate(item.variantId, {
+        await VariantModel.findByIdAndUpdate(item.variantId, {
           $inc: { stock: -item.quantity },
         });
       }
     }
 
-    await User.findByIdAndUpdate(
+    await UserModel.findByIdAndUpdate(
       userId,
       { $push: { order: savedOrder._id } },
       { new: true }
     );
-    await Cart.findOneAndDelete({ userId });
+    await CartModel.findOneAndDelete({ userId });
     return savedOrder;
   } catch (error) {
     throw error;
@@ -131,16 +135,16 @@ export const buyNowService = async (
   voucherCode
 ) => {
   try {
-    const address = await Address.findById(addressId);
+    const address = await AddressModel.findById(addressId);
     if (!address) {
       throw new Error("Địa chỉ không tồn tại");
     }
-    const product = await Product.findById(productId);
+    const product = await ProductModel.findById(productId);
     if (!product) {
       throw new Error("Sản phẩm không tồn tại");
     }
     if (variantId) {
-      const variant = await Variants.findById(variantId);
+      const variant = await VariantModel.findById(variantId);
       if (!variant) {
         throw new Error("Biến thể sản phẩm không tồn tại");
       }
@@ -186,7 +190,7 @@ export const buyNowService = async (
 
     const orderCode = generateOrderCode();
 
-    const order = new Order({
+    const order = new OrderModel({
       userId,
       items: orderItems,
       originalTotal,
@@ -229,7 +233,7 @@ export const buyNowService = async (
 };
 export const getOrdersByUserService = async (userId) => {
   try {
-    const orders = await Order.find({ userId })
+    const orders = await OrderModel.find({ userId })
       .sort({ createdAt: -1 })
       .populate({
         path: "items.productId",
@@ -269,7 +273,7 @@ export const getOrdersByUserService = async (userId) => {
 
 export const removeOrderService = async (orderId, userId) => {
   try {
-    const order = await Order.findById(orderId);
+    const order = await OrderModel.findById(orderId);
     if (!order) {
       throw new Error("Đơn hàng không tồn tại");
     }
@@ -280,12 +284,12 @@ export const removeOrderService = async (orderId, userId) => {
     }
     for (const item of order.items) {
       if (item.variantId) {
-        await Variants.findByIdAndUpdate(item.variantId, {
+        await VariantModel.findByIdAndUpdate(item.variantId, {
           $inc: { stock: item.quantity },
         });
       }
     }
-    await Order.findByIdAndDelete(orderId);
+    await OrderModel.findByIdAndDelete(orderId);
     return {
       success: true,
       message: "Hủy đơn hàng thành công ",

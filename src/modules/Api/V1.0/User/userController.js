@@ -1,5 +1,5 @@
-import { uploadSingleFile } from "../../../services/fileService.js";
-import { updateUserById } from "../../../services/userService.js";
+import { uploadSingleFile } from "../FileUpload/fileService.js";
+import { updateUserById } from "./userService.js";
 
 export const updateUser = async (req, res) => {
   const { userId } = req.params;

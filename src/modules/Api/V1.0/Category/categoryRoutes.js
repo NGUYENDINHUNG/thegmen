@@ -4,13 +4,12 @@ import {
   UpdateCategory,
   GetCategoryById,
   GetAllCategory,
-} from "../Controllers/categoryController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+} from "./categoryController.js";
 
 const CategoryRouter = express.Router();
 
-CategoryRouter.post("/createCategory", verifyToken, CreateCategory);
-CategoryRouter.put("/:id", verifyToken, UpdateCategory);
-CategoryRouter.get("/:id", verifyToken, GetCategoryById);
-CategoryRouter.get("/", verifyToken, GetAllCategory);
+CategoryRouter.post("/createCategory", CreateCategory);
+CategoryRouter.put("/:id", UpdateCategory);
+CategoryRouter.get("/:id", GetCategoryById);
+CategoryRouter.get("/list", GetAllCategory);
 export default CategoryRouter;

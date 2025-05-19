@@ -1,8 +1,10 @@
-import Product from "../../../../models/productModel.schema.js";
+import {
+  ProductModel,
+  SupplierModel,
+  CategoryModel,
+  VariantModel,
+} from "../../../../models/index.js";
 import aqp from "api-query-params";
-import Supplier from "../../../../models/supplierModel.schema.js";
-import Category from "../../../../models/categoryModel.schema.js";
-import Variants from "../../../../models/variantsModel.schema.js";
 
 export const ProductsConllectionService = async (
   name,
@@ -14,8 +16,8 @@ export const ProductsConllectionService = async (
 ) => {
   try {
     const [existSupplier, existCategory] = await Promise.all([
-      Supplier.findOne({ _id: supplierId }),
-      Category.findOne({ _id: categoryId }),
+      SupplierModel.findOne({ _id: supplierId }),
+      CategoryModel.findOne({ _id: categoryId }),
     ]);
     const errors = [];
     if (!existSupplier) errors.push("Nhà cung cấp không khả dụng");
@@ -29,7 +31,7 @@ export const ProductsConllectionService = async (
       };
     }
 
-    let result = await Product.create({
+    let result = await ProductModel.create({
       name: name,
       price: price,
       images: images,
@@ -43,9 +45,10 @@ export const ProductsConllectionService = async (
     throw error;
   }
 };
+
 export const UpdateProductsService = async (ProductId, updateData) => {
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(
+    const updatedProduct = await ProductModel.findByIdAndUpdate(
       ProductId,
       { $set: updateData },
       { new: true }
@@ -55,12 +58,13 @@ export const UpdateProductsService = async (ProductId, updateData) => {
     throw new Error(error.message || "Lỗi khi cập nhật sản phẩm.");
   }
 };
+
 export const GetProductsByIdService = async (ProductId) => {
   try {
     if (!ProductId) {
       return null;
     }
-    const results = await Product.findById(ProductId).populate({
+    const results = await ProductModel.findById(ProductId).populate({
       path: "variants",
       match: { isDeleted: false },
     });
@@ -70,6 +74,7 @@ export const GetProductsByIdService = async (ProductId) => {
     throw error;
   }
 };
+
 export const GetAllProductsService = async (
   pageSize,
   currentPage,
@@ -83,9 +88,12 @@ export const GetAllProductsService = async (
       delete filter.pageSize;
       delete filter.currentPage;
       filter.isDeleted = false;
-      result = await Product.find(filter).skip(offset).limit(pageSize).exec();
+      result = await ProductModel.find(filter)
+        .skip(offset)
+        .limit(pageSize)
+        .exec();
     } else {
-      result = await Product.find({});
+      result = await ProductModel.find({});
     }
     return result;
   } catch (error) {
@@ -93,9 +101,10 @@ export const GetAllProductsService = async (
     return null;
   }
 };
+
 export const SoftDeleteProductService = async (ProductId) => {
   try {
-    const deletedProduct = await Product.findByIdAndUpdate(
+    const deletedProduct = await ProductModel.findByIdAndUpdate(
       ProductId,
       {
         isDeleted: true,
@@ -108,7 +117,7 @@ export const SoftDeleteProductService = async (ProductId) => {
       throw new Error("Sản phẩm không tồn tại hoặc đã bị xóa");
     }
 
-    await Variants.updateMany(
+    await VariantModel.updateMany(
       { productId: ProductId },
       { isDeleted: true, deletedAt: new Date() }
     );
@@ -119,9 +128,10 @@ export const SoftDeleteProductService = async (ProductId) => {
     throw error;
   }
 };
+
 export const RestoreProductService = async (ProductId) => {
   try {
-    const restoredProduct = await Product.findByIdAndUpdate(
+    const restoredProduct = await ProductModel.findByIdAndUpdate(
       ProductId,
       {
         isDeleted: false,

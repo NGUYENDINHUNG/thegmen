@@ -1,4 +1,4 @@
-import { uploadSingleFile } from "../../../services/fileService.js";
+import { postUploadSingleFileApi } from "../FileUpload/fileController.js";
 import {
   ProductsConllectionService,
   UpdateProductsService,
@@ -6,7 +6,7 @@ import {
   GetAllProductsService,
   SoftDeleteProductService,
   RestoreProductService,
-} from "../../../services/productsService.js";
+} from "./productsService.js";
 
 export const CreateProduct = async (req, res) => {
   const { name, price, description, supplierId, categoryId } = req.body;
@@ -14,7 +14,7 @@ export const CreateProduct = async (req, res) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).send("No files were uploaded.");
   } else {
-    let results = await uploadSingleFile(req.files.images);
+    let results = await postUploadSingleFileApi(req.files.images);
     imageUrl = results.path;
   }
 

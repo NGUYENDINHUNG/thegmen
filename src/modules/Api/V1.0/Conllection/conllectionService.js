@@ -1,5 +1,4 @@
-import Collection from "../../../../models/collectionModel.schema.js";
-import Product from "../../../../models/productModel.schema.js";
+import { CollectionModel, ProductModel } from "../../../../models/index.js";
 import aqp from "api-query-params";
 
 export const CreateCollectionService = async (
@@ -9,7 +8,7 @@ export const CreateCollectionService = async (
   images = []
 ) => {
   try {
-    let result = await Collection.create({
+    let result = await CollectionModel.create({
       name: name,
       slug: slug,
       description: description,
@@ -24,7 +23,7 @@ export const CreateCollectionService = async (
 
 export const UpdateCollectionService = async (collectionId, updateData) => {
   try {
-    const updatedCollection = await Collection.findByIdAndUpdate(
+    const updatedCollection = await CollectionModel.findByIdAndUpdate(
       collectionId,
       { $set: updateData },
       { new: true }
@@ -46,9 +45,9 @@ export const GetCollectionByIdService = async (collectionId) => {
     if (!collectionId) {
       return null;
     }
-    const results = await Collection.findOne({
+    const results = await CollectionModel.findOne({
       _id: collectionId,
-      // isDeleted: false,
+      isDeleted: false,
     }).populate("products");
 
     return results;
@@ -73,12 +72,12 @@ export const GetAllCollectionService = async (
 
       filter.isDeleted = false;
 
-      result = await Collection.find(filter)
+      result = await CollectionModel.find(filter)
         .skip(offset)
         .limit(pageSize)
         .exec();
     } else {
-      result = await Collection.find({ isDeleted: false });
+      result = await CollectionModel.find({ isDeleted: false });
     }
     return result;
   } catch (error) {
@@ -89,14 +88,14 @@ export const GetAllCollectionService = async (
 
 export const SoftDeleteCollectionService = async (collectionId) => {
   try {
-    const collection = await Collection.findById(collectionId);
+    const collection = await CollectionModel.findById(collectionId);
 
     if (!collection || collection.isDeleted) {
       throw new Error("Bộ sưu tập không tồn tại hoặc đã bị xóa");
     }
     const productIds = collection.products;
 
-    const deletedCollection = await Collection.findByIdAndUpdate(
+    const deletedCollection = await CollectionModel.findByIdAndUpdate(
       collectionId,
       {
         isDeleted: true,
@@ -107,7 +106,7 @@ export const SoftDeleteCollectionService = async (collectionId) => {
 
     // Cập nhật danh sách bộ sưu tập trong mỗi sản phẩm
     if (productIds && productIds.length > 0) {
-      await Product.updateMany(
+      await ProductModel.updateMany(
         { _id: { $in: productIds } },
         { $pull: { collections: collectionId } }
       );
@@ -122,14 +121,13 @@ export const SoftDeleteCollectionService = async (collectionId) => {
 
 export const RestoreCollectionService = async (collectionId) => {
   try {
-    const collection = await Collection.findById(collectionId);
+    const collection = await CollectionModel.findById(collectionId);
     if (!collection) {
       throw new Error("Bộ sưu tập không tồn tại");
     }
     const productIds = collection.products;
 
-    // Khôi phục bộ sưu tập
-    const restoredCollection = await Collection.findByIdAndUpdate(
+    const restoredCollection = await CollectionModel.findByIdAndUpdate(
       collectionId,
       {
         isDeleted: false,
@@ -138,10 +136,9 @@ export const RestoreCollectionService = async (collectionId) => {
       { new: true }
     );
 
-    // Cập nhật danh sách bộ sưu tập trong mỗi sản phẩm
     if (productIds && productIds.length > 0) {
       for (const productId of productIds) {
-        await Product.findByIdAndUpdate(productId, {
+        await ProductModel.findByIdAndUpdate(productId, {
           $addToSet: { collections: collectionId },
         });
       }
@@ -159,23 +156,26 @@ export const AddProductToCollectionService = async (
   productId
 ) => {
   try {
-    const collection = await Collection.findOne({
+    const collection = await CollectionModel.findOne({
       _id: collectionId,
-      //isDeleted: false,
+      isDeleted: false,
     });
 
     if (!collection) {
       throw new Error("Bộ sưu tập không tồn tại hoặc đã bị xóa");
     }
-    const product = await Product.findOne({ _id: productId, isDeleted: false });
+    const product = await ProductModel.findOne({
+      _id: productId,
+      isDeleted: false,
+    });
 
     if (!product) {
       throw new Error("Sản phẩm không tồn tại hoặc đã bị xóa");
     }
-    await Collection.findByIdAndUpdate(collectionId, {
+    await CollectionModel.findByIdAndUpdate(collectionId, {
       $addToSet: { products: productId },
     });
-    await Product.findByIdAndUpdate(productId, {
+    await ProductModel.findByIdAndUpdate(productId, {
       $addToSet: { collections: collectionId },
     });
 
@@ -191,7 +191,7 @@ export const RemoveProductFromCollectionService = async (
   productId
 ) => {
   try {
-    const collection = await Collection.findById(collectionId);
+    const collection = await CollectionModel.findById(collectionId);
 
     if (!collection) {
       throw new Error("Bộ sưu tập không tồn tại");
@@ -201,10 +201,10 @@ export const RemoveProductFromCollectionService = async (
     if (!product) {
       throw new Error("Sản phẩm không tồn tại");
     }
-    await Collection.findByIdAndUpdate(collectionId, {
+    await CollectionModel.findByIdAndUpdate(collectionId, {
       $pull: { products: productId },
     });
-    await Product.findByIdAndUpdate(productId, {
+    await ProductModel.findByIdAndUpdate(productId, {
       $pull: { collections: collectionId },
     });
 
@@ -221,16 +221,16 @@ export const GetProductsByCollectionIdService = async (
   currentPage
 ) => {
   try {
-    const collection = await Collection.findOne({
+    const collection = await CollectionModel.findOne({
       _id: collectionId,
-      // isDeleted: false,
+      isDeleted: false,
     });
 
     if (!collection) {
       throw new Error("Bộ sưu tập không tồn tại hoặc đã bị xóa");
     }
 
-    let query = Product.find({
+    let query = ProductModel.find({
       _id: { $in: collection.products },
       isDeleted: false,
     });
@@ -250,15 +250,15 @@ export const GetProductsByCollectionIdService = async (
 
 export const GetCollectionsByProductIdService = async (productId) => {
   try {
-    const product = await Product.findOne({
+    const product = await ProductModel.findOne({
       _id: productId,
-      //isDeleted: false
+      isDeleted: false,
     });
 
     if (!product) {
       throw new Error("Sản phẩm không tồn tại hoặc đã bị xóa");
     }
-    const collections = await Collection.find({
+    const collections = await CollectionModel.find({
       _id: { $in: product.collections },
       isDeleted: false,
     });

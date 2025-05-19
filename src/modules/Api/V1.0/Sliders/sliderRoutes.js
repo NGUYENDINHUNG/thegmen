@@ -3,12 +3,11 @@ import {
   CreateSliders,
   DeleteSlider,
   UpdateSliders,
-} from "../Controllers/sliderController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+} from "./sliderController.js";
 
 const SlidersRouter = express.Router();
 
-SlidersRouter.post("/createSliders", verifyToken, CreateSliders);
-SlidersRouter.put("/:id", verifyToken, UpdateSliders);
-SlidersRouter.delete("/:id", verifyToken, DeleteSlider);
+SlidersRouter.post("/createSliders", CreateSliders);
+SlidersRouter.put("/:id", UpdateSliders);
+SlidersRouter.delete("/:id", DeleteSlider);
 export default SlidersRouter;

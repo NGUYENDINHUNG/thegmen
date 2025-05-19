@@ -8,8 +8,8 @@ import {
   ForgetPasswordService,
   resetPasswordService,
   LogoutService,
-} from "../../../services/authService.js";
-import { uploadSingleFile } from "../../../services/fileService.js";
+} from "./authService.js";
+import { postUploadSingleFileApi } from "../FileUpload/fileController.js";
 
 export const Register = async (req, res) => {
   try {
@@ -18,7 +18,7 @@ export const Register = async (req, res) => {
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).send("No files were uploaded.");
     } else {
-      let results = await uploadSingleFile(req.files.avatar);
+      let results = await postUploadSingleFileApi(req.files.avatar);
       imageUrl = results.path;
     }
     const data = await RegisterSevice(

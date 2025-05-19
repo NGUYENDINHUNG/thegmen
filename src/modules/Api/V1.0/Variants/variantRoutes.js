@@ -7,17 +7,16 @@ import {
   getAllVariants,
   softDeleteVariant,
   restoreVariant,
-} from "../Controllers/variantController.js";
-import {verifyToken} from "../../../middleware/auth.js";
+} from "./variantController.js";
 
 const VariantRouter = express.Router();
 
-VariantRouter.post("/createVariant", verifyToken, createVariant);
-VariantRouter.put("/update/:variantId", verifyToken, updateVariant);
-VariantRouter.get("/:variantId", verifyToken, getVariantById);
-VariantRouter.get("/:productId", verifyToken, getVariantsByProductId);
-VariantRouter.get("/", verifyToken, getAllVariants);
-VariantRouter.put("/softDelete/:variantId", verifyToken, softDeleteVariant);
-VariantRouter.put("/restore/:variantId", verifyToken, restoreVariant);
+VariantRouter.post("/createVariant", createVariant);
+VariantRouter.put("/update/:variantId", updateVariant);
+VariantRouter.get("/:variantId", getVariantById);
+VariantRouter.get("/:productId", getVariantsByProductId);
+VariantRouter.get("/", getAllVariants);
+VariantRouter.put("/softDelete/:variantId", softDeleteVariant);
+VariantRouter.put("/restore/:variantId", restoreVariant);
 
 export default VariantRouter;

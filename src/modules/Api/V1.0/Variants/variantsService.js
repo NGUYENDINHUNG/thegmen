@@ -1,5 +1,4 @@
-import Variant from "../../../../models/variantsModel.schema.js";
-import Product from "../../../../models/productModel.schema.js";
+import { VariantModel, ProductModel } from "../../../../models/index.js";
 import aqp from "api-query-params";
 
 export const createVariantService = async (
@@ -42,7 +41,7 @@ export const createVariantService = async (
 
 export const updateVariantService = async (variantId, updateData) => {
   try {
-    const updatedVariant = await Variant.findByIdAndUpdate(
+    const updatedVariant = await VariantModel.findByIdAndUpdate(
       variantId,
       { $set: updateData },
       { new: true }
@@ -61,7 +60,10 @@ export const updateVariantService = async (variantId, updateData) => {
 
 export const getVariantByIdService = async (variantId) => {
   try {
-    const variant = await Variant.findOne({ _id: variantId, isDeleted: false });
+    const variant = await VariantModel.findOne({
+      _id: variantId,
+      isDeleted: false,
+    });
 
     if (!variant) {
       throw new Error("Biến thể không tồn tại hoặc đã bị xóa");
@@ -76,7 +78,7 @@ export const getVariantByIdService = async (variantId) => {
 
 export const getVariantsByProductIdService = async (productId) => {
   try {
-    const variants = await Variant.find({
+    const variants = await VariantModel.find({
       productId: productId,
       isDeleted: false,
     });
@@ -103,9 +105,12 @@ export const getAllVariantsService = async (
 
       filter.isDeleted = false;
 
-      result = await Variant.find(filter).skip(offset).limit(pageSize).exec();
+      result = await VariantModel.find(filter)
+        .skip(offset)
+        .limit(pageSize)
+        .exec();
     } else {
-      result = await Variant.find({ isDeleted: false });
+      result = await VariantModel.find({ isDeleted: false });
     }
     return result;
   } catch (error) {
@@ -117,7 +122,7 @@ export const getAllVariantsService = async (
 export const softDeleteVariantService = async (variantId) => {
   try {
     // Tìm biến thể cần xóa
-    const variant = await Variant.findById(variantId);
+    const variant = await VariantModel.findById(variantId);
 
     if (!variant) {
       throw new Error("Biến thể không tồn tại hoặc đã bị xóa");
@@ -125,7 +130,7 @@ export const softDeleteVariantService = async (variantId) => {
 
     const productId = variant.productId;
 
-    const deletedVariant = await Variant.findByIdAndUpdate(
+    const deletedVariant = await VariantModel.findByIdAndUpdate(
       variantId,
       {
         isDeleted: true,
@@ -133,7 +138,7 @@ export const softDeleteVariantService = async (variantId) => {
       },
       { new: true }
     );
-    await Product.findByIdAndUpdate(productId, {
+    await ProductModel.findByIdAndUpdate(productId, {
       $pull: { variants: variantId },
     });
 
@@ -146,7 +151,7 @@ export const softDeleteVariantService = async (variantId) => {
 
 export const restoreVariantService = async (variantId) => {
   try {
-    const variant = await Variant.findById(variantId);
+    const variant = await VariantModel.findById(variantId);
 
     if (!variant) {
       throw new Error("Biến thể không tồn tại");
@@ -154,7 +159,7 @@ export const restoreVariantService = async (variantId) => {
 
     const productId = variant.productId;
 
-    const restoredVariant = await Variant.findByIdAndUpdate(
+    const restoredVariant = await VariantModel.findByIdAndUpdate(
       variantId,
       {
         isDeleted: false,

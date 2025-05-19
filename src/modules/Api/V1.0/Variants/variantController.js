@@ -1,7 +1,4 @@
-import {
-  uploadSingleFile,
-  uploadMultipleFiles,
-} from "../../../services/fileService.js";
+import { postUploadMultipleFilesAPI, postUploadSingleFileApi } from "../FileUpload/fileController.js";
 import {
   createVariantService,
   updateVariantService,
@@ -10,7 +7,7 @@ import {
   getAllVariantsService,
   softDeleteVariantService,
   restoreVariantService,
-} from "../../../services/variantsService.js";
+} from "./variantsService.js";
 
 export const createVariant = async (req, res) => {
   try {
@@ -19,12 +16,12 @@ export const createVariant = async (req, res) => {
 
     if (req.files && Object.keys(req.files).length > 0) {
       if (Array.isArray(req.files.images)) {
-        const results = await uploadMultipleFiles(req.files.images);
+        const results = await postUploadMultipleFilesAPI(req.files.images);
         imageUrls = results.detail
           .filter((item) => item.status === "success")
           .map((item) => item.path);
       } else {
-        const result = await uploadSingleFile(req.files.images);
+        const result = await postUploadSingleFileApi(req.files.images);
         if (result.status === "success") {
           imageUrls.push(result.path);
         }

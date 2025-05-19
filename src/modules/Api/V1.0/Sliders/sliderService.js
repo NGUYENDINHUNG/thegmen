@@ -1,9 +1,9 @@
-import Sliders from "../../../../models/sliderModule.schema.js";
+import SliderModel from "../../../../models/sliderModel.schema.js";
 import aqp from "api-query-params";
 
 export const CreateSlidersService = async (imageUrl, linkUrl, position) => {
   try {
-    let result = await Sliders.create({
+    let result = await SliderModel.create({
       imageUrl: imageUrl,
       linkUrl: linkUrl,
       position: position,
@@ -13,7 +13,7 @@ export const CreateSlidersService = async (imageUrl, linkUrl, position) => {
 };
 export const UpdateSlidersService = async (SidersId, updateData) => {
   try {
-    const updatedSliders = await Sliders.findByIdAndUpdate(
+    const updatedSliders = await SliderModel.findByIdAndUpdate(
       SidersId,
       { $set: updateData },
       { new: true }
@@ -26,7 +26,7 @@ export const UpdateSlidersService = async (SidersId, updateData) => {
 };
 export const DeleteSliderService = async (sliderId) => {
   try {
-    const deletedSlider = await Sliders.findByIdAndUpdate(
+    const deletedSlider = await SliderModel.findByIdAndUpdate(
       sliderId,
       { $set: { isActive: false }, deletedAt: new Date() },
       { new: true }

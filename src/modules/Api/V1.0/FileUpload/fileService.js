@@ -1,5 +1,6 @@
 import path from "path";
-import s3 from "../../../../config/s3.js";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import s3Client from "../../../../config/s3.js";
 
 export const uploadSingleFile = async (fileObject) => {
   let extName = path.extname(fileObject.name);
@@ -14,20 +15,26 @@ export const uploadSingleFile = async (fileObject) => {
   };
 
   try {
-    const data = await s3.upload(params).promise();
+    const command = new PutObjectCommand(params);
+    const data = await s3Client.send(command);
+
+
+    const fileUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/uploads/${finalName}`;
+
     return {
       status: "success",
-      path: data.Location,
+      path: fileUrl,
       error: null,
     };
   } catch (error) {
     return {
-      status: "failled",
+      status: "failed",
       path: null,
       error: JSON.stringify(error),
     };
   }
 };
+
 export const uploadMultipleFiles = async (filesArr) => {
   try {
     let resultArr = [];
@@ -44,10 +51,15 @@ export const uploadMultipleFiles = async (filesArr) => {
       };
 
       try {
-        const data = await s3.upload(params).promise();
+        const command = new PutObjectCommand(params);
+        await s3Client.send(command);
+
+
+        const fileUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/uploads/${finalName}`;
+
         resultArr.push({
           status: "success",
-          path: data.Location,
+          path: fileUrl,
           fileName: filesArr[i].name,
           error: null,
         });
@@ -65,5 +77,9 @@ export const uploadMultipleFiles = async (filesArr) => {
     };
   } catch (error) {
     console.log(error);
+    return {
+      detail: [],
+      error: JSON.stringify(error),
+    };
   }
 };

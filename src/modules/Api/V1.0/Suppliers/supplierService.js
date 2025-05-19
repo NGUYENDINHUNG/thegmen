@@ -1,8 +1,8 @@
-import Supplier from "../../../../models/supplierModel.schema.js";
+import SupplierModel from "../../../../models/supplierModel.schema.js";
 
 export const CreateSupplierService = async (name, slug) => {
   try {
-    let result = await Supplier.create({
+    let result = await SupplierModel.create({
       name: name,
     });
     return result;
@@ -10,7 +10,7 @@ export const CreateSupplierService = async (name, slug) => {
 };
 export const UpdateSupplierService = async (SupplierId, updateData) => {
   try {
-    const updatedSupplier = await Supplier.findByIdAndUpdate(
+    const updatedSupplier = await SupplierModel.findByIdAndUpdate(
       SupplierId,
       { $set: updateData },
       { new: true }

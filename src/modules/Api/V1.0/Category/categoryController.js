@@ -3,7 +3,7 @@ import {
   UpdateCategoryService,
   GetCategoryByIdService,
   GetAllCategoryService,
-} from "../../../services/categoryService.js";
+} from "./categoryService.js";
 import aqp from "api-query-params";
 
 export const CreateCategory = async (req, res) => {

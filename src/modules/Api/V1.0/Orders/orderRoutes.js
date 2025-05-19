@@ -1,10 +1,15 @@
 import { Router } from "express";
-import { byNowOrder, createOrder, getUserOrders, removeOrder } from "../Controllers/orderController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+import {
+  byNowOrder,
+  createOrder,
+  getUserOrders,
+  removeOrder,
+} from "./orderController.js";
+
 const OrderRouter = Router();
 
-OrderRouter.post("/createOrder", verifyToken, createOrder);
-OrderRouter.post("/byNow", verifyToken, byNowOrder);
-OrderRouter.get("/byNow", verifyToken, getUserOrders);
-OrderRouter.delete("/:orderId", verifyToken, removeOrder);
+OrderRouter.post("/createOrder", createOrder);
+OrderRouter.post("/byNow", byNowOrder);
+OrderRouter.get("/byNow", getUserOrders);
+OrderRouter.delete("/:orderId", removeOrder);
 export default OrderRouter;

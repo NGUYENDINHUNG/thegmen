@@ -3,7 +3,7 @@ import {
   createOrderService,
   getOrdersByUserService,
   removeOrderService,
-} from "../../../services/ordersService.js";
+} from "./ordersService.js";
 
 export const createOrder = async (req, res) => {
   try {

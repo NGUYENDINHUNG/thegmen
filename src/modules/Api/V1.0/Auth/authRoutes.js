@@ -9,15 +9,15 @@ import {
   logout,
   getAccount,
   loginGoogleSuccess,
-} from "../Controllers/authController.js";
-import { verifyToken } from "../../../middleware/auth.js";
-import passport from "../../../config/passport.js";
+} from "./authController.js";
+import passport from "../../../../config/passport.js";
+import verifyToken from "../../../../middleware/auth.js";
 
 const AuthRouter = express.Router();
 
 AuthRouter.post("/register", Register);
 AuthRouter.post("/login", LoginUsers);
-AuthRouter.get("/account", verifyToken, getAccount);
+AuthRouter.get("/account", getAccount);
 AuthRouter.get("/refreshToken", RefreshTokenUser);
 AuthRouter.get(
   "/google",

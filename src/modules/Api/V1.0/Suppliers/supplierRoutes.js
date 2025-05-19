@@ -2,12 +2,12 @@ import express from "express";
 import {
   CreateSupplier,
   UpdateCategory,
-} from "../Controllers/supplierController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+} from "./supplierController.js";
+
 
 const SupplierRouter = express.Router();
 
-SupplierRouter.post("/createSupplier", verifyToken, CreateSupplier);
-SupplierRouter.put("/:id", verifyToken, UpdateCategory);
+SupplierRouter.post("/createSupplier", CreateSupplier);
+SupplierRouter.put("/:id", UpdateCategory);
 
 export default SupplierRouter;

@@ -4,14 +4,13 @@ import {
   getAllVouchers,
   updateVoucher,
   applyVoucher,
-} from "../Controllers/vouchersController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+} from "./vouchersController.js";
 
 const VoucherRouter = express.Router();
 
-VoucherRouter.post("/createVoucher", verifyToken, createVoucher);
-VoucherRouter.put("/:id", verifyToken, updateVoucher);
-VoucherRouter.get("/", verifyToken, getAllVouchers);
-VoucherRouter.post("/apply", verifyToken, applyVoucher);
+VoucherRouter.post("/createVoucher", createVoucher);
+VoucherRouter.put("/:id", updateVoucher);
+VoucherRouter.get("/", getAllVouchers);
+VoucherRouter.post("/apply", applyVoucher);
 
 export default VoucherRouter;

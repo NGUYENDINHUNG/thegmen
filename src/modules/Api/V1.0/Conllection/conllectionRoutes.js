@@ -10,23 +10,22 @@ import {
   RemoveProductFromCollection,
   GetProductsByCollectionId,
   GetCollectionsByProductId,
-} from "../Controllers/conllectionController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+} from "./conllectionController.js";
 
 const CollectionRouter = express.Router();
 
 // Quản lý bộ sưu tập
-CollectionRouter.post("/create", verifyToken, CreateCollection);
-CollectionRouter.put("/update/:id", verifyToken, UpdateCollection);
-CollectionRouter.get("/:id", verifyToken, GetCollectionById);
-CollectionRouter.get("/", verifyToken, GetAllCollection);
-CollectionRouter.put("/softDelete/:collectionId", verifyToken, SoftDeleteCollection);
-CollectionRouter.put("/restore/:collectionId", verifyToken, RestoreCollection);
+CollectionRouter.post("/create", CreateCollection);
+CollectionRouter.put("/update/:id", UpdateCollection);
+CollectionRouter.get("/:id", GetCollectionById);
+CollectionRouter.get("/", GetAllCollection);
+CollectionRouter.put("/softDelete/:collectionId", SoftDeleteCollection);
+CollectionRouter.put("/restore/:collectionId", RestoreCollection);
 
 // Quản lý mối quan hệ sản phẩm - bộ sưu tập
-CollectionRouter.post("/addProduct", verifyToken, AddProductToCollection);
-CollectionRouter.post("/removeProduct", verifyToken, RemoveProductFromCollection);
-CollectionRouter.get("/products/:collectionId", verifyToken, GetProductsByCollectionId);
-CollectionRouter.get("/byProduct/:productId", verifyToken, GetCollectionsByProductId);
+CollectionRouter.post("/addProduct", AddProductToCollection);
+CollectionRouter.post("/removeProduct", RemoveProductFromCollection);
+CollectionRouter.get("/products/:collectionId", GetProductsByCollectionId);
+CollectionRouter.get("/byProduct/:productId", GetCollectionsByProductId);
 
 export default CollectionRouter;

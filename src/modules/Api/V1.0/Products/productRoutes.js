@@ -6,15 +6,14 @@ import {
   UpdateProduct,
   SoftDeleteProduct,
   RestoreProduct,
-} from "../Controllers/productController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+} from "./productController.js";
 
 const ProductRouter = express.Router();
 
-ProductRouter.post("/createProduct", verifyToken, CreateProduct);
-ProductRouter.put("/updateProduct/:ProductId", verifyToken, UpdateProduct);
-ProductRouter.get("/:ProductId", verifyToken, GetProductById);
-ProductRouter.get("/", verifyToken, GetAllProducts);
-ProductRouter.put("/softDelete/:ProductId", verifyToken, SoftDeleteProduct);
-ProductRouter.put("/restore/:ProductId", verifyToken, RestoreProduct);
+ProductRouter.post("/createProduct", CreateProduct);
+ProductRouter.put("/updateProduct/:ProductId", UpdateProduct);
+ProductRouter.get("/:ProductId", GetProductById);
+ProductRouter.get("/", GetAllProducts);
+ProductRouter.put("/softDelete/:ProductId", SoftDeleteProduct);
+ProductRouter.put("/restore/:ProductId", RestoreProduct);
 export default ProductRouter;

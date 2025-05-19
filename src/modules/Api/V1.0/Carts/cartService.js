@@ -1,6 +1,8 @@
-import Cart from "../../../../models/cartModel.schema.js";
-import Variants from "../../../../models/variantsModel.schema.js";
-import Product from "../../../../models/productModel.schema.js";
+import {
+  CartModel,
+  VariantModel,
+  ProductModel,
+} from "../../../../models/index.js";
 
 export const addToCartService = async (
   userId,
@@ -8,9 +10,9 @@ export const addToCartService = async (
   variantId,
   quantity
 ) => {
-  let cart = await Cart.findOne({ userId });
+  let cart = await CartModel.findOne({ userId });
   if (!cart) {
-    cart = await Cart.create({
+    cart = await CartModel.create({
       userId,
       items: [],
     });
@@ -18,11 +20,11 @@ export const addToCartService = async (
   // Kiểm tra tồn kho
   let stock = 0;
   if (variantId) {
-    const variant = await Variants.findById(variantId);
+    const variant = await VariantModel.findById(variantId);
     if (!variant) throw new Error("Biến thể không tồn tại");
     stock = variant.stock;
   } else {
-    const product = await Product.findById(productId);
+    const product = await ProductModel.findById(productId);
     if (!product) throw new Error("Sản phẩm không tồn tại");
     stock = product.stock;
   }
@@ -54,7 +56,7 @@ export const addToCartService = async (
 };
 
 export const getCartByUserService = async (userId) => {
-  const cart = await Cart.findOne({ userId }).populate({
+  const cart = await CartModel.findOne({ userId }).populate({
     path: "items.productId items.variantId",
   });
 
@@ -81,7 +83,7 @@ export const removeItemFromCartService = async (
   productId,
   variantId
 ) => {
-  const cart = await Cart.findOne({ userId });
+  const cart = await CartModel.findOne({ userId });
   if (!cart) return null;
   cart.items = cart.items.filter(
     (item) =>

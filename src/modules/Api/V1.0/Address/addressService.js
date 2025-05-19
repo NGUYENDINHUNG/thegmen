@@ -1,5 +1,4 @@
-import Address from "../../../../models/addressModel.schema.js";
-import User from "../../../../models/userModel.schema.js";
+import { AddressModel, UserModel } from "../../../../models/index.js";
 import aqp from "api-query-params";
 
 export const createAddressService = async (userId, addressData) => {
@@ -14,7 +13,7 @@ export const createAddressService = async (userId, addressData) => {
       isDefault,
     } = addressData;
 
-    const newAddress = await Address.create({
+    const newAddress = await AddressModel.create({
       userId: userId,
       fullname,
       phoneNumber,
@@ -53,7 +52,7 @@ export const createAddressService = async (userId, addressData) => {
 
 export const updateAddressService = async (addressId, userId, addressData) => {
   try {
-    const address = await Address.findById(addressId);
+    const address = await AddressModel.findById(addressId);
 
     if (!address) {
       throw new Error("Địa chỉ không tồn tại");
@@ -61,14 +60,14 @@ export const updateAddressService = async (addressId, userId, addressData) => {
     if (address.userId.toString() !== userId.toString()) {
       throw new Error("Bạn không có quyền xóa địa chỉ này");
     }
-    const updatedAddress = await Address.findByIdAndUpdate(
+    const updatedAddress = await AddressModel.findByIdAndUpdate(
       addressId,
       { $set: addressData },
       { new: true }
     );
-    const user = await User.findOne({ "address.id": addressId });
+    const user = await UserModel.findOne({ "address.id": addressId });
     if (user) {
-      await User.findByIdAndUpdate(user._id, {
+      await UserModel.findByIdAndUpdate(user._id, {
         address: {
           id: updatedAddress._id,
           fullname: updatedAddress.fullname,
@@ -92,7 +91,8 @@ export const updateAddressService = async (addressId, userId, addressData) => {
 export const getAllAddressService = async (
   pageSize,
   currentPage,
-  queryString
+  queryString,
+  userId
 ) => {
   try {
     let result = null;
@@ -103,9 +103,9 @@ export const getAllAddressService = async (
       delete filter.pageSize;
       delete filter.currentPage;
 
-      result = await Address.find(filter).skip(offset).limit(pageSize).exec();
+      result = await AddressmModel.find(filter).skip(offset).limit(pageSize).exec();
     } else {
-      result = await Address.find({});
+      result = await AddressModel.find({});
     }
     return result;
   } catch (error) {
@@ -116,7 +116,7 @@ export const getAllAddressService = async (
 
 export const getAllUserAddressService = async (userId) => {
   try {
-    const user = await User.findById(userId).populate("addresses");
+    const user = await UserModel.findById(userId).populate("addresses");
 
     if (!user) {
       throw new Error("User not found");
@@ -131,27 +131,27 @@ export const getAllUserAddressService = async (userId) => {
 
 export const deleteAddressService = async (addressId, userId) => {
   try {
-    const address = await Address.findById(addressId);
+    const address = await AddressModel.findById(addressId);
     if (!address) {
       throw new Error("Địa chỉ không tồn tại");
     }
     if (address.userId.toString() !== userId.toString()) {
       throw new Error("Bạn không có quyền xóa địa chỉ này");
     }
-    const deletedAddress = await Address.findByIdAndDelete(addressId);
+    const deletedAddress = await AddressModel.findByIdAndDelete(addressId);
 
-    await User.updateOne(
+    await UserModel.updateOne(
       { addresses: addressId },
       { $pull: { addresses: addressId } }
     );
     if (deletedAddress.isDefault) {
-      const user = await User.findById(deletedAddress.userId).populate(
+      const user = await UserModel.findById(deletedAddress.userId).populate(
         "addresses"
       );
       if (user && user.addresses.length > 0) {
         const newDefault = user.addresses[0];
-        await Address.findByIdAndUpdate(newDefault._id, { isDefault: true });
-        await User.findByIdAndUpdate(user._id, {
+        await AddressModel.findByIdAndUpdate(newDefault._id, { isDefault: true });
+        await UserModel.findByIdAndUpdate(user._id, {
           address: {
             id: newDefault._id,
             fullname: newDefault.fullname,
@@ -164,7 +164,7 @@ export const deleteAddressService = async (addressId, userId) => {
           },
         });
       } else {
-        await User.findByIdAndUpdate(deletedAddress.userId, { address: null });
+        await UserModel.findByIdAndUpdate(deletedAddress.userId, { address: null });
       }
     }
     return deletedAddress;

@@ -1,12 +1,11 @@
-import Voucher from "../../../../models/vouchersModel.schema.js";
-import User from "../../../../models/userModel.schema.js";
+import { VoucherModel, UserModel } from "../../../../models/index.js";
 export const createVoucherService = async (voucherData) => {
   try {
-    const exist = await Voucher.findOne({ code: voucherData.code });
+    const exist = await VoucherModel.findOne({ code: voucherData.code });
     if (exist) {
       throw new Error("Mã voucher đã tồn tại");
     }
-    const voucher = await Voucher.create(voucherData);
+    const voucher = await VoucherModel.create(voucherData);
     return voucher;
   } catch (error) {
     throw error;
@@ -15,7 +14,7 @@ export const createVoucherService = async (voucherData) => {
 
 export const getAllVouchersService = async () => {
   try {
-    return await Voucher.find({});
+    return await VoucherModel.find({});
   } catch (error) {
     throw error;
   }
@@ -23,7 +22,7 @@ export const getAllVouchersService = async () => {
 
 export const updateVoucherService = async (id, updateData) => {
   try {
-    return await Voucher.findByIdAndUpdate(id, updateData, {
+    return await VoucherModel.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     });
@@ -34,7 +33,7 @@ export const updateVoucherService = async (id, updateData) => {
 
 export const getVoucherByCodeService = async (code) => {
   try {
-    const voucher = await Voucher.findOne({ code });
+    const voucher = await VoucherModel.findOne({ code });
     if (!voucher) {
       throw new Error("Không tìm thấy voucher với mã này");
     }
@@ -49,7 +48,7 @@ export const validateAndApplyVoucherService = async (
   userId
 ) => {
   try {
-    const voucher = await Voucher.findOne({ code });
+    const voucher = await VoucherModel.findOne({ code });
     if (!voucher) {
       throw new Error("Voucher không tồn tại");
     }
@@ -63,7 +62,7 @@ export const validateAndApplyVoucherService = async (
     if (voucher.quantity <= 0) {
       throw new Error("Voucher đã hết số lượng");
     }
-    const user = await User.findById(userId);
+    const user = await UserModel.findById(userId);
     if (!user) {
       throw new Error("Người dùng không tồn tại");
     }
@@ -74,7 +73,7 @@ export const validateAndApplyVoucherService = async (
     if (usedVoucher && usedVoucher.usageCount >= voucher.maxUsagePerUser) {
       throw new Error("Bạn đã sử dụng hết số lần cho phép với voucher này.");
     }
-    // Tính toán giá trị giảm giá
+
     let discountAmount = 0;
     if (voucher.discountType === "percentage") {
       discountAmount = (orderValue * voucher.discountValue) / 100;
@@ -82,7 +81,7 @@ export const validateAndApplyVoucherService = async (
       discountAmount = voucher.discountValue;
     }
     console.log(discountAmount);
-    // Cập nhật số lần sử dụng voucher cho user
+
     if (usedVoucher) {
       usedVoucher.usageCount += 1;
     } else {

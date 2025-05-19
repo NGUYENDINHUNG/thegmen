@@ -1,5 +1,4 @@
-import User from "../../../../models/userModel.schema.js";
-
+import UserModel from "../../../../models/userModel.schema.js";
 
 export const updateUserById = async (userId, updateData) => {
   console.log("userId", userId);
@@ -19,7 +18,7 @@ export const updateUserById = async (userId, updateData) => {
 
 export const UpdateUserRefreshToken = async (userId, refreshToken) => {
   try {
-    const result = await User.findByIdAndUpdate(
+    const result = await UserModel.findByIdAndUpdate(
       userId,
       { refreshToken: refreshToken },
       { new: true }
@@ -32,7 +31,7 @@ export const UpdateUserRefreshToken = async (userId, refreshToken) => {
 };
 export const FindUserByToken = async (refreshToken) => {
   try {
-    const UserByToken = await User.findOne({ refreshToken });
+    const UserByToken = await UserModel.findOne({ refreshToken });
     return UserByToken;
   } catch (error) {
     console.error("Error finding user by token:", error);

@@ -1,7 +1,7 @@
 import {
   CreateSupplierService,
   UpdateSupplierService,
-} from "../../../services/supplierService.js";
+} from "./supplierService.js";
 
 export const CreateSupplier = async (req, res) => {
   const { name } = req.body;

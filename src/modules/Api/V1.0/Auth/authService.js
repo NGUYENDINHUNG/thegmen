@@ -1,8 +1,11 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import User from "../../../models/userModel.schema.js";
-import { UpdateUserRefreshToken, FindUserByToken } from "../User/userService.js";
-import sendEmail from "../../../util/email.util.js";
+import { UserModel } from "../../../../models/index.js";
+import {
+  UpdateUserRefreshToken,
+  FindUserByToken,
+} from "../User/userService.js";
+import sendEmail from "../../../../util/email.util.js";
 import ms from "ms";
 const saltRounds = 10;
 
@@ -15,13 +18,13 @@ export const RegisterSevice = async (
 ) => {
   try {
     //check user exist
-    const Usersexis = await User.findOne({ email });
+    const Usersexis = await UserModel.findOne({ email });
     if (Usersexis) {
       console.log(`Email hoặc số điện thoại đã tồn tại`);
     }
     const hashPassword = await bcrypt.hash(password, saltRounds);
 
-    let result = await User.create({
+    let result = await UserModel.create({
       email: email,
       name: name,
       password: hashPassword,
@@ -36,7 +39,7 @@ export const RegisterSevice = async (
 };
 export const LoginUserService = async (phoneNumber, password) => {
   try {
-    const user = await User.findOne({ phoneNumber: phoneNumber });
+    const user = await UserModel.findOne({ phoneNumber: phoneNumber });
     if (!user) {
       return {
         EC: 1,
@@ -238,7 +241,7 @@ export const processNewToken = async (refreshToken, res) => {
 };
 export const ForgetPasswordService = async (email) => {
   try {
-    const Users = await User.findOne({ email });
+    const Users = await UserModel.findOne({ email });
     if (!Users) {
       console.log(`Email ${email} không tồn tại`);
     }
@@ -266,7 +269,7 @@ export const ForgetPasswordService = async (email) => {
 export const resetPasswordService = async (token, newPassword) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded._id);
+    const user = await UserModel.findById(decoded._id);
     if (!user) throw new Error("Người dùng không tồn tại.");
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;

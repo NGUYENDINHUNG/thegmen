@@ -5,14 +5,13 @@ import {
   getAllAddress,
   getUserAddresses,
   deleteAddress,
-} from "../Controllers/addressController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+} from "./addressController.js";
 
 const Addressrouter = express.Router();
 
-Addressrouter.post("/createAddress", verifyToken, createAddress);
-Addressrouter.put("/:addressId", verifyToken, updateAddress);
-Addressrouter.get("/", verifyToken, getAllAddress);
-Addressrouter.get("/my-addresses", verifyToken, getUserAddresses);
-Addressrouter.delete("/:addressId", verifyToken, deleteAddress);
+Addressrouter.post("/createAddress", createAddress);
+Addressrouter.put("/:addressId", updateAddress);
+Addressrouter.get("/", getAllAddress);
+Addressrouter.get("/my-addresses", getUserAddresses);
+Addressrouter.delete("/:addressId", deleteAddress);
 export default Addressrouter;

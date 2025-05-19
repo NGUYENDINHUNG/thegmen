@@ -3,7 +3,8 @@ import {
   getAllVouchersService,
   updateVoucherService,
   validateAndApplyVoucherService,
-} from "../../../services/vouchersSevice.js";
+} from "./vouchersSevice.js";
+
 
 export const createVoucher = async (req, res) => {
   try {
