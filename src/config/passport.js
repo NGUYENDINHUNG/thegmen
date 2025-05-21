@@ -9,7 +9,7 @@ passport.use(
       callbackURL: "http://localhost:8000/v1/api/auth/google/callback",
       scope: ["profile", "email"],
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (profile, done) => {
       return done(null, profile);
     }
   )
@@ -21,9 +21,9 @@ passport.use(
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
       callbackURL: "http://localhost:8000/v1/api/auth/facebook/callback",
-      profileFields: ["displayName", "photos", "name"], 
+      profileFields: ["displayName", "photos", "name"],
     },
-    async (accessToken, refreshToken, profile, cb) => {
+    async (profile, cb) => {
       try {
         return cb(null, profile);
       } catch (error) {

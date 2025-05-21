@@ -196,7 +196,7 @@ export const RemoveProductFromCollectionService = async (
     if (!collection) {
       throw new Error("Bộ sưu tập không tồn tại");
     }
-    const product = await Product.findById(productId);
+    const product = await ProductModel.findById(productId);
 
     if (!product) {
       throw new Error("Sản phẩm không tồn tại");

@@ -13,6 +13,7 @@ export const ApiError = {
     code: 400,
     message: "Bad Request",
   },
+
   fileTooLarge: {
     status: BAD_REQUEST,
     code: 4001,
@@ -53,7 +54,7 @@ export const ApiError = {
     message: "Group already exists",
   },
 
-  // 500
+
   serverError: {
     status: INTERNAL_SERVER_ERROR,
     code: 500,

@@ -2,17 +2,11 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
-import path from "path";
 import fileUpload from "express-fileupload";
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 import connection from "./config/database.js";
-// import { errorConverter, errorHandler } from "./middleware/errorHandler.js";
-// import ApiError from "./helpers/apiError.js";
-
-// Import routes
 import router from "./modules/routes.js";
+
+
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -27,16 +21,7 @@ app.use(cors());
 // Routes
 app.use(router);
 
-// Handle 404
-// app.use((req, res, next) => {
-//   next(new ApiError(404, `Cannot find ${req.originalUrl} on this server!`));
-// });
 
-// Error handling middleware
-// app.use(errorConverter);
-// app.use(errorHandler);
-
-// Kết nối DB và start server
 const startServer = async () => {
   try {
     await connection();

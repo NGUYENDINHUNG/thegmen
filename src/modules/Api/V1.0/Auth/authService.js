@@ -7,6 +7,7 @@ import {
 } from "../User/userService.js";
 import sendEmail from "../../../../util/email.util.js";
 import ms from "ms";
+import User from "../../../../models/userModel.schema.js";
 const saltRounds = 10;
 
 export const RegisterSevice = async (
