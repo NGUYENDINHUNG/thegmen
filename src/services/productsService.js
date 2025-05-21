@@ -77,15 +77,19 @@ export const GetAllProductsService = async (
 ) => {
   try {
     let result = null;
+
     if (pageSize && currentPage) {
       let offset = (currentPage - 1) * pageSize;
       const { filter } = aqp(queryString);
+
       delete filter.pageSize;
       delete filter.currentPage;
       filter.isDeleted = false;
+
       result = await Product.find(filter).skip(offset).limit(pageSize).exec();
     } else {
       result = await Product.find({});
+      // xử lí trường hợp nếu có từ khóa tìm kiếm
     }
     return result;
   } catch (error) {
@@ -93,6 +97,9 @@ export const GetAllProductsService = async (
     return null;
   }
 };
+
+
+
 export const SoftDeleteProductService = async (ProductId) => {
   try {
     const deletedProduct = await Product.findByIdAndUpdate(

@@ -11,6 +11,7 @@ export const CreateSlidersService = async (imageUrl, linkUrl, position) => {
     return result;
   } catch (error) {}
 };
+
 export const UpdateSlidersService = async (SidersId, updateData) => {
   try {
     const updatedSliders = await Sliders.findByIdAndUpdate(

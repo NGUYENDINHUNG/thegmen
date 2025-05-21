@@ -5,6 +5,6 @@ const OrderRouter = Router();
 
 OrderRouter.post("/createOrder", verifyToken, createOrder);
 OrderRouter.post("/byNow", verifyToken, byNowOrder);
-OrderRouter.get("/byNow", verifyToken, getUserOrders);
+OrderRouter.get("/userOrders", verifyToken, getUserOrders);
 OrderRouter.delete("/:orderId", verifyToken, removeOrder);
 export default OrderRouter;
