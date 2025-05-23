@@ -2,8 +2,8 @@ import express from "express";
 import {
   CreateSupplier,
   UpdateCategory,
-} from "../Controllers/supplierController.js";
-import { verifyToken } from "../middleware/auth.js";
+} from "../../Controllers/supplierController.js";
+import { verifyToken } from "../../middleware/auth.js";
 
 const SupplierRouter = express.Router();
 

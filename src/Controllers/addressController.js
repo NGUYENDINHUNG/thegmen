@@ -5,7 +5,7 @@ import {
   getAllUserAddressService,
   deleteAddressService,
 } from "../services/addressService.js";
-import aqp from "api-query-params";
+
 export const createAddress = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -93,6 +93,7 @@ export const deleteAddress = async (req, res) => {
 
     return res.status(200).json({
       message: "Xóa địa chỉ thành công.",
+      data: deleted,
     });
   } catch (error) {
     return res.status(500).json({

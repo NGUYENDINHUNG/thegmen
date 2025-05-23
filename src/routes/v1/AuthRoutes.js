@@ -9,9 +9,9 @@ import {
   logout,
   getAccount,
   loginGoogleSuccess,
-} from "../Controllers/authController.js";
-import { verifyToken } from "../middleware/auth.js";
-import passport from "../config/passport.js";
+} from "../../Controllers/authController.js";
+import { verifyToken } from "../../middleware/auth.js";
+import passport from "../../config/passport.js";
 
 const AuthRouter = express.Router();
 

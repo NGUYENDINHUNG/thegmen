@@ -3,8 +3,8 @@ import {
   CreateSliders,
   DeleteSlider,
   UpdateSliders,
-} from "../Controllers/sliderController.js";
-import { verifyToken } from "../middleware/auth.js";
+} from "../../Controllers/sliderController.js";
+import { verifyToken } from "../../middleware/auth.js";
 
 const SlidersRouter = express.Router();
 

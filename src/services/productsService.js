@@ -97,9 +97,6 @@ export const GetAllProductsService = async (
     return null;
   }
 };
-
-
-
 export const SoftDeleteProductService = async (ProductId) => {
   try {
     const deletedProduct = await Product.findByIdAndUpdate(

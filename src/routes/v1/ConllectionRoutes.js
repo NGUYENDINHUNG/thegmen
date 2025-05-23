@@ -10,8 +10,8 @@ import {
   RemoveProductFromCollection,
   GetProductsByCollectionId,
   GetCollectionsByProductId,
-} from "../Controllers/conllectionController.js";
-import { verifyToken } from "../middleware/auth.js";
+} from "../../Controllers/conllectionController.js";
+import { verifyToken } from "../../middleware/auth.js";
 
 const CollectionRouter = express.Router();
 

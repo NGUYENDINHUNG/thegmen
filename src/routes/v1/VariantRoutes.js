@@ -7,8 +7,8 @@ import {
   getAllVariants,
   softDeleteVariant,
   restoreVariant,
-} from "../Controllers/variantController.js";
-import {verifyToken} from "../middleware/auth.js";
+} from "../../Controllers/variantController.js";
+import {verifyToken} from "../../middleware/auth.js";
 
 const VariantRouter = express.Router();
 

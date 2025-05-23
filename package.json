@@ -40,7 +40,10 @@
     "vietnam-provinces": "^0.0.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.27.0",
     "@faker-js/faker": "^9.8.0",
+    "eslint": "^9.27.0",
+    "globals": "^16.1.0",
     "nodemon": "^3.1.10"
   }
 }

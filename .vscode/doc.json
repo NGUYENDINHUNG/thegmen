@@ -1,0 +1,30 @@
+export const role =[
+    {
+    id: 1,
+    name: "admin",
+    description: "Quản trị viên",
+    permissions: [
+            "user:create",
+            "user:update",
+            "user:delete",
+            "user:view",
+            "product:create",
+            "product:update",
+            "product:delete",
+        ]
+    },
+]
+
+export const user = {
+    id: 1,
+    name: "admin",
+    email: "admin@gmail.com",
+    password: "admin",
+    role: "admin",
+    createdAt: "2021-01-01",
+    updatedAt: "2021-01-01"
+}
+
+
+@prop({type:[mongose.Schema.Types.ObjectId], ref:permission.name})
+permissions: [Permission]
