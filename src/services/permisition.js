@@ -1,6 +1,6 @@
 import Permission from "../models/Permission.js";
 import aqp from "api-query-params";
-import apiError from "../constants/apiError.js";
+//import apiError from "../constants/apiError.js";
 export const createPermissionService = async (permissionData) => {
   try {
     const exitPermission = await Permission.findOne({
@@ -14,7 +14,7 @@ export const createPermissionService = async (permissionData) => {
 
     return permission;
   } catch (error) {
-    throw new apiError(400, error);
+  //  throw new apiError(400, error);
   }
 };
 
@@ -26,14 +26,14 @@ export const getPermissionService = async (permissionId) => {
     }
     return permission;
   } catch (error) {
-    throw new apiError(400, error);
+   // throw new apiError(400, error);
   }
 };
 
 export const updatePermissionService = async (permissionId, permissionData) => {
   try {
     if (!permissionId) {
-      throw new apiError(400, "Permission ID is required");
+   //   throw new apiError(400, "Permission ID is required");
     }
     const permission = await Permission.findByIdAndUpdate(
       permissionId,
@@ -42,20 +42,20 @@ export const updatePermissionService = async (permissionId, permissionData) => {
     );
     return permission;
   } catch (error) {
-    throw new apiError(400, error);
+   // throw new apiError(400, error);
   }
 };
 
 export const deletePermissionService = async (permissionId) => {
   try {
     if (!permissionId) {
-      throw new apiError(400, "Permission ID is required");
+    //  throw new apiError(400, "Permission ID is required");
     }
     const permission = await Permission.findByIdAndDelete(permissionId);
 
     return permission;
   } catch (error) {
-    throw new apiError(400, error);
+  //  throw new apiError(400, error);
   }
 };
 export const GetAllPermissionsService = async (pageSize, currentPage, qs) => {
@@ -90,6 +90,6 @@ export const GetAllPermissionsService = async (pageSize, currentPage, qs) => {
       result,
     };
   } catch (error) {
-    throw new apiError(400, error);
+    console.log(error);
   }
 };

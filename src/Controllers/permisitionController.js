@@ -47,6 +47,7 @@ export const getPermission = async (req, res) => {
 export const updatePermission = async (req, res) => {
   try {
     const { permissionId } = req.params;
+    console.log(permissionId);
     const permissionData = req.body;
     const permission = await updatePermissionService(
       permissionId,
@@ -86,7 +87,14 @@ export const deletePermission = async (req, res) => {
 
 export const getAllPermissions = async (req, res) => {
   try {
-    const permissions = await GetAllPermissionsService();
+    const { pageSize, currentPage } = req.query;
+    const permissions = await GetAllPermissionsService(pageSize, currentPage);
+    if (!permissions || permissions.length === 0) {
+      return res.status(400).json({
+        statusCode: 400,
+        message: "Không tìm thấy quyền",
+      });
+    }
     return res.status(200).json({
       statusCode: 200,
       message: "Lấy tất cả quyền thành công",

@@ -4,6 +4,7 @@ import User from "../models/userModel.schema.js";
 import { UpdateUserRefreshToken, FindUserByToken } from "./userService.js";
 import sendEmail from "../util/email.util.js";
 import ms from "ms";
+import Role from "../models/roleModel.schema.js";
 const saltRounds = 10;
 
 export const RegisterSevice = async (
@@ -11,14 +12,23 @@ export const RegisterSevice = async (
   name,
   password,
   phoneNumber,
-  avatar
+  avatar,
+  role
 ) => {
   try {
-    //check user exist
     const Usersexis = await User.findOne({ email });
     if (Usersexis) {
       console.log(`Email hoặc số điện thoại đã tồn tại`);
     }
+    let roleId = role;
+    if (!roleId) {
+      const userRole = await Role.findOne({ name: "USER" });
+      if (!userRole) {
+        throw new Error("Role USER not found in database");
+      }
+      roleId = userRole._id;
+    }
+
     const hashPassword = await bcrypt.hash(password, saltRounds);
 
     let result = await User.create({
@@ -27,6 +37,7 @@ export const RegisterSevice = async (
       password: hashPassword,
       phoneNumber: phoneNumber,
       avatar: avatar,
+      role: roleId,
     });
     return result;
   } catch (error) {

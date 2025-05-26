@@ -2,7 +2,8 @@ import express from "express";
 import "dotenv/config";
 import connection from "./config/database.js";
 import configExpress from "./config/express.js";
-import ApiRouter from "./routes/index.js";
+import Apirouter from "./routes/index.js";
+
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -11,7 +12,7 @@ const port = process.env.PORT || 4000;
 configExpress(app);
 
 // User routes
-app.use("/v1/api", ApiRouter);
+app.use(Apirouter);
 
 // Kết nối DB và start server
 const startServer = async () => {

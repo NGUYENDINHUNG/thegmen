@@ -254,39 +254,40 @@ export const getOrdersByUserService = async (userId) => {
   }
 };
 
-// export const UpdateOrderService = async (orderId, status) => {
-//   try {
-//     const order = await Order.findByIdAndUpdate(
-//       orderId,
-//       { status },
-//       { new: true }
-//     );
-//     return order;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+export const UpdateOrderService = async (orderId, status) => {
+  const order = await Order.findByIdAndUpdate(
+    orderId,
+    { status },
+    { new: true }
+  );
+
+  if (!order) {
+    throw new Error("Không tìm thấy đơn hàng");
+  }
+
+  return {
+    success: true,
+    message: "Cập nhật trạng thái đơn hàng thành công",
+    data: order,
+  };
+};
 
 export const removeOrderService = async (orderId) => {
-  try {
-    const order = await Order.findById(orderId);
-    if (!order) {
-      throw new Error("Đơn hàng không tồn tại");
-    }
-    for (const item of order.items) {
-      if (item.variantId) {
-        await Variants.findByIdAndUpdate(item.variantId, {
-          $inc: { stock: item.quantity },
-        });
-      }
-    }
-    await Order.findByIdAndDelete(orderId);
-
-    return {
-      success: true,
-      message: "Hủy đơn hàng thành công ",
-    };
-  } catch (error) {
-    throw error;
+  const order = await Order.findById(orderId);
+  if (!order) {
+    throw new Error("Đơn hàng không tồn tại");
   }
+  for (const item of order.items) {
+    if (item.variantId) {
+      await Variants.findByIdAndUpdate(item.variantId, {
+        $inc: { stock: item.quantity },
+      });
+    }
+  }
+  await Order.findByIdAndDelete(orderId);
+
+  return {
+    success: true,
+    message: "Hủy đơn hàng thành công ",
+  };
 };

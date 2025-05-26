@@ -72,3 +72,4 @@ export const applyVoucher = async (req, res) => {
     });
   }
 };
+

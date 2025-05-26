@@ -5,14 +5,14 @@ import {
   getAllPermissions,
   getPermission,
   updatePermission,
-} from "../../controllers/permisitionController.js";
+} from "../../../controllers/permisitionController.js";
 
 const PermistionRouter = express.Router();
 
 PermistionRouter.post("/create", createPermission);
 PermistionRouter.get("/", getAllPermissions);
-PermistionRouter.get("/:id", getPermission);
-PermistionRouter.put("/:id", updatePermission);
-PermistionRouter.delete("/:id", deletePermission);
+PermistionRouter.get("/:permissionId", getPermission);
+PermistionRouter.put("/:permissionId", updatePermission);
+PermistionRouter.delete("/:permissionId", deletePermission);
 
 export default PermistionRouter;

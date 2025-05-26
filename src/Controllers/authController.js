@@ -20,6 +20,7 @@ export const Register = async (req, res) => {
     let results = await uploadSingleFile(req.files.avatar);
     imageUrl = results.path;
   }
+  
   console.log("imageUrl", imageUrl);
   const data = await RegisterSevice(
     email,

@@ -4,12 +4,12 @@ import {
   deleteRole,
   getRole,
   updateRole,
-} from "../../controllers/roleController.js";
+} from "../../../controllers/roleController.js";
 const RoleRouter = express.Router();
 
 RoleRouter.post("/create", createRole);
-RoleRouter.get("/:id", getRole);
-RoleRouter.put("/:id", updateRole);
-RoleRouter.delete("/:id", deleteRole);
+RoleRouter.get("/:roleId", getRole);
+RoleRouter.put("/:roleId", updateRole);
+RoleRouter.delete("/:roleId", deleteRole);
 
 export default RoleRouter;

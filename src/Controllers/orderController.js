@@ -3,6 +3,7 @@ import {
   createOrderService,
   getOrdersByUserService,
   removeOrderService,
+  UpdateOrderService,
 } from "../services/ordersService.js";
 
 export const createOrder = async (req, res) => {
@@ -175,6 +176,25 @@ export const removeOrder = async (req, res) => {
       status: 200,
       success: true,
       message: "Đơn hàng đã được hủy bỏ thành công",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    const result = await UpdateOrderService(orderId, status);
+    return res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Đơn hàng đã được cập nhật thành công",
       data: result,
     });
   } catch (error) {
