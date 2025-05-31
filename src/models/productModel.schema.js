@@ -8,33 +8,59 @@ const ProductSchema = new Schema(
       type: String,
       required: true,
     },
-    price: {
-      type: Number,
+    description: {
+      type: String,
+    },
+    content: {
+      type: String,
+    },
+    slug: {
+      type: String,
+    },
+    color: {
+      type: String,
+    },
+    coverImage: {
+      type: String,
     },
     images: {
       type: [String],
       default: [],
     },
-    description: {
+    price: {
+      type: Number,
+    },
+    discountType: {
       type: String,
+      enum: ["PERCENTAGE", "FIXED_AMOUNT"],
+      default: "PERCENTAGE",
+    },
+    discount: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
     },
     variants: {
       type: [Schema.Types.ObjectId],
       ref: "variants",
       default: [],
     },
-    collections: {
+    featured: { type: Boolean, default: false },
+    groupProducts: {
       type: [Schema.Types.ObjectId],
-      ref: "conlection",
+      ref: "groupProducts",
       default: [],
     },
-    supplierId: {
-      type: Schema.Types.ObjectId,
-      ref: "suppliers",
-    },
-    categoryId: {
-      type: Schema.Types.ObjectId,
+    categories: {
+      type: [Schema.Types.ObjectId],
       ref: "categories",
+      default: [],
+    },
+    sizeSuggestCategories: {
+      type: [Schema.Types.ObjectId],
+      ref: "sizeSuggestCategories",
+      default: [],
     },
     isDeleted: {
       type: Boolean,

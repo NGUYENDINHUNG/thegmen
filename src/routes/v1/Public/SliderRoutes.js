@@ -1,12 +1,7 @@
 import express from "express";
-import {
-  DeleteSlider,
-  UpdateSliders,
-} from "../../../Controllers/sliderController.js";
-
+import { GetAllSliders } from "../../../controllers/sliderController.js";
 
 const SlidersRouter = express.Router();
 
-SlidersRouter.put("/:id", UpdateSliders);
-SlidersRouter.delete("/:id", DeleteSlider);
+SlidersRouter.get("/getAllSliders", GetAllSliders);
 export default SlidersRouter;

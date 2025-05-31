@@ -15,6 +15,7 @@ export const uploadSingleFile = async (file) => {
     Key: `uploads/${finalName}`,
     Body: file.buffer,
     ContentType: file.mimetype,
+    ACL: "public-read",
   };
   try {
     const command = new PutObjectCommand(params);

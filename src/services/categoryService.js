@@ -1,15 +1,23 @@
-import Category from "../models/categoryModel.schema.js";
-import aqp from "api-query-params";
-import Product from "../models/productModel.schema.js";
+import slugify from "slugify";
+import Category from "../models/categoriesModel.schema.js";
 
-export const CreateCategoryService = async (name, slug) => {
+export const CreateCategoryService = async (name, images) => {
   try {
-    let result = await Category.create({
-      name: name,
+    const existingCategory = await Category.findOne({ name });
+    if (existingCategory) {
+      throw new Error("Danh mục với slug này đã tồn tại");
+    }
+    const slug = slugify(name, { lower: true, strict: true, locale: "vi" });
+    const result = await Category.create({
+      name,
       slug: slug,
+      images,
     });
     return result;
-  } catch (error) {}
+  } catch (error) {
+    console.log("Error in CreateCategoryService:", error);
+    throw new Error(error.message || "Lỗi khi tạo danh mục");
+  }
 };
 export const UpdateCategoryService = async (categoryId, updateData) => {
   try {
@@ -24,48 +32,12 @@ export const UpdateCategoryService = async (categoryId, updateData) => {
     throw new Error(error.message || "Lỗi khi cập nhật danh mục.");
   }
 };
-// export const GetCategoryByIdService = async (categoryId) => {
-//   try {
-//     if (!categoryId) {
-//       return null;
-//     }
-//     const results = await Category.findById(categoryId).populate({
-//       path: "products",
-//       select: "name price images",
-//       match: { isDeleted: false },
-//     });
-//     if (!results) return null;
-//     const productCount = results.products ? results.products.length : 0;
-//     return {
-//       ...results.toObject(),
-//       productCount,
-//     };
-//   } catch (error) {
-//     console.error("Lỗi khi tìm category theo ID:", error);
-//     throw error;
-//   }
-// };
-export const GetAllCategoryService = async (
-  pageSize,
-  currentPage,
-  queryString
-) => {
+export const GetOneCategoryService = async (slug) => {
   try {
-    let result = null;
-    if (pageSize && currentPage) {
-      console.log(currentPage);
-      let offset = (currentPage - 1) * pageSize;
-      const { filter } = aqp(queryString);
-      delete filter.pageSize;
-      delete filter.currentPage;
-
-      result = await Category.find(filter).skip(offset).limit(pageSize).exec();
-    } else {
-      result = await Category.find({});
-    }
-    return result;
+    const category = await Category.findOne({ slug }).populate("products");
+    return category;
   } catch (error) {
-    console.log("Error in GetAllCategoryService:", error);
-    return null;
+    console.log("Error in GetOneCategoryService:", error);
+    throw new Error(error.message || "Lỗi khi lấy danh mục.");
   }
 };

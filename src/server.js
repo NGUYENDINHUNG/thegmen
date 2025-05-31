@@ -4,7 +4,6 @@ import connection from "./config/database.js";
 import configExpress from "./config/express.js";
 import Apirouter from "./routes/index.js";
 
-
 const app = express();
 const port = process.env.PORT || 4000;
 

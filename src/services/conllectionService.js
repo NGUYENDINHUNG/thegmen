@@ -1,20 +1,21 @@
+import slugify from "slugify";
 import Collection from "../models/collectionModel.schema.js";
 import Product from "../models/productModel.schema.js";
-import aqp from "api-query-params";
 
 export const CreateCollectionService = async (
-  name,
-  slug,
+  title,
   description,
   images = []
 ) => {
   try {
+    const slug = slugify(title, { lower: true, strict: true, locale: "vi" });
     let result = await Collection.create({
-      name: name,
+      title: title,
       slug: slug,
       description: description,
       images: images,
     });
+
     return result;
   } catch (error) {
     console.error("Error in CreateCollectionService:", error);
@@ -22,16 +23,22 @@ export const CreateCollectionService = async (
   }
 };
 
-export const UpdateCollectionService = async (collectionId, updateData) => {
+export const UpdateCollectionService = async (slug, updateData, imageUrl) => {
   try {
-    const updatedCollection = await Collection.findByIdAndUpdate(
-      collectionId,
+    if (!slug) {
+      throw new Error("Bộ sưu tập không tồn tại hoặc đã bị xóa");
+    }
+    if (imageUrl) {
+      updateData.images = imageUrl;
+    }
+    const updatedCollection = await Collection.findOneAndUpdate(
+      { slug: slug },
       { $set: updateData },
       { new: true }
     );
 
     if (!updatedCollection) {
-      throw new Error("Bộ sưu tập không tồn tại hoặc đã bị xóa");
+      throw new Error("lỗi khi cập nhật bộ sưu tập");
     }
 
     return updatedCollection;
@@ -41,49 +48,36 @@ export const UpdateCollectionService = async (collectionId, updateData) => {
   }
 };
 
-export const GetCollectionByIdService = async (collectionId) => {
+export const GetCollectionByIdService = async (slug) => {
   try {
-    if (!collectionId) {
-      return null;
+    if (!slug) {
+      throw new Error("bộ sưu tập không tồn tại");
     }
-    const results = await Collection.findOne({
-      _id: collectionId,
-      // isDeleted: false,
-    }).populate("products");
-
+    const results = await Collection.findOne(
+      {
+        slug: slug,
+      },
+      "name slug description images"
+    ).populate("products");
+    if (!results) {
+      throw new Error("loi khi lay du lieu");
+    }
     return results;
   } catch (error) {
     console.error("Lỗi khi tìm collection theo ID:", error);
     throw error;
   }
 };
-
-export const GetAllCollectionService = async (
-  pageSize,
-  currentPage,
-  queryString
-) => {
+export const GetAllCollectionsService = async () => {
   try {
-    let result = null;
-    if (pageSize && currentPage) {
-      let offset = (currentPage - 1) * pageSize;
-      const { filter } = aqp(queryString);
-      delete filter.pageSize;
-      delete filter.currentPage;
-
-      filter.isDeleted = false;
-
-      result = await Collection.find(filter)
-        .skip(offset)
-        .limit(pageSize)
-        .exec();
-    } else {
-      result = await Collection.find({ isDeleted: false });
-    }
-    return result;
+    const collections = await Collection.find(
+      { isDeleted: false },
+      "-__v -createdAt -updatedAt -isDeleted -deletedAt"
+    );
+    return collections;
   } catch (error) {
-    console.log("Error in GetAllCollectionService:", error);
-    return null;
+    console.error("Error in GetAllCollectionsService:", error);
+    throw error;
   }
 };
 
@@ -94,7 +88,6 @@ export const SoftDeleteCollectionService = async (collectionId) => {
     if (!collection || collection.isDeleted) {
       throw new Error("Bộ sưu tập không tồn tại hoặc đã bị xóa");
     }
-    const productIds = collection.products;
 
     const deletedCollection = await Collection.findByIdAndUpdate(
       collectionId,
@@ -104,14 +97,6 @@ export const SoftDeleteCollectionService = async (collectionId) => {
       },
       { new: true }
     );
-
-    // Cập nhật danh sách bộ sưu tập trong mỗi sản phẩm
-    if (productIds && productIds.length > 0) {
-      await Product.updateMany(
-        { _id: { $in: productIds } },
-        { $pull: { collections: collectionId } }
-      );
-    }
 
     return deletedCollection;
   } catch (error) {
@@ -161,7 +146,7 @@ export const AddProductToCollectionService = async (
   try {
     const collection = await Collection.findOne({
       _id: collectionId,
-      //isDeleted: false,
+      isDeleted: false,
     });
 
     if (!collection) {
@@ -175,9 +160,7 @@ export const AddProductToCollectionService = async (
     await Collection.findByIdAndUpdate(collectionId, {
       $addToSet: { products: productId },
     });
-    await Product.findByIdAndUpdate(productId, {
-      $addToSet: { collections: collectionId },
-    });
+
 
     return { message: "Thêm sản phẩm vào bộ sưu tập thành công" };
   } catch (error) {
@@ -244,28 +227,6 @@ export const GetProductsByCollectionIdService = async (
     return products;
   } catch (error) {
     console.error("Error in GetProductsByCollectionIdService:", error);
-    throw error;
-  }
-};
-
-export const GetCollectionsByProductIdService = async (productId) => {
-  try {
-    const product = await Product.findOne({
-      _id: productId,
-      //isDeleted: false
-    });
-
-    if (!product) {
-      throw new Error("Sản phẩm không tồn tại hoặc đã bị xóa");
-    }
-    const collections = await Collection.find({
-      _id: { $in: product.collections },
-      isDeleted: false,
-    });
-
-    return collections;
-  } catch (error) {
-    console.error("Error in GetCollectionsByProductIdService:", error);
     throw error;
   }
 };

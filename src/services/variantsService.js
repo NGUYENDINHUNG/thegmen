@@ -3,12 +3,10 @@ import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
 
 export const createVariantService = async (
-  name,
-  color,
   size,
   stock,
   sku,
-  images,
+  position,
   productId
 ) => {
   try {
@@ -20,12 +18,10 @@ export const createVariantService = async (
       throw new Error("Sản phẩm không tồn tại hoặc đã bị xóa");
     }
     const newVariant = await Variant.create({
-      name,
-      color,
       size,
       stock,
       sku,
-      images,
+      position,
       productId,
     });
 

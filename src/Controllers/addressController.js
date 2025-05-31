@@ -2,7 +2,6 @@ import {
   createAddressService,
   updateAddressService,
   getAllAddressService,
-  getAllUserAddressService,
   deleteAddressService,
 } from "../services/addressService.js";
 
@@ -12,92 +11,82 @@ export const createAddress = async (req, res) => {
     const addressData = req.body;
     const newAddress = await createAddressService(userId, addressData);
 
-    res.status(200).json({
+    return res.status(200).json({
+      statusCode: 200,
       message: "Tạo địa chỉ thành công",
       data: newAddress,
     });
   } catch (error) {
-    res.status(400).json({
-      message: error.message || "Lỗi khi tạo địa chỉ",
+    ``;
+    return res.status(500).json({
+      statusCode: 500,
+      message: "Lỗi khi tạo địa chỉ",
+      error: error.message,
     });
   }
 };
 
 export const updateAddress = async (req, res) => {
   try {
+    const userId = req.user._id;
     const { addressId } = req.params;
     const addressData = req.body;
-    const updatedAddress = await updateAddressService(addressId, addressData);
-    console.log(updatedAddress);
+    const updatedAddress = await updateAddressService(
+      userId,
+      addressId,
+      addressData
+    );
+
     return res.status(200).json({
-      message: "Address updated successfully",
+      statusCode: 200,
+      message: "Địa chỉ đã được cập nhật thành công",
       data: updatedAddress,
     });
   } catch (error) {
-    console.error("Error in updateAddressController:", error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-export const getAllAddress = async (req, res) => {
-  let pageSize = req.query.pageSize;
-  let currentPage = req.query.currentPage;
-  let result = null;
-
-  try {
-    if (pageSize && currentPage) {
-      result = await getAllAddressService(pageSize, currentPage, req.query);
-    } else {
-      result = await getAllAddressService();
-    }
-
-    if (result) {
-      return res.status(200).json({
-        EC: 0,
-        data: result,
-      });
-    } else {
-      return res.status(500).json({
-        EC: -1,
-        data: null,
-      });
-    }
-  } catch (error) {
-    console.log("Error in GetAllCategory:", error);
     return res.status(500).json({
-      EC: -1,
-      data: null,
-    });
-  }
-};
-export const getUserAddresses = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const addresses = await getAllUserAddressService(userId);
-    console.log(addresses);
-    return res.status(200).json({
-      message: "Fetched user's addresses successfully",
-      data: addresses,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Failed to fetch user's addresses",
+      statusCode: 500,
+      message: "Lỗi khi cập nhật địa chỉ",
       error: error.message,
     });
   }
 };
-export const deleteAddress = async (req, res) => {
+
+export const getAllAddress = async (req, res) => {
   try {
-    const { addressId } = req.params;
-    const deleted = await deleteAddressService(addressId);
+    const userId = req.user._id;
+
+    const addresses = await getAllAddressService(userId);
 
     return res.status(200).json({
+      statusCode: 200,
+      message: "Lấy tất cả địa chỉ thành công",
+      data: addresses,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      message: "Lỗi khi lấy tất cả địa chỉ",
+      error: error.message,
+    });
+  }
+};
+
+export const deleteAddress = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { addressId } = req.params;
+    const deleted = await deleteAddressService(userId, addressId);
+
+    return res.status(200).json({
+      statusCode: 200,
       message: "Xóa địa chỉ thành công.",
       data: deleted,
     });
   } catch (error) {
     return res.status(500).json({
-      message: error.message || "Lỗi server khi xóa địa chỉ.",
+      statusCode: 500,
+      message: "Lỗi server khi xóa địa chỉ.",
+      error: error.message,
     });
   }
 };

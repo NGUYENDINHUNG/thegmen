@@ -2,44 +2,26 @@ import {
   CreateCollectionService,
   UpdateCollectionService,
   GetCollectionByIdService,
-  GetAllCollectionService,
   SoftDeleteCollectionService,
   RestoreCollectionService,
   AddProductToCollectionService,
   RemoveProductFromCollectionService,
-  GetProductsByCollectionIdService,
-  GetCollectionsByProductIdService,
+  GetAllCollectionsService,
 } from "../services/conllectionService.js";
-import {
-  uploadSingleFile,
-  uploadMultipleFiles,
-} from "../services/fileService.js";
+import { uploadSingleFile } from "../services/fileService.js";
 
 export const CreateCollection = async (req, res) => {
   try {
-    const { name, description, slug } = req.body;
-    let imageUrls = [];
-
-    if (req.files && Object.keys(req.files).length > 0) {
-      if (Array.isArray(req.files.images)) {
-        const results = await uploadMultipleFiles(req.files.images);
-        imageUrls = results.detail
-          .filter((item) => item.status === "success")
-          .map((item) => item.path);
-      } else {
-        const result = await uploadSingleFile(req.files.images);
-        if (result.status === "success") {
-          imageUrls.push(result.path);
-        }
-      }
+    const { title, description } = req.body;
+    let imageUrl = " ";
+    if (!req.files || Object.keys(req.files).length === 0) {
+      console.log("No files were uploaded.");
+    } else {
+      let results = await uploadSingleFile(req.files.images);
+      imageUrl = results.path;
     }
 
-    const data = await CreateCollectionService(
-      name,
-      slug,
-      description,
-      imageUrls
-    );
+    const data = await CreateCollectionService(title, description, imageUrl);
 
     return res.status(200).json({
       statusCode: 200,
@@ -47,9 +29,8 @@ export const CreateCollection = async (req, res) => {
       data: data,
     });
   } catch (error) {
-    console.error("Error creating collection:", error);
-    return res.status(400).json({
-      statusCode: 400,
+    return res.status(500).json({
+      statusCode: 500,
       message: error.message || "Tạo bộ sưu tập thất bại",
       error: error,
     });
@@ -58,33 +39,21 @@ export const CreateCollection = async (req, res) => {
 
 export const UpdateCollection = async (req, res) => {
   try {
-    const collectionId = req.params.id;
-    const { name, slug, description } = req.body;
-
-    const updateData = {
+    const slug = req.params.slug;
+    const { name, description, images } = req.body || {};
+    let updateData = {
       name,
-      slug,
       description,
+      images,
     };
-    if (req.files && Object.keys(req.files).length > 0) {
-      let imageUrls = [];
 
-      if (Array.isArray(req.files.images)) {
-        const results = await uploadMultipleFiles(req.files.images);
-        imageUrls = results.detail
-          .filter((item) => item.status === "success")
-          .map((item) => item.path);
-      } else {
-        const result = await uploadSingleFile(req.files.images);
-        if (result.status === "success") {
-          imageUrls.push(result.path);
-        }
-      }
-
-      updateData.images = imageUrls;
+    let imageUrl = "";
+    if (req.files && req.files.images) {
+      const results = await uploadSingleFile(req.files.images);
+      imageUrl = results.path;
     }
 
-    const updated = await UpdateCollectionService(collectionId, updateData);
+    const updated = await UpdateCollectionService(slug, updateData, imageUrl);
 
     return res.status(200).json({
       statusCode: 200,
@@ -92,9 +61,8 @@ export const UpdateCollection = async (req, res) => {
       data: updated,
     });
   } catch (error) {
-    console.error("Error updating collection:", error);
-    return res.status(400).json({
-      statusCode: 400,
+    return res.status(500).json({
+      statusCode: 500,
       message: error.message || "Cập nhật bộ sưu tập thất bại",
       error: error,
     });
@@ -103,8 +71,9 @@ export const UpdateCollection = async (req, res) => {
 
 export const GetCollectionById = async (req, res) => {
   try {
-    const collectionId = req.params.id;
-    const collection = await GetCollectionByIdService(collectionId);
+    const slug = req.params.slug;
+    console.log(slug);
+    const collection = await GetCollectionByIdService(slug);
 
     if (!collection) {
       return res.status(404).json({
@@ -119,7 +88,6 @@ export const GetCollectionById = async (req, res) => {
       data: collection,
     });
   } catch (error) {
-    console.error("Error getting collection:", error);
     return res.status(400).json({
       statusCode: 400,
       message: error.message || "Lấy thông tin bộ sưu tập thất bại",
@@ -128,31 +96,18 @@ export const GetCollectionById = async (req, res) => {
   }
 };
 
-export const GetAllCollection = async (req, res) => {
+export const GetAllCollections = async (req, res) => {
   try {
-    const { pageSize, currentPage } = req.query;
-    let collections = null;
-
-    if (pageSize && currentPage) {
-      collections = await GetAllCollectionService(
-        pageSize,
-        currentPage,
-        req.query
-      );
-    } else {
-      collections = await GetAllCollectionService();
-    }
-
+    const collections = await GetAllCollectionsService();
     return res.status(200).json({
       statusCode: 200,
-      message: "Lấy danh sách bộ sưu tập thành công",
+      message: "Lấy tất cả bộ sưu tập thành công",
       data: collections,
     });
   } catch (error) {
-    console.error("Error getting all collections:", error);
-    return res.status(400).json({
-      statusCode: 400,
-      message: error.message || "Lấy danh sách bộ sưu tập thất bại",
+    return res.status(500).json({
+      statusCode: 500,
+      message: error.message || "Lấy tất cả bộ sưu tập thất bại",
       error: error,
     });
   }
@@ -236,54 +191,6 @@ export const RemoveProductFromCollection = async (req, res) => {
     return res.status(400).json({
       statusCode: 400,
       message: error.message || "Xóa sản phẩm khỏi bộ sưu tập thất bại",
-      error: error,
-    });
-  }
-};
-
-export const GetProductsByCollectionId = async (req, res) => {
-  try {
-    const { collectionId } = req.params;
-    const { pageSize, currentPage } = req.query;
-
-    const products = await GetProductsByCollectionIdService(
-      collectionId,
-      pageSize,
-      currentPage
-    );
-
-    return res.status(200).json({
-      statusCode: 200,
-      message: "Lấy danh sách sản phẩm theo bộ sưu tập thành công",
-      data: products,
-    });
-  } catch (error) {
-    console.error("Error getting products by collection ID:", error);
-    return res.status(400).json({
-      statusCode: 400,
-      message:
-        error.message || "Lấy danh sách sản phẩm theo bộ sưu tập thất bại",
-      error: error,
-    });
-  }
-};
-
-export const GetCollectionsByProductId = async (req, res) => {
-  try {
-    const { productId } = req.params;
-    const collections = await GetCollectionsByProductIdService(productId);
-    console.log(collections);
-    return res.status(200).json({
-      statusCode: 200,
-      message: "Lấy danh sách bộ sưu tập theo sản phẩm thành công",
-      data: collections,
-    });
-  } catch (error) {
-    console.error("Error getting collections by product ID:", error);
-    return res.status(400).json({
-      statusCode: 400,
-      message:
-        error.message || "Lấy danh sách bộ sưu tập theo sản phẩm thất bại",
       error: error,
     });
   }

@@ -1,5 +1,4 @@
 import Sliders from "../models/sliderModule.schema.js";
-import aqp from "api-query-params";
 
 export const CreateSlidersService = async (imageUrl, linkUrl, position) => {
   try {
@@ -9,7 +8,9 @@ export const CreateSlidersService = async (imageUrl, linkUrl, position) => {
       position: position,
     });
     return result;
-  } catch (error) {}
+  } catch (error) {
+    throw new Error(error.message || "Lỗi khi tạo slider.");
+  }
 };
 
 export const UpdateSlidersService = async (SidersId, updateData) => {
@@ -36,5 +37,17 @@ export const DeleteSliderService = async (sliderId) => {
   } catch (error) {
     console.log(error);
     throw new Error("Không thể xóa slider.");
+  }
+};
+
+export const GetAllSlidersService = async () => {
+  try {
+    const sliders = await Sliders.find(
+      { isActive: true },
+      "imageUrl linkUrl position"
+    );
+    return sliders;
+  } catch (error) {
+    throw new Error(error.message || "Lỗi khi lấy slider.");
   }
 };

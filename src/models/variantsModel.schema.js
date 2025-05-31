@@ -4,13 +4,6 @@ const { Schema } = mongoose;
 
 const VariantsSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
-    color: {
-      type: String,
-    },
     size: {
       type: String,
     },
@@ -20,15 +13,16 @@ const VariantsSchema = new Schema(
     sku: {
       type: String,
     },
-    images: {
-      type: [String],
-      default: [],
+    position: {
+      type: Number,
     },
+
     productId: {
       type: Schema.Types.ObjectId,
       ref: "products",
       required: true,
     },
+
     isDeleted: {
       type: Boolean,
       default: false,

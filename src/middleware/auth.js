@@ -44,7 +44,6 @@ const verifyToken = async (req, res, next) => {
         errorCode: "INVALID_TOKEN",
       });
     }
-
     return res.status(401).json({
       message: "Không thể xác thực người dùng",
       errorCode: "AUTH_FAILED",

@@ -1,77 +1,147 @@
-import { uploadSingleFile } from "../services/fileService.js";
 import {
-  ProductsConllectionService,
+  uploadMultipleFiles,
+  uploadSingleFile,
+} from "../services/fileService.js";
+import {
+  CreateProductService,
   UpdateProductsService,
-  GetProductsByIdService,
+  GetProductsBySlugService,
   GetAllProductsService,
   SoftDeleteProductService,
   RestoreProductService,
 } from "../services/productsService.js";
 
 export const CreateProduct = async (req, res) => {
-  const { name, price, description, supplierId, categoryId } = req.body;
-  let imageUrl = "";
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).send("No files were uploaded.");
-  } else {
-    let results = await uploadSingleFile(req.files.images);
-    imageUrl = results.path;
-  }
+  try {
+    const {
+      name,
+      price,
+      discount,
+      discountType,
+      description,
+      categories,
+      content,
+      color,
+      sizeSuggestCategories,
+    } = req.body;
 
-  const data = await ProductsConllectionService(
-    name,
-    price,
-    imageUrl,
-    description,
-    supplierId,
-    categoryId
-  );
-  console.log("data", data);
-  return res.status(200).json({
-    statusCode: 200,
-    message: "Create product successfully",
-    data: data,
-  });
+    let coverImageUrl = "";
+    let imageUrls = [];
+
+    // 1. Upload ảnh bìa
+    if (req.files?.coverImage) {
+      const result = await uploadSingleFile(req.files.coverImage);
+      coverImageUrl = result.path;
+    }
+
+    if (Array.isArray(req.files.images)) {
+      const result = await uploadMultipleFiles(req.files.images);
+      console.log("result", result);
+      imageUrls = result.detail.map((item) => item.path);
+    } else {
+      const result = await uploadSingleFile(req.files.images);
+      imageUrls = result.path;
+    }
+    const data = await CreateProductService({
+      name,
+      price,
+      discount,
+      discountType,
+      description,
+      categories,
+      sizeSuggestCategories,
+      content,
+      color,
+      coverImage: coverImageUrl,
+      images: imageUrls,
+    });
+
+    return res.status(201).json({
+      statusCode: 201,
+      message: "Tạo sản phẩm thành công",
+      data: data,
+    });
+  } catch (error) {
+    console.error("CreateProduct error:", error);
+    return res.status(500).json({
+      statusCode: 500,
+      message: error.message || "Tạo sản phẩm thất bại",
+    });
+  }
 };
+
 export const UpdateProduct = async (req, res) => {
-  const { name, price, discount, description, supplierId, categoryId } =
-    req.body;
-  const { ProductId } = req.params;
-  const updateData = await UpdateProductsService(ProductId, {
-    name,
-    price,
-    discount,
-    description,
-    supplierId,
-    categoryId,
-  });
-  return res.status(200).json({
-    statusCode: 200,
-    message: "Update product successfully",
-    data: updateData,
-  });
+  try {
+    const { name, price, description, supplierId, categoryId, slug, sku } =
+      req.body;
+
+    const { ProductId } = req.params;
+
+    const updateData = await UpdateProductsService(ProductId, {
+      name,
+      price,
+      description,
+      supplierId,
+      categoryId,
+      slug,
+      sku,
+    });
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Cập nhật sản phẩm thành công",
+      data: updateData,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      message: error.message || "Cập nhật sản phẩm thất bại",
+    });
+  }
 };
-export const GetProductById = async (req, res) => {
-  const { ProductId } = req.params;
-  const product = await GetProductsByIdService(ProductId);
-  return res.status(200).json({
-    statusCode: 200,
-    message: "Get product by id successfully",
-    data: product,
-  });
+
+export const GetOnProduct = async (req, res) => {
+  const { slug } = req.params;
+  try {
+    const product = await GetProductsBySlugService(slug);
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Lấy sản phẩm thành công",
+      data: product,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      message: error.message || "Lấy sản phẩm thất bại",
+    });
+  }
 };
+
 export const GetAllProducts = async (req, res) => {
-  const { pageSize, currentPage, queryString, } = req.query;
-  const products = await GetAllProductsService(
-    pageSize,
-    currentPage,
-    queryString
-  );
-  return res.status(200).json({
-    statusCode: 200,
-    message: "Get all products successfully",
-    data: products,
-  });
+  try {
+    const { pageSize, currentPage, queryString } = req.query;
+    const products = await GetAllProductsService(
+      pageSize,
+      currentPage,
+      queryString
+    );
+    if (products.result.length === 0) {
+      return res.status(200).json({
+        statusCode: 200,
+        message: "Không có sản phẩm nào",
+        data: [],
+      });
+    }
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Lấy tất cả sản phẩm thành công",
+      data: products,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      message: error.message || "Lấy tất cả sản phẩm thất bại",
+    });
+  }
 };
 
 export const SoftDeleteProduct = async (req, res) => {
@@ -85,8 +155,8 @@ export const SoftDeleteProduct = async (req, res) => {
       data: deletedProduct,
     });
   } catch (error) {
-    return res.status(400).json({
-      statusCode: 400,
+    return res.status(500).json({
+      statusCode: 500,
       message: error.message || "Xóa sản phẩm thất bại",
     });
   }
@@ -103,8 +173,8 @@ export const RestoreProduct = async (req, res) => {
       data: restoredProduct,
     });
   } catch (error) {
-    return res.status(400).json({
-      statusCode: 400,
+    return res.status(500).json({
+      statusCode: 500,
       message: error.message || "Khôi phục sản phẩm thất bại",
     });
   }

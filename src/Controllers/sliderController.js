@@ -1,6 +1,7 @@
 import {
   CreateSlidersService,
   DeleteSliderService,
+  GetAllSlidersService,
   UpdateSlidersService,
 } from "../services/sliderService.js";
 
@@ -53,5 +54,21 @@ export const DeleteSlider = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+export const GetAllSliders = async (req, res) => {
+  try {
+    const sliders = await GetAllSlidersService();
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Lấy tất cả slider thành công",
+      data: sliders,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      message: "Lỗi lấy slider",
+      error: error.message,
+    });
   }
 };

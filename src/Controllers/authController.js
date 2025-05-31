@@ -12,30 +12,35 @@ import {
 import { uploadSingleFile } from "../services/fileService.js";
 
 export const Register = async (req, res) => {
-  const { email, name, password, phoneNumber } = req.body;
-  let imageUrl = " ";
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).send("No files were uploaded.");
-  } else {
-    let results = await uploadSingleFile(req.files.avatar);
-    imageUrl = results.path;
+  try {
+    const { email, name, password, phoneNumber } = req.body;
+    let imageUrl = " ";
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).send("No files were uploaded.");
+    } else {
+      let results = await uploadSingleFile(req.files.avatar);
+      imageUrl = results.path;
+    }
+    const data = await RegisterSevice(
+      email,
+      name,
+      password,
+      phoneNumber,
+      imageUrl
+    );
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Đăng ký thành công",
+      data: data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      message: "Đăng ký thất bại",
+      error: error.message,
+    });
   }
-  
-  console.log("imageUrl", imageUrl);
-  const data = await RegisterSevice(
-    email,
-    name,
-    password,
-    phoneNumber,
-    imageUrl
-  );
-  return res.status(200).json({
-    statusCode: 200,
-    message: "Register successfully",
-    data: data,
-  });
 };
-
 export const LoginUsers = async (req, res) => {
   try {
     const { phoneNumber, password } = req.body;
@@ -52,13 +57,12 @@ export const LoginUsers = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({
-      EC: 1,
-      EM: "Lỗi đăng nhập",
+      statusCode: 500,
+      message: "Đăng nhập thất bại",
       error: error.message,
     });
   }
 };
-
 export const loginGoogleSuccess = async (req, res) => {
   try {
     const data = await handleGoogleLogin(req.user);
@@ -82,7 +86,6 @@ export const loginGoogleSuccess = async (req, res) => {
     });
   }
 };
-
 export const loginFaceBookSuccess = async (req, res) => {
   try {
     const data = await handleFacebookLogin(req.user);
@@ -93,15 +96,15 @@ export const loginFaceBookSuccess = async (req, res) => {
     });
 
     return res.status(200).json({
-      EC: data.EC,
-      EM: data.EM,
+      statusCode: 200,
+      message: "Đăng nhập thành công",
       accessToken: data.accessToken,
       user: data.user,
     });
   } catch (err) {
     return res.status(500).json({
-      EC: 1,
-      EM: "Lỗi đăng nhập FaceBook",
+      statusCode: 500,
+      message: "Đăng nhập thất bại",
       error: err.message,
     });
   }
@@ -120,43 +123,67 @@ export const getAccount = async (req, res) => {
         message: "Không tìm thấy thông tin người dùng hoặc token đã hết hạn",
       });
     }
-
     return res.status(200).json({
+      statusCode: 200,
       message: "Lấy thông tin người dùng thành công",
       user: req.user,
     });
   } catch (error) {
     return res.status(500).json({
+      statusCode: 500,
       message: "Lỗi server",
       error: error.message,
     });
   }
 };
-
 export const requestPasswordReset = async (req, res) => {
   const { email } = req.body;
   try {
     const response = await ForgetPasswordService(email);
-    return res.json(response);
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Yêu cầu đặt lại mật khẩu thành công",
+      data: response,
+    });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.status(400).json({
+      statusCode: 400,
+      message: "Lỗi server",
+      error: error.message,
+    });
   }
 };
 export const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
   try {
     const result = await resetPasswordService(token, newPassword);
-    res.json(result);
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Đặt lại mật khẩu thành công",
+      data: result,
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    return res.status(400).json({
+      statusCode: 400,
+      message: "Lỗi server",
+      error: error.message,
+    });
   }
 };
 export const logout = async (req, res) => {
   try {
     const refreshToken = req.cookies["refresh_token"];
     await LogoutService(refreshToken, res);
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Đăng xuất thành công",
+    });
   } catch (error) {
     console.error("Logout error:", error.message);
-    res.status(500).json({ message: "Đăng xuất thất bại." });
+    return res.status(500).json({
+      statusCode: 500,
+      message: "Đăng xuất thất bại.",
+      error: error.message,
+    });
   }
 };

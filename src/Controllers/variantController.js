@@ -14,29 +14,13 @@ import {
 
 export const createVariant = async (req, res) => {
   try {
-    const { name, color, size, stock, sku, productId } = req.body;
-    let imageUrls = [];
+    const { size, stock, sku, position, productId } = req.body;
 
-    if (req.files && Object.keys(req.files).length > 0) {
-      if (Array.isArray(req.files.images)) {
-        const results = await uploadMultipleFiles(req.files.images);
-        imageUrls = results.detail
-          .filter((item) => item.status === "success")
-          .map((item) => item.path);
-      } else {
-        const result = await uploadSingleFile(req.files.images);
-        if (result.status === "success") {
-          imageUrls.push(result.path);
-        }
-      }
-    }
     const variant = await createVariantService(
-      name,
-      color,
       size,
       stock,
       sku,
-      imageUrls,
+      position,
       productId
     );
 
@@ -46,9 +30,8 @@ export const createVariant = async (req, res) => {
       data: variant,
     });
   } catch (error) {
-    console.error("Error creating variant:", error);
-    return res.status(400).json({
-      statusCode: 400,
+    return res.status(500).json({
+      statusCode: 500,
       message: error.message || "Tạo biến thể thất bại",
       error: error,
     });

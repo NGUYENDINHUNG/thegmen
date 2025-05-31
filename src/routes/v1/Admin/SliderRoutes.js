@@ -3,14 +3,13 @@ import {
   CreateSliders,
   DeleteSlider,
   UpdateSliders,
-} from "../../../Controllers/sliderController.js";
+} from "../../../controllers/sliderController.js";
 import checkPermission from "../../../middleware/checkPermission.js";
 
 const SlidersRouter = express.Router();
 
 SlidersRouter.post(
   "/createSliders",
-
   checkPermission("Create_Slider"),
   CreateSliders
 );

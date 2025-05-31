@@ -1,48 +1,57 @@
 import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
-import Supplier from "../models/supplierModel.schema.js";
-import Category from "../models/categoryModel.schema.js";
+import slugify from "slugify";
 import Variants from "../models/variantsModel.schema.js";
 
-export const ProductsConllectionService = async (
-  name,
-  price,
-  images,
-  description,
-  supplierId,
-  categoryId
-) => {
+export const CreateProductService = async (productData) => {
   try {
-    const [existSupplier, existCategory] = await Promise.all([
-      Supplier.findOne({ _id: supplierId }),
-      Category.findOne({ _id: categoryId }),
-    ]);
-    const errors = [];
-    if (!existSupplier) errors.push("Nhà cung cấp không khả dụng");
-    if (!existCategory) errors.push("Danh mục không khả dụng");
+    const {
+      name,
+      description,
+      content,
+      color,
+      converImage,
+      images,
+      price,
+      discount,
+      discountType,
+      categories,
+      sizeSuggestCategories,
+    } = productData;
 
-    if (errors.length > 0) {
-      throw {
-        status: 400,
-        errors,
-        message: "Không khả dụng",
-      };
+    if (discount) {
+      if (discountType === "PERCENTAGE" && (discount < 0 || discount > 100)) {
+        throw new Error("Giảm giá theo phần trăm phải từ 0 đến 100");
+      }
+      if (discountType === "FIXED_AMOUNT" && discount > price) {
+        throw new Error("Giảm giá cố định không được lớn hơn giá sản phẩm");
+      }
     }
 
-    let result = await Product.create({
-      name: name,
-      price: price,
-      images: images,
-      description: description,
-      supplierId: supplierId,
-      categoryId: categoryId,
+    const slug = slugify(name, { lower: true, strict: true, locale: "vi" });
+
+    const newProduct = await Product.create({
+      name,
+      description,
+      content,
+      color,
+      converImage,
+      images,
+      price,
+      discount,
+      discountType,
+      categories,
+      sizeSuggestCategories,
+      slug: slug,
     });
-    return result;
+
+    return newProduct;
   } catch (error) {
-    console.log("Error in ProductsConllectionService:", error);
+    console.log("Error in CreateProductService:", error);
     throw error;
   }
 };
+
 export const UpdateProductsService = async (ProductId, updateData) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
@@ -55,18 +64,31 @@ export const UpdateProductsService = async (ProductId, updateData) => {
     throw new Error(error.message || "Lỗi khi cập nhật sản phẩm.");
   }
 };
-export const GetProductsByIdService = async (ProductId) => {
+export const GetProductsBySlugService = async (slug) => {
   try {
-    if (!ProductId) {
-      return null;
+    if (!slug) {
+      throw new Error("Slug không hợp lệ");
     }
-    const results = await Product.findById(ProductId).populate({
-      path: "variants",
-      match: { isDeleted: false },
-    });
-    return results;
+    const results = await Product.findOne(
+      { slug: slug },
+      "-createdAt -updatedAt -isDeleted -deletedAt"
+    )
+      .populate("variants", "-createdAt -updatedAt -isDeleted -deletedAt")
+      .populate(
+        "sizeSuggestCategories",
+        "-createdAt -updatedAt -isDeleted -deletedAt"
+      )
+      .populate("categories", "name,slug");
+
+    const response = {
+      product: {
+        ...results,
+      },
+    };
+
+    return response;
   } catch (error) {
-    console.error("Lỗi khi tìm sản phẩm theo ID:", error);
+    console.error("Lỗi khi tìm sản phẩm theo slug:", error);
     throw error;
   }
 };
@@ -76,29 +98,50 @@ export const GetAllProductsService = async (
   queryString
 ) => {
   try {
+    const { filter, sort, population } = aqp(queryString);
+    delete filter.current;
+    delete filter.pageSize;
     let result = null;
+    let totalItems = 0;
+    let totalPages = 0;
 
     if (pageSize && currentPage) {
       let offset = (currentPage - 1) * pageSize;
-      const { filter } = aqp(queryString);
+      let defaultLimit = +pageSize ? +pageSize : 10;
+      totalItems = (await Product.find(filter)).length;
+      totalPages = Math.ceil(totalItems / defaultLimit);
 
-      delete filter.pageSize;
-      delete filter.currentPage;
-      filter.isDeleted = false;
-
-      result = await Product.find(filter).skip(offset).limit(pageSize).exec();
-    } else {
-      result = await Product.find({});
-      // xử lí trường hợp nếu có từ khóa tìm kiếm
+      result = await Product.find(
+        filter,
+        "-createdAt -updatedAt -isDeleted -deletedAt"
+      )
+        .skip(offset)
+        .limit(defaultLimit)
+        .sort(sort)
+        .populate(population)
+        .exec();
     }
-    return result;
+
+    return {
+      meta: {
+        currentPage: +currentPage,
+        pageSize: +pageSize,
+        totalItems,
+        totalPages,
+      },
+      result,
+    };
   } catch (error) {
-    console.log("Error in GetAllProductsService:", error);
-    return null;
+    console.log(error);
+    throw error;
   }
 };
 export const SoftDeleteProductService = async (ProductId) => {
+  console.log(ProductId);
   try {
+    if (!ProductId) {
+      throw new Error("ID sản phẩm không hợp lệ");
+    }
     const deletedProduct = await Product.findByIdAndUpdate(
       ProductId,
       {
@@ -108,8 +151,9 @@ export const SoftDeleteProductService = async (ProductId) => {
       { new: true }
     );
 
+    console.log(deletedProduct);
     if (!deletedProduct) {
-      throw new Error("Sản phẩm không tồn tại hoặc đã bị xóa");
+      throw new Error();
     }
 
     await Variants.updateMany(

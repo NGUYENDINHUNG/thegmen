@@ -11,12 +11,15 @@ export const addToCart = async (req, res) => {
     const cart = await addToCartService(userId, productId, variantId, quantity);
 
     return res.status(200).json({
+      statusCode: 200,
       message: "Thêm sản phẩm vào giỏ hàng thành công",
       data: cart,
     });
   } catch (error) {
-    return res.status(400).json({
-      message: error.message || "Lỗi khi thêm sản phẩm vào giỏ hàng",
+    return res.status(500).json({
+      statusCode: 500,
+      message: "thêm sản phẩm vào giỏ hàng thất bại",
+      error: error.message,
     });
   }
 };
@@ -31,14 +34,16 @@ export const getCartByUser = async (req, res) => {
         message: "Không tìm thấy giỏ hàng",
       });
     }
-
     return res.status(200).json({
+      statusCode: 200,
       message: "Lấy giỏ hàng thành công",
       data: cart,
     });
   } catch (error) {
-    return res.status(400).json({
-      message: error.message || "Lỗi khi lấy giỏ hàng",
+    return res.status(500).json({
+      statusCode: 500,
+      message: "Lỗi khi lấy giỏ hàng",
+      error: error.message,
     });
   }
 };
@@ -52,17 +57,20 @@ export const removeItemFromCart = async (req, res) => {
 
     if (!cart) {
       return res.status(404).json({
+        statusCode: 404,
         message: "Không tìm thấy giỏ hàng hoặc sản phẩm",
       });
     }
     return res.status(200).json({
-      status: 200,
+      statusCode: 200,
       message: "Xóa sản phẩm khỏi giỏ hàng thành công",
       data: cart,
     });
   } catch (error) {
-    return res.status(400).json({
-      message: error.message || "Lỗi khi xóa sản phẩm khỏi giỏ hàng",
+    return res.status(500).json({
+      statusCode: 500,
+      message: "Lỗi khi xóa sản phẩm khỏi giỏ hàng",
+      error: error.message,
     });
   }
 };

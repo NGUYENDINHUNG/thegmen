@@ -1,20 +1,17 @@
 import User from "../models/userModel.schema.js";
 
-
 export const updateUserById = async (userId, updateData) => {
-  console.log("userId", userId);
-  try {
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData || {}, {
-      new: true,
-      select: "-password -refreshToken",
-    });
-    if (!updatedUser) {
-      throw new Error("User not found");
-    }
-    return updatedUser;
-  } catch (error) {
-    throw error;
+  if (!userId) {
+    throw new Error("không tìm thấy user");
   }
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData || {}, {
+    new: true,
+    select: "-password -refreshToken",
+  });
+  if (!updatedUser) {
+    throw new Error("User not found");
+  }
+  return updatedUser;
 };
 
 export const UpdateUserRefreshToken = async (userId, refreshToken) => {

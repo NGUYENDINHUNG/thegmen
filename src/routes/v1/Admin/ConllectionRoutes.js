@@ -6,11 +6,10 @@ import {
   RestoreCollection,
   AddProductToCollection,
   RemoveProductFromCollection,
-  GetProductsByCollectionId,
-  GetCollectionsByProductId,
 } from "../../../Controllers/conllectionController.js";
 
 import checkPermission from "../../../middleware/checkPermission.js";
+
 const CollectionRouter = express.Router();
 
 CollectionRouter.post(
@@ -19,12 +18,12 @@ CollectionRouter.post(
   CreateCollection
 );
 CollectionRouter.put(
-  "/update/:id",
+  "/update/:slug",
   checkPermission("Update_Collection"),
   UpdateCollection
 );
 CollectionRouter.put(
-  "/softDelete/:collectionId",
+  "/softDelete/:slug",
   checkPermission("SoftDelete_Collection"),
   SoftDeleteCollection
 );
@@ -42,16 +41,6 @@ CollectionRouter.post(
   "/removeProduct",
   checkPermission("RemoveProduct_Collection"),
   RemoveProductFromCollection
-);
-CollectionRouter.get(
-  "/products/:collectionId",
-  checkPermission("Get_Products_Collection"),
-  GetProductsByCollectionId
-);
-CollectionRouter.get(
-  "/byProduct/:productId",
-  checkPermission("Get_Collections_By_Product_Id"),
-  GetCollectionsByProductId
 );
 
 export default CollectionRouter;

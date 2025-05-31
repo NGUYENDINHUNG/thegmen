@@ -23,9 +23,6 @@ export const RegisterSevice = async (
     let roleId = role;
     if (!roleId) {
       const userRole = await Role.findOne({ name: "USER" });
-      if (!userRole) {
-        throw new Error("Role USER not found in database");
-      }
       roleId = userRole._id;
     }
 
@@ -39,6 +36,7 @@ export const RegisterSevice = async (
       avatar: avatar,
       role: roleId,
     });
+    
     return result;
   } catch (error) {
     console.log(error);
@@ -61,7 +59,6 @@ export const LoginUserService = async (phoneNumber, password) => {
         EM: "Mật khẩu không hợp lệ",
       };
     }
-
     const payload = {
       _id: user.id,
       email: user.email,
@@ -84,6 +81,7 @@ export const LoginUserService = async (phoneNumber, password) => {
         name: user.name,
         phoneNumber: user.phoneNumber,
         avatar: user.avatar,
+        role: user.role,
       },
     };
   } catch (error) {
@@ -98,7 +96,6 @@ export const handleGoogleLogin = async (profile) => {
   if (!profile?.id) {
     throw new Error("Không có thông tin người dùng Google");
   }
-
   const googleId = profile.id;
   const email = profile.emails?.[0]?.value;
   const name =
@@ -112,7 +109,6 @@ export const handleGoogleLogin = async (profile) => {
   }
 
   const payload = { id: user._id, email: user.email, name: user.name };
-  console.log("payload", payload);
   const refreshToken = CreateRefreshToken(payload);
   const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
@@ -171,7 +167,7 @@ export const processNewToken = async (refreshToken, res) => {
         EM: "Không tìm thấy refresh token",
       };
     }
-    const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
     const user = await FindUserByToken(refreshToken);
 
     if (!user) {
@@ -201,19 +197,16 @@ export const processNewToken = async (refreshToken, res) => {
       user._id,
       new_refresh_token
     );
-
     if (!updateResult) {
       return {
         EC: 2,
         EM: "Không thể cập nhật refresh token",
       };
     }
-
     res.cookie("refresh_token", new_refresh_token, {
       httpOnly: true,
       maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
     });
-
     return {
       EC: 0,
       EM: "Làm mới token thành công",
@@ -284,6 +277,7 @@ export const resetPasswordService = async (token, newPassword) => {
     await user.save();
     return { message: "Đặt lại mật khẩu thành công." };
   } catch (error) {
+    console.log("««««« error »»»»»", error);
     throw new Error("Token không hợp lệ hoặc đã hết hạn.");
   }
 };
@@ -300,11 +294,11 @@ export const LogoutService = async (refreshToken, res) => {
       { refreshToken: null },
       { new: true }
     );
-
+    if (!user) {
+      return res.status(401).json({ message: "Không tìm thấy người dùng" });
+    }
     res.clearCookie("refresh_token");
-    return res
-      .status(200)
-      .json({ message: "Đăng xuất thành công (cookie đã bị xóa)." });
+    return res.status(200).json({ message: "Đăng xuất thành công" });
   } catch (error) {
     throw new Error("Lỗi khi đăng xuất: " + error.message);
   }

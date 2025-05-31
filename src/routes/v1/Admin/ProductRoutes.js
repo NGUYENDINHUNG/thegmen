@@ -4,7 +4,7 @@ import {
   UpdateProduct,
   SoftDeleteProduct,
   RestoreProduct,
-} from "../../../Controllers/productController.js";
+} from "../../../controllers/productController.js";
 import checkPermission from "../../../middleware/checkPermission.js";
 
 const ProductRouter = express.Router();
@@ -15,7 +15,7 @@ ProductRouter.post(
   CreateProduct
 );
 ProductRouter.put(
-  "/updateProduct/:ProductId",
+    "/updateProduct/:ProductId",
   checkPermission("Update_Product"),
   UpdateProduct
 );

@@ -1,12 +1,12 @@
 import express from "express";
 import {
   GetCollectionById,
-  GetAllCollection,
-} from "../../../Controllers/conllectionController.js";
+  GetAllCollections,
+} from "../../../controllers/conllectionController.js";
 
 const CollectionRouter = express.Router();
 
-CollectionRouter.get("/:id", GetCollectionById);
-CollectionRouter.get("/", GetAllCollection);
+CollectionRouter.get("/:slug", GetCollectionById);
+CollectionRouter.get("/", GetAllCollections);
 
 export default CollectionRouter;

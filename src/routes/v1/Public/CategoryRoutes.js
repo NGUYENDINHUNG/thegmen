@@ -1,11 +1,11 @@
 import express from "express";
 import {
   UpdateCategory,
-  GetAllCategory,
+  GetOneCategory,
 } from "../../../controllers/categoryController.js";
 
 const CategoryRouter = express.Router();
 
 CategoryRouter.put("/:id", UpdateCategory);
-CategoryRouter.get("/", GetAllCategory);
+CategoryRouter.get("/:slug", GetOneCategory);
 export default CategoryRouter;
