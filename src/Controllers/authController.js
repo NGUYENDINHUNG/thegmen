@@ -124,10 +124,17 @@ export const getAccount = async (req, res) => {
         message: "Không tìm thấy thông tin người dùng hoặc token đã hết hạn",
       });
     }
+    const { name, email, phoneNumber, address, avatar } = req.user;
     return res.status(200).json({
       statusCode: 200,
       message: "Lấy thông tin người dùng thành công",
-      user: req.user,
+      user: {
+        name,
+        email,
+        phoneNumber,
+        address,
+        avatar
+      }
     });
   } catch (error) {
     return res.status(500).json({

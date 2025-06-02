@@ -36,7 +36,7 @@ export const RegisterSevice = async (
       avatar: avatar,
       role: roleId,
     });
-    
+
     return result;
   } catch (error) {
     console.log(error);
@@ -63,7 +63,13 @@ export const LoginUserService = async (email, password) => {
       _id: user.id,
       email: user.email,
       name: user.name,
+      phoneNumber: user.phoneNumber,
+      address: user.address,
+      avatar: user.avatar,
+     
+
     };
+    console.log(payload);
 
     const refreshToken = CreateRefreshToken(payload);
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -76,13 +82,6 @@ export const LoginUserService = async (email, password) => {
       EM: "Đăng nhập thành công",
       accessToken,
       refreshToken,
-      user: {
-        email: user.email,
-        name: user.name,
-        avatar: user.avatar,
-        role: user.role,
-      },
-      log: "Đăng nhập thành công",
     };
   } catch (error) {
     console.log("««««« error »»»»»", error);
@@ -303,3 +302,4 @@ export const LogoutService = async (refreshToken, res) => {
     throw new Error("Lỗi khi đăng xuất: " + error.message);
   }
 };
+;

@@ -12,6 +12,7 @@ const verifyToken = async (req, res, next) => {
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(decoded);
     const user = await User.findById(decoded._id);
     if (!user || user.refreshToken !== req.cookies["refresh_token"]) {
       return res.status(401).json({
@@ -25,6 +26,9 @@ const verifyToken = async (req, res, next) => {
       _id: decoded._id,
       email: decoded.email,
       name: decoded.name,
+      phoneNumber: decoded.phoneNumber,
+      address: decoded.address,
+      avatar: decoded.avatar,
       role: userRole,
       permissions: permissions,
     };

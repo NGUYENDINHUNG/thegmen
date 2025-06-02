@@ -74,6 +74,11 @@ export const getUserById = async (req, res) => {
   }
 };
 
+
+
+
+
+
 // Update user by ID (for superAdmin)
 export const updateUserBySuperAdmin = async (req, res) => {
   try {
