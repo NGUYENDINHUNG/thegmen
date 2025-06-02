@@ -25,18 +25,18 @@ export const CreateProduct = async (req, res) => {
       sizeSuggestCategories,
     } = req.body;
 
-    let coverImageUrl = "";
+    let avatarUrl = "";
     let imageUrls = [];
 
     // 1. Upload ảnh bìa
-    if (req.files?.coverImage) {
-      const result = await uploadSingleFile(req.files.coverImage);
-      coverImageUrl = result.path;
+    if (req.files?.avatar) {
+      const result = await uploadSingleFile(req.files.avatar);
+      avatarUrl = result.path;
     }
-
+    console.log("avatarUrl", avatarUrl);
+    // 2. Upload ảnh sản phẩm
     if (Array.isArray(req.files.images)) {
       const result = await uploadMultipleFiles(req.files.images);
-      console.log("result", result);
       imageUrls = result.detail.map((item) => item.path);
     } else {
       const result = await uploadSingleFile(req.files.images);
@@ -52,7 +52,7 @@ export const CreateProduct = async (req, res) => {
       sizeSuggestCategories,
       content,
       color,
-      coverImage: coverImageUrl,
+      avatar: avatarUrl,
       images: imageUrls,
     });
 

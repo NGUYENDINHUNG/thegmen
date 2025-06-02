@@ -2,6 +2,7 @@ import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
 import slugify from "slugify";
 import Variants from "../models/variantsModel.schema.js";
+import GroupProduct from "../models/groupProduct.schema.js";
 
 export const CreateProductService = async (productData) => {
   try {
@@ -10,7 +11,7 @@ export const CreateProductService = async (productData) => {
       description,
       content,
       color,
-      converImage,
+      avatar,
       images,
       price,
       discount,
@@ -35,7 +36,7 @@ export const CreateProductService = async (productData) => {
       description,
       content,
       color,
-      converImage,
+      avatar,
       images,
       price,
       discount,
@@ -51,7 +52,6 @@ export const CreateProductService = async (productData) => {
     throw error;
   }
 };
-
 export const UpdateProductsService = async (ProductId, updateData) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
@@ -69,24 +69,53 @@ export const GetProductsBySlugService = async (slug) => {
     if (!slug) {
       throw new Error("Slug không hợp lệ");
     }
-    const results = await Product.findOne(
+    const product = await Product.findOne(
       { slug: slug },
-      "-createdAt -updatedAt -isDeleted -deletedAt"
+      "-createdAt -updatedAt -isDeleted -deletedAt -__v"
     )
-      .populate("variants", "-createdAt -updatedAt -isDeleted -deletedAt")
-      .populate(
-        "sizeSuggestCategories",
-        "-createdAt -updatedAt -isDeleted -deletedAt"
-      )
-      .populate("categories", "name,slug");
+      .populate("variants", "-createdAt -updatedAt -isDeleted -deletedAt -__v")
+      .populate({
+        path: "sizeSuggestCategories",
+        select: "-createdAt -updatedAt -isDeleted -deletedAt -__v",
+        populate: {
+          path: "sizeOptions",
+          select: "-createdAt -updatedAt -isDeleted -deletedAt -__v",
+        },
+      })
+      .populate("categories", "name slug")
+      .select("-isDeleted -deletedAt -__v")
+      .lean();
 
-    const response = {
+    if (!product) {
+      throw new Error("Không tìm thấy sản phẩm");
+    }
+
+    const groupItem = await GroupProduct.findOne({
+      productId: product._id,
+    }).lean();
+
+    let groupProducts = [];
+    if (groupItem?.groupKey) {
+      const relatedGroupProducts = await GroupProduct.find({
+        groupKey: groupItem.groupKey,
+      })
+        .populate({
+          path: "productId",
+          select: "avatar name slug",
+        })
+        .lean();
+      groupProducts = relatedGroupProducts.map((index) => ({
+        _id: index._id,
+        color: index.color,
+        product: index.productId,
+      }));
+    }
+    return {
       product: {
-        ...results,
+        ...product,
+        groupProducts,
       },
     };
-
-    return response;
   } catch (error) {
     console.error("Lỗi khi tìm sản phẩm theo slug:", error);
     throw error;
@@ -124,10 +153,10 @@ export const GetAllProductsService = async (
 
     return {
       meta: {
-        currentPage: +currentPage,
-        pageSize: +pageSize,
-        totalItems,
-        totalPages,
+        // currentPage: +currentPage,
+        // pageSize: +pageSize,
+        // totalItems,
+        // totalPages,
       },
       result,
     };

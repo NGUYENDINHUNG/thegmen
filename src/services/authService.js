@@ -43,13 +43,13 @@ export const RegisterSevice = async (
     return null;
   }
 };
-export const LoginUserService = async (phoneNumber, password) => {
+export const LoginUserService = async (email, password) => {
   try {
-    const user = await User.findOne({ phoneNumber: phoneNumber });
+    const user = await User.findOne({ email: email });
     if (!user) {
       return {
         EC: 1,
-        EM: "Số Điện Thoại Không Đúng",
+        EM: "Email Không Đúng",
       };
     }
     const isMatchPassword = await bcrypt.compare(password, user.password);
@@ -79,7 +79,6 @@ export const LoginUserService = async (phoneNumber, password) => {
       user: {
         email: user.email,
         name: user.name,
-        phoneNumber: user.phoneNumber,
         avatar: user.avatar,
         role: user.role,
       },

@@ -20,7 +20,7 @@ const ProductSchema = new Schema(
     color: {
       type: String,
     },
-    coverImage: {
+    avatar: {
       type: String,
     },
     images: {
@@ -47,11 +47,6 @@ const ProductSchema = new Schema(
       default: [],
     },
     featured: { type: Boolean, default: false },
-    groupProducts: {
-      type: [Schema.Types.ObjectId],
-      ref: "groupProducts",
-      default: [],
-    },
     categories: {
       type: [Schema.Types.ObjectId],
       ref: "categories",

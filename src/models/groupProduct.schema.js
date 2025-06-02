@@ -3,6 +3,10 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const GroupProductSchema = new Schema({
+  groupKey: {
+    type: String,
+    required: true,
+  },
   color: {
     type: String,
   },
