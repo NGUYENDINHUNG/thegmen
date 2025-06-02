@@ -5,9 +5,11 @@ import Role from "../models/roleModel.schema.js";
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer")) {
-    return res
-      .status(401)
-      .json({ message: "Bạn chưa truyền access token ở headers" });
+    return res.status(401)
+    .json({
+        statusCode: 401,
+        message: "Vui lòng đăng nhập để truy cập",
+      });
   }
   const token = authHeader.split(" ")[1];
   try {

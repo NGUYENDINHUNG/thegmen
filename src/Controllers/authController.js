@@ -85,17 +85,22 @@ export const loginGoogleSuccess = async (req, res) => {
       httpOnly: true,
       maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
     });
-
-    return res.status(200).json({
-      statusCode: 200,
-      message: "Login successfully",
-      accessToken: data.accessToken,
-      user: data.user,
-    });
+    if (data.EC === 0) {
+      return res.status(200).json({
+        statusCode: 200,
+        message: "Login successfully",
+        accessToken: data.accessToken,
+      });
+    } else {
+      return res.status(500).json({
+        statusCode: 500,
+        message: data.EM,
+      });
+    }
   } catch (err) {
     return res.status(500).json({
-      EC: 1,
-      EM: "Lỗi đăng nhập Google",
+      statusCode: 500,
+      message: "Lỗi đăng nhập Google",
       error: err.message,
     });
   }
@@ -158,14 +163,22 @@ export const getAccount = async (req, res) => {
   }
 };
 export const requestPasswordReset = async (req, res) => {
+
   const { email } = req.body;
   try {
     const response = await ForgetPasswordService(email);
-    return res.status(200).json({
-      statusCode: 200,
-      message: "Yêu cầu đặt lại mật khẩu thành công",
-      data: response,
-    });
+    if (response.EC === 0) {
+      return res.status(200).json({
+        statusCode: 200,
+        message: "Yêu cầu đặt lại mật khẩu thành công",
+        data: response,
+      });
+    } else {
+      return res.status(400).json({
+        statusCode: 400,
+        message: response.EM,
+      });
+    }
   } catch (error) {
     return res.status(400).json({
       statusCode: 400,

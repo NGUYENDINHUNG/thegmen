@@ -102,66 +102,94 @@ export const LoginUserService = async (email, password) => {
   }
 };
 export const handleGoogleLogin = async (profile) => {
-  if (!profile?.id) {
-    throw new Error("Không có thông tin người dùng Google");
+  try {
+    if (!profile?.id) {
+      throw new Error("Không có thông tin người dùng Google");
+    }
+    const googleId = profile.id;
+    const email = profile.emails?.[0]?.value;
+    const name =
+      profile.displayName ||
+      `${profile.name?.familyName} ${profile.name?.givenName}`;
+    const avatar = profile.photos?.[0]?.value;
+
+    const userRole = await Role.findOne({ name: "USER" });
+
+    let user = await User.findOne({ googleId });
+    if (!user) {
+      user = await User.create({
+        googleId,
+        email,
+        name,
+        avatar,
+        role: userRole?._id,
+      });
+    }
+
+    const payload = { id: user._id, email: user.email, name: user.name };
+    const refreshToken = CreateRefreshToken(payload);
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+
+    await UpdateUserRefreshToken(user._id, refreshToken);
+
+    return {
+      EC: 0,
+      EM: "Đăng nhập thành công",
+      accessToken,
+      refreshToken,
+    };
+  } catch (error) {
+    console.log("««««« error »»»»»", error);
+    return {
+      EC: 500,
+      EM: "Đã có lỗi xảy ra, vui lòng thử lại",
+    };
   }
-  const googleId = profile.id;
-  const email = profile.emails?.[0]?.value;
-  const name =
-    profile.displayName ||
-    `${profile.name?.familyName} ${profile.name?.givenName}`;
-  const avatar = profile.photos?.[0]?.value;
-
-  let user = await User.findOne({ googleId });
-  if (!user) {
-    user = await User.create({ googleId, email, name, avatar });
-  }
-
-  const payload = { id: user._id, email: user.email, name: user.name };
-  const refreshToken = CreateRefreshToken(payload);
-  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
-  });
-
-  await UpdateUserRefreshToken(user._id, refreshToken);
-
-  return {
-    EC: 0,
-    EM: "Đăng nhập thành công",
-    accessToken,
-    refreshToken,
-    user: {
-      email: user.email,
-      name: user.name,
-    },
-  };
 };
 export const handleFacebookLogin = async (profile) => {
-  if (!profile?.id) throw new Error("Không có thông tin Facebook");
+  try {
+    if (!profile?.id) throw new Error("Không có thông tin Facebook");
 
-  const facebookId = profile.id;
-  const email = profile.emails || "";
-  const name =
-    profile.displayName ||
-    `${profile.name?.givenName} ${profile.name?.familyName}`;
-  const avatar = profile.photos?.[0]?.value || "";
-  let user = await User.findOne({ facebookId });
-  if (!user) {
-    user = await User.create({ facebookId, email, name, avatar });
+    const facebookId = profile.id;
+    const email = profile.emails || "";
+    const name =
+      profile.displayName ||
+      `${profile.name?.givenName} ${profile.name?.familyName}`;
+    const avatar = profile.photos?.[0]?.value || "";
+    const userRole = await Role.findOne({ name: "USER" });
+    let user = await User.findOne({ facebookId });
+    if (!user) {
+      user = await User.create({
+        facebookId,
+        email,
+        name,
+        avatar,
+        role: userRole?._id,
+      });
+    }
+
+    const payload = { id: user._id, email: user.email, name: user.name };
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+    const refreshToken = CreateRefreshToken(payload);
+    await UpdateUserRefreshToken(user._id, refreshToken);
+
+    return {
+      EC: 0,
+      EM: "Đăng nhập thành công",
+      accessToken,
+      refreshToken,
+    };
+  } catch (error) {
+    console.log("««««« error »»»»»", error);
+    return {
+      EC: 500,
+      EM: "Đã có lỗi xảy ra, vui lòng thử lại",
+    };
   }
-
-  const payload = { id: user._id, email: user.email, name: user.name };
-  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
-  });
-  const refreshToken = CreateRefreshToken(payload);
-  await UpdateUserRefreshToken(user._id, refreshToken);
-
-  return {
-    accessToken,
-    refreshToken,
-    user: { email: user.email, name: user.name, avatar: user.avatar },
-  };
 };
 export const CreateRefreshToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
@@ -253,7 +281,10 @@ export const ForgetPasswordService = async (email) => {
   try {
     const Users = await User.findOne({ email });
     if (!Users) {
-      console.log(`Email ${email} không tồn tại`);
+      return {
+        EC: 1,
+        EM: "Email không tồn tại",
+      };
     }
     const payload = {
       _id: Users.id,
@@ -270,24 +301,41 @@ export const ForgetPasswordService = async (email) => {
   `;
     await sendEmail(Users.email, "Reset Your Password", html);
 
-    return { message: "Reset link sent to email" };
+    return {
+      EC: 0,
+      EM: "Link đặt lại mật khẩu đã được gửi đến email",
+    };
   } catch (error) {
-    console.error(error);
-    throw new Error(error.message || "Something went wrong");
+    console.log("««««« error »»»»»", error);
+    return {
+      EC: 500,
+      EM: "Đã có lỗi xảy ra, vui lòng thử lại",
+    };
   }
 };
 export const resetPasswordService = async (token, newPassword) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded._id);
-    if (!user) throw new Error("Người dùng không tồn tại.");
+    if (!user) {
+      return {
+        EC: 1,
+        EM: "Người dùng không tồn tại.",
+      };
+    }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
-    return { message: "Đặt lại mật khẩu thành công." };
+    return {
+      EC: 0,
+      EM: "Đặt lại mật khẩu thành công.",
+    };
   } catch (error) {
     console.log("««««« error »»»»»", error);
-    throw new Error("Token không hợp lệ hoặc đã hết hạn.");
+    return {
+      EC: 500,
+      EM: "Đã có lỗi xảy ra, vui lòng thử lại",
+    };
   }
 };
 export const LogoutService = async (refreshToken, res) => {

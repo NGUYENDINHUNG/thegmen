@@ -4,6 +4,8 @@ import {
   Register,
   loginFaceBookSuccess,
   loginGoogleSuccess,
+  requestPasswordReset,
+  resetPassword,
 } from "../../../controllers/authController.js";  
 import passport from "../../../config/passport.js";
 
@@ -36,4 +38,6 @@ AuthRouter.get(
   }),
   loginFaceBookSuccess
 );
+AuthRouter.post("/request-reset-password", requestPasswordReset);
+AuthRouter.post("/reset-password", resetPassword);
 export default AuthRouter;
