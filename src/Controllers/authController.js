@@ -16,7 +16,7 @@ export const Register = async (req, res) => {
     const { email, name, password, phoneNumber } = req.body;
     let imageUrl = " ";
     if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).send("No files were uploaded.");
+      console.log("không có file được up lên.");
     } else {
       let results = await uploadSingleFile(req.files.avatar);
       imageUrl = results.path;
@@ -28,15 +28,23 @@ export const Register = async (req, res) => {
       phoneNumber,
       imageUrl
     );
-    return res.status(200).json({
-      statusCode: 200,
-      message: "Đăng ký thành công",
-      data: data,
-    });
+    if (data.EC === 0) {
+      return res.status(200).json({
+        statusCode: 200,
+        message: "Đăng ký thành công",
+        data: data,
+      });
+    } else {
+      return res.status(400).json({
+        statusCode: 400,
+        message: data.EM,
+      });
+    }
   } catch (error) {
+    console.log("««««« error »»»»»", error);
     return res.status(500).json({
       statusCode: 500,
-      message: "Đăng ký thất bại",
+      message: "Đăng ký thất bại. Vui lòng thử lại sau.",
       error: error.message,
     });
   }
@@ -50,9 +58,9 @@ export const LoginUsers = async (req, res) => {
       maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
     });
     if (data.EC === 0) {
-    return res.status(200).json({
-      statusCode: 200,
-      message: "Login successfully",
+      return res.status(200).json({
+        statusCode: 200,
+        message: "Login successfully",
         accessToken: data.accessToken,
       });
     } else {
@@ -138,8 +146,8 @@ export const getAccount = async (req, res) => {
         email,
         phoneNumber,
         address,
-        avatar
-      }
+        avatar,
+      },
     });
   } catch (error) {
     return res.status(500).json({

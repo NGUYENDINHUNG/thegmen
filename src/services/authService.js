@@ -16,16 +16,25 @@ export const RegisterSevice = async (
   role
 ) => {
   try {
-    const Usersexis = await User.findOne({ email });
-    if (Usersexis) {
-      console.log(`Email hoặc số điện thoại đã tồn tại`);
+    const emailsexis = await User.findOne({ email });
+    const phoneNumbersexis = await User.findOne({ phoneNumber });
+    if (emailsexis) {
+      return {
+        EC: 1,
+        EM: "Email  đã tồn tại",
+      };
+    }
+    if (phoneNumbersexis) {
+      return {
+        EC: 2,
+        EM: "Số điện thoại đã tồn tại",
+      };
     }
     let roleId = role;
     if (!roleId) {
       const userRole = await Role.findOne({ name: "USER" });
       roleId = userRole._id;
     }
-
     const hashPassword = await bcrypt.hash(password, saltRounds);
 
     let result = await User.create({
@@ -36,11 +45,17 @@ export const RegisterSevice = async (
       avatar: avatar,
       role: roleId,
     });
-
-    return result;
+    return {
+      EC: 0,
+      EM: "đăng kí thành công",
+      data: result,
+    };
   } catch (error) {
-    console.log(error);
-    return null;
+    console.log("««««« error »»»»»", error);
+    return {
+      EC: 500,
+      EM: "đăng kí thất bại",
+    };
   }
 };
 export const LoginUserService = async (email, password) => {
@@ -297,4 +312,3 @@ export const LogoutService = async (refreshToken, res) => {
     throw new Error("Lỗi khi đăng xuất: " + error.message);
   }
 };
-;
