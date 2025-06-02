@@ -43,8 +43,8 @@ export const Register = async (req, res) => {
 };
 export const LoginUsers = async (req, res) => {
   try {
-    const { phoneNumber, password } = req.body;
-    const data = await LoginUserService(phoneNumber, password);
+    const { email, password } = req.body;
+    const data = await LoginUserService(email, password);
     res.cookie("refresh_token", data.refreshToken, {
       httpOnly: true,
       maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
@@ -56,6 +56,7 @@ export const LoginUsers = async (req, res) => {
       user: data.user,
     });
   } catch (error) {
+    
     return res.status(500).json({
       statusCode: 500,
       message: "Đăng nhập thất bại",

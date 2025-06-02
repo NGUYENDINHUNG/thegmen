@@ -82,6 +82,7 @@ export const LoginUserService = async (email, password) => {
         avatar: user.avatar,
         role: user.role,
       },
+      log: "Đăng nhập thành công",
     };
   } catch (error) {
     console.log("««««« error »»»»»", error);
