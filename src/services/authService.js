@@ -49,14 +49,14 @@ export const LoginUserService = async (email, password) => {
     if (!user) {
       return {
         EC: 1,
-        EM: "Email Không Đúng",
+        EM: "Email hoặc mật khẩu không đúng",
       };
     }
     const isMatchPassword = await bcrypt.compare(password, user.password);
     if (!isMatchPassword) {
       return {
         EC: 2,
-        EM: "Mật khẩu không hợp lệ",
+        EM: "Email hoặc mật khẩu không đúng",
       };
     }
     const payload = {
