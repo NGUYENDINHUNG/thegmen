@@ -49,13 +49,19 @@ export const LoginUsers = async (req, res) => {
       httpOnly: true,
       maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
     });
+    if (data.EC === 0) {
     return res.status(200).json({
       statusCode: 200,
       message: "Login successfully",
-      accessToken: data.accessToken,
-    });
+        accessToken: data.accessToken,
+      });
+    } else {
+      return res.status(500).json({
+        statusCode: 500,
+        message: data.EM,
+      });
+    }
   } catch (error) {
-    
     return res.status(500).json({
       statusCode: 500,
       message: "Đăng nhập thất bại",

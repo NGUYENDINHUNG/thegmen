@@ -66,16 +66,11 @@ export const LoginUserService = async (email, password) => {
       phoneNumber: user.phoneNumber,
       address: user.address,
       avatar: user.avatar,
-     
-
     };
-
-
     const refreshToken = CreateRefreshToken(payload);
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
     });
-
     await UpdateUserRefreshToken(user._id, refreshToken);
     return {
       EC: 0,
