@@ -69,7 +69,7 @@ export const LoginUserService = async (email, password) => {
      
 
     };
-    console.log(payload);
+
 
     const refreshToken = CreateRefreshToken(payload);
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {

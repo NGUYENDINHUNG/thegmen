@@ -4,7 +4,7 @@ import {
   Register,
   loginFaceBookSuccess,
   loginGoogleSuccess,
-} from "../../../Controllers/authController.js";
+} from "../../../controllers/authController.js";  
 import passport from "../../../config/passport.js";
 
 const AuthRouter = express.Router();

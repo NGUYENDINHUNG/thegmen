@@ -53,7 +53,6 @@ export const LoginUsers = async (req, res) => {
       statusCode: 200,
       message: "Login successfully",
       accessToken: data.accessToken,
-      user: data.user,
     });
   } catch (error) {
     

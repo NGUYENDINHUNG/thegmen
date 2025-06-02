@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../../../middleware/auth.js";
+//import { verifyToken } from "../../../middleware/auth.js";
 import CategoryRouter from "./CategoryRoutes.js";
 import CollectionRouter from "./ConllectionRoutes.js";
 import OrderRouter from "./orderRoutes.js";
@@ -14,7 +14,7 @@ import GroupProductRouter from "./GroupProducts.js";
 
 const AdminRouter = express.Router();
 
-AdminRouter.use(verifyToken);
+//AdminRouter.use(verifyToken);
 
 AdminRouter.use("/collections", CollectionRouter);
 AdminRouter.use("/auth", CollectionRouter);
