@@ -88,37 +88,46 @@ export const loginGoogleSuccess = async (req, res) => {
         maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
       });
 
-      const redirectUrl = `http://localhost:5173?accessToken=${data.accessToken}`;
+      const redirectUrl = `${process.env.CORS_ORIGIN}?accessToken=${data.accessToken}`;
       return res.redirect(redirectUrl);
     } else {
-      return res.redirect(`http://localhost:5173/login?error=${data.EM}`);
+      return res.redirect(
+        `${process.env.CORS_ORIGIN}/login?error=${encodeURIComponent(data.EM)}`
+      );
     }
   } catch (err) {
     console.error("Lỗi đăng nhập Google:", err);
-    return res.redirect("http://localhost:5173/login?error=Đăng nhập thất bại");
+    return res.redirect(
+      `${process.env.CORS_ORIGIN}/login?error=${encodeURIComponent(
+        "Đăng nhập thất bại"
+      )}`
+    );
   }
 };
 export const loginFaceBookSuccess = async (req, res) => {
   try {
     const data = await handleFacebookLogin(req.user);
 
-    res.cookie("refresh_token", data.refreshToken, {
-      httpOnly: true,
-      maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
-    });
-
-    return res.status(200).json({
-      statusCode: 200,
-      message: "Đăng nhập thành công",
-      accessToken: data.accessToken,
-      user: data.user,
-    });
+    if (data.EC === 0) {
+      res.cookie("refresh_token", data.refreshToken, {
+        httpOnly: true,
+        maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
+      });
+      const redirectUrl = `${process.env.CORS_ORIGIN}?accessToken=${data.accessToken}`;
+      return res.redirect(redirectUrl);
+    }
+    {
+      return res.redirect(
+        `${process.env.CORS_ORIGIN}/login?error=${encodeURIComponent(data.EM)}`
+      );
+    }
   } catch (err) {
-    return res.status(500).json({
-      statusCode: 500,
-      message: "Đăng nhập thất bại",
-      error: err.message,
-    });
+    console.error("Lỗi đăng nhập Facebook:", err);
+    return res.redirect(
+      `${process.env.CORS_ORIGIN}/login?error=${encodeURIComponent(
+        "Đăng nhập thất bại"
+      )}`
+    );
   }
 };
 export const RefreshTokenUser = async (req, res) => {

@@ -75,7 +75,7 @@ export const LoginUserService = async (email, password) => {
       };
     }
     const payload = {
-      _id: user.id,
+      _id: user._id,
       email: user.email,
       name: user.name,
       phoneNumber: user.phoneNumber,
@@ -126,12 +126,20 @@ export const handleGoogleLogin = async (profile) => {
       });
     }
 
-    const payload = { id: user._id, email: user.email, name: user.name };
+    const payload = {
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+      phoneNumber: user.phoneNumber,
+      address: user.address,
+      avatar: user.avatar,
+    };
     const refreshToken = CreateRefreshToken(payload);
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
     });
 
+    console.log("Generated tokens:", { accessToken, refreshToken });
     await UpdateUserRefreshToken(user._id, refreshToken);
 
     return {
@@ -169,8 +177,14 @@ export const handleFacebookLogin = async (profile) => {
         role: userRole?._id,
       });
     }
-
-    const payload = { id: user._id, email: user.email, name: user.name };
+    const payload = {
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+      phoneNumber: user.phoneNumber,
+      address: user.address,
+      avatar: user.avatar,
+    };
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
     });
