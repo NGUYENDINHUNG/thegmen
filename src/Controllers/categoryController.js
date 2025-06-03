@@ -2,6 +2,7 @@ import {
   CreateCategoryService,
   UpdateCategoryService,
   GetOneCategoryService,
+  GetAllCategoriesService,
 } from "../services/categoryService.js";
 import { uploadSingleFile } from "../services/fileService.js";
 
@@ -24,7 +25,6 @@ export const CreateCategory = async (req, res) => {
       message: "Tạo danh mục thành công",
       data: data,
     });
-
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
@@ -58,6 +58,22 @@ export const GetOneCategory = async (req, res) => {
 
     const data = await GetOneCategoryService(slug);
 
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Lấy danh mục thành công",
+      data: data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      message: "Lỗi lấy danh mục",
+      error: error.message,
+    });
+  }
+};
+export const GetAllCategories = async (req, res) => {
+  try {
+    const data = await GetAllCategoriesService();
     return res.status(200).json({
       statusCode: 200,
       message: "Lấy danh mục thành công",

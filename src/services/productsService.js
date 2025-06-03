@@ -1,3 +1,5 @@
+// co' cai dau buoi
+
 import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
 import slugify from "slugify";
@@ -146,13 +148,58 @@ export const GetProductsBySlugService = async (slug) => {
     throw error;
   }
 };
+// export const GetAllProductsService = async (
+//   pageSize,
+//   currentPage,
+//   queryString
+// ) => {
+//   try {
+//     const { filter, sort, population } = aqp(queryString);
+//     delete filter.current;
+//     delete filter.pageSize;
+
+//     const DEFAULT_PAGE_SIZE = 5;
+//     const DEFAULT_CURRENT_PAGE = 1;
+
+//     const limit = +pageSize || DEFAULT_PAGE_SIZE;
+//     const page = +currentPage || DEFAULT_CURRENT_PAGE;
+//     const offset = (page - 1) * limit;
+
+//     const totalItems = await Product.countDocuments(filter);
+//     const totalPages = Math.ceil(totalItems / limit);
+
+//     const result = await Product.find(
+//       filter,
+//       "-createdAt -updatedAt -isDeleted -deletedAt"
+//     )
+//       .skip(offset)
+//       .limit(limit)
+//       .sort(sort)
+//       .populate(population)
+//       .exec();
+
+//     return {
+//       meta: {
+//         currentPage: page,
+//         pageSize: limit,
+//         totalItems,
+//         totalPages,
+//       },
+//       result,
+//     };
+//   } catch (error) {
+//     console.error("GetAllProductsService error:", error);
+//     throw new Error(`Lỗi khi lấy danh sách sản phẩm: ${error.message}`);
+//   }
+// };
+
 export const GetAllProductsService = async (
   pageSize,
   currentPage,
   queryString
 ) => {
   try {
-    const { filter, sort, population } = aqp(queryString);
+    const { filter, sort } = aqp(queryString);
     delete filter.current;
     delete filter.pageSize;
 
@@ -163,18 +210,139 @@ export const GetAllProductsService = async (
     const page = +currentPage || DEFAULT_CURRENT_PAGE;
     const offset = (page - 1) * limit;
 
-    const totalItems = await Product.countDocuments(filter);
-    const totalPages = Math.ceil(totalItems / limit);
 
-    const result = await Product.find(
-      filter,
-      "-createdAt -updatedAt -isDeleted -deletedAt"
-    )
-      .skip(offset)
-      .limit(limit)
-      .sort(sort)
-      .populate(population)
-      .exec();
+    const sortObj = (sort && typeof sort === 'object' && Object.keys(sort).length > 0) ? sort : { _id: -1 };
+
+
+    // const aggregatePipeline = [
+    //   { $match: filter },
+    //   { $sort: sortObj },
+    //   {
+    //     $group: {
+    //       _id: "$groupKey", 
+    //       representative: { $first: "$$ROOT" },
+    //       groupProducts: {
+    //         $push: {
+    //           color: "$color",
+    //           productId: "$_id",
+    //           avatar: { $ifNull: ["$avatar", { $arrayElemAt: ["$images", 0] }] }
+    //         }
+    //       }
+    //     }
+    //   },
+    //   {
+    //     $replaceRoot: {
+    //       newRoot: {
+    //         $mergeObjects: [
+    //           "$representative",
+    //           { groupProducts: "$groupProducts" }
+    //         ]
+    //       }
+    //     }
+    //   },
+    //   { $skip: offset },
+    //   { $limit: limit }
+    // ];
+    const aggregatePipeline = [
+      { $match: filter },
+      { $sort: sortObj },
+      {
+        $group: {
+          _id: "$groupKey",
+          representative: { $first: "$$ROOT" },
+          groupProducts: {
+            $push: {
+              color: "$color",
+              productId: "$_id",
+              avatar: { $ifNull: ["$avatar", { $arrayElemAt: ["$images", 0] }] },
+              slug: "$slug"
+            }
+          }
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: [
+              "$representative",
+              { groupProducts: "$groupProducts" }
+            ]
+          }
+        }
+      },
+      // Populate categories
+      {
+        $lookup: {
+          from: "categories",
+          localField: "categories",
+          foreignField: "_id",
+          as: "categories"
+        }
+      },
+      // Populate variants
+      {
+        $lookup: {
+          from: "variants",
+          let: { variantIds: "$variants" },
+          pipeline: [
+            { $match: { $expr: { $and: [
+              { $in: ["$_id", "$$variantIds"] },
+              { $eq: ["$isDeleted", false] }
+            ] } } }
+          ],
+          as: "variants"
+        }
+      },
+      // Populate sizeSuggestCategories
+      {
+        $lookup: {
+          from: "sizesuggestcategories",
+          localField: "sizeSuggestCategories",
+          foreignField: "_id",
+          as: "sizeSuggestCategories"
+        }
+      },
+      // Unwind sizeSuggestCategories to populate sizeOptions
+      { $unwind: { path: "$sizeSuggestCategories", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "sizeoption",
+          localField: "sizeSuggestCategories.sizeOptions",
+          foreignField: "_id",
+          as: "sizeSuggestCategories.sizeOptions"
+        }
+      },
+      // Group back sizeSuggestCategories
+      {
+        $group: {
+          _id: "$_id",
+          doc: { $first: "$$ROOT" },
+          sizeSuggestCategories: { $push: "$sizeSuggestCategories" }
+        }
+      },
+      {
+        $addFields: {
+          "doc.sizeSuggestCategories": "$sizeSuggestCategories"
+        }
+      },
+      { $replaceRoot: { newRoot: "$doc" } },
+      { $skip: offset },
+      { $limit: limit }
+    ];
+    const result = await Product.aggregate(aggregatePipeline);
+
+    // Đếm tổng số group (loại sản phẩm)
+    const totalItemsAgg = await Product.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: "$groupKey"
+        }
+      },
+      { $count: "total" }
+    ]);
+    const totalItems = totalItemsAgg[0]?.total || 0;
+    const totalPages = Math.ceil(totalItems / limit);
 
     return {
       meta: {
@@ -190,6 +358,7 @@ export const GetAllProductsService = async (
     throw new Error(`Lỗi khi lấy danh sách sản phẩm: ${error.message}`);
   }
 };
+
 export const SoftDeleteProductService = async (ProductId) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(ProductId)) {

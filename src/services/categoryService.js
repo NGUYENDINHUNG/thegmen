@@ -41,3 +41,13 @@ export const GetOneCategoryService = async (slug) => {
     throw new Error(error.message || "Lỗi khi lấy danh mục.");
   }
 };
+
+export const GetAllCategoriesService = async () => {
+  try {
+    const categories = await Category.find();
+    return categories;
+  } catch (error) {
+    console.log("Error in GetAllCategoriesService:", error);
+    throw new Error(error.message || "Lỗi khi lấy danh mục.");
+  }
+};
