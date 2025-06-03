@@ -3,19 +3,46 @@ import User from "../models/userModel.schema.js";
 
 export const createAddressService = async (userId, addressData) => {
   try {
+  
+    const user = await User.findById(userId);
+    if (!user) {
+      return {
+        EC: 404,
+        EM: "Không tìm thấy người dùng",
+      };
+    }
+
+    if (!addressData) {
+      return {
+        EC: 400,
+        EM: "Dữ liệu địa chỉ không hợp lệ",
+      };
+    }
+
     if (addressData.isDefault) {
       await Address.updateMany({ userId }, { $set: { isDefault: false } });
     }
-    const newAddress = await Address.create({ ...addressData, userId: userId });
+
+    const newAddress = await Address.create({
+      ...addressData,
+      userId: userId,
+    });
 
     await User.findByIdAndUpdate(userId, {
       $addToSet: { addresses: newAddress._id },
     });
 
-    return newAddress;
+    return {
+      EC: 0,
+      EM: "Thêm địa chỉ thành công",
+      data: newAddress,
+    };
   } catch (error) {
     console.error("Error in createAddressService:", error);
-    throw error;
+    return {
+      EC: 500,
+      EM: "Lỗi server, vui lòng thử lại sau",
+    };
   }
 };
 

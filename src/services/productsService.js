@@ -55,14 +55,38 @@ export const CreateProductService = async (productData) => {
 };
 export const UpdateProductsService = async (ProductId, updateData) => {
   try {
+    const existingProduct = await Product.findById(ProductId);
+    if (!existingProduct) {
+      return {
+        EC: 404,
+        EM: "Không tìm thấy sản phẩm"
+      };
+    }
+    if (!updateData || Object.keys(updateData).length === 0) {
+      return {
+        EC: 400,
+        EM: "Dữ liệu cập nhật không hợp lệ"
+      };
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
       ProductId,
       { $set: updateData },
       { new: true }
     );
-    return updatedProduct;
+
+    return {
+      EC: 0,
+      EM: "Cập nhật sản phẩm thành công",
+      data: updatedProduct
+    };
+
   } catch (error) {
-    throw new Error(error.message || "Lỗi khi cập nhật sản phẩm.");
+    console.error("Error in UpdateProductsService:", error);
+    return {
+      EC: 500,
+      EM: "Lỗi server, vui lòng thử lại sau"
+    };
   }
 };
 export const GetProductsBySlugService = async (slug) => {
@@ -74,7 +98,7 @@ export const GetProductsBySlugService = async (slug) => {
       { slug: slug },
       "-createdAt -updatedAt -isDeleted -deletedAt -__v"
     )
-      .populate("variants", "size stock sku")
+      .populate("variants", "size stock sku ")
       .populate({
         path: "sizeSuggestCategories",
         select: "-createdAt -updatedAt -isDeleted -deletedAt -__v",

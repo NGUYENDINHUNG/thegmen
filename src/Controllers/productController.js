@@ -72,25 +72,22 @@ export const CreateProduct = async (req, res) => {
 
 export const UpdateProduct = async (req, res) => {
   try {
-    const { name, price, description, supplierId, categoryId, slug, sku } =
-      req.body;
-
     const { ProductId } = req.params;
 
-    const updateData = await UpdateProductsService(ProductId, {
-      name,
-      price,
-      description,
-      supplierId,
-      categoryId,
-      slug,
-      sku,
-    });
-    return res.status(200).json({
-      statusCode: 200,
-      message: "Cập nhật sản phẩm thành công",
-      data: updateData,
-    });
+    const updateData = await UpdateProductsService(ProductId, req.body);
+    if (updateData.EC !== 0) {
+      return res.status(200).json({
+        statusCode: 200,
+        message: updateData.EM,
+        data: updateData.data,
+      });
+    } else {
+      return res.status(200).json({
+        statusCode: 200,
+        message: "Cập nhật sản phẩm thành công",
+        data: updateData,
+      });
+    }
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
