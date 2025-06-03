@@ -4,10 +4,12 @@ const { Schema } = mongoose;
 
 const UserSchema = new Schema(
   {
-    email: { type: String, unique: true },
+    email: {
+      type: String
+    },
     name: String,
     password: String,
-    phoneNumber: String,
+    phoneNumber: { type: Number },
     role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "role",

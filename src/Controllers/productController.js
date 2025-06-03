@@ -118,25 +118,21 @@ export const GetOnProduct = async (req, res) => {
 
 export const GetAllProducts = async (req, res) => {
   try {
-    const { pageSize, currentPage, queryString } = req.query;
+    const { pageSize, currentPage } = req.query;
+
     const products = await GetAllProductsService(
       pageSize,
       currentPage,
-      queryString
+      req.query
     );
-    if (products.result.length === 0) {
-      return res.status(200).json({
-        statusCode: 200,
-        message: "Không có sản phẩm nào",
-        data: [],
-      });
-    }
+
     return res.status(200).json({
       statusCode: 200,
       message: "Lấy tất cả sản phẩm thành công",
       data: products,
     });
   } catch (error) {
+    console.error("GetAllProducts error:", error);
     return res.status(500).json({
       statusCode: 500,
       message: error.message || "Lấy tất cả sản phẩm thất bại",
@@ -147,6 +143,14 @@ export const GetAllProducts = async (req, res) => {
 export const SoftDeleteProduct = async (req, res) => {
   try {
     const { ProductId } = req.params;
+
+    if (!ProductId) {
+      return res.status(400).json({
+        statusCode: 400,
+        message: "ID sản phẩm không hợp lệ",
+      });
+    }
+
     const deletedProduct = await SoftDeleteProductService(ProductId);
 
     return res.status(200).json({
@@ -155,13 +159,13 @@ export const SoftDeleteProduct = async (req, res) => {
       data: deletedProduct,
     });
   } catch (error) {
+    console.error("Controller error:", error.message);
     return res.status(500).json({
       statusCode: 500,
       message: error.message || "Xóa sản phẩm thất bại",
     });
   }
 };
-
 export const RestoreProduct = async (req, res) => {
   try {
     const { ProductId } = req.params;

@@ -3,6 +3,7 @@ import aqp from "api-query-params";
 import slugify from "slugify";
 import Variants from "../models/variantsModel.schema.js";
 import GroupProduct from "../models/groupProduct.schema.js";
+import mongoose from "mongoose";
 
 export const CreateProductService = async (productData) => {
   try {
@@ -73,7 +74,7 @@ export const GetProductsBySlugService = async (slug) => {
       { slug: slug },
       "-createdAt -updatedAt -isDeleted -deletedAt -__v"
     )
-      .populate("variants", "-createdAt -updatedAt -isDeleted -deletedAt -__v")
+      .populate("variants", "size stock sku")
       .populate({
         path: "sizeSuggestCategories",
         select: "-createdAt -updatedAt -isDeleted -deletedAt -__v",
@@ -130,70 +131,74 @@ export const GetAllProductsService = async (
     const { filter, sort, population } = aqp(queryString);
     delete filter.current;
     delete filter.pageSize;
-    let result = null;
-    let totalItems = 0;
-    let totalPages = 0;
 
-    if (pageSize && currentPage) {
-      let offset = (currentPage - 1) * pageSize;
-      let defaultLimit = +pageSize ? +pageSize : 10;
-      totalItems = (await Product.find(filter)).length;
-      totalPages = Math.ceil(totalItems / defaultLimit);
+    const DEFAULT_PAGE_SIZE = 5;
+    const DEFAULT_CURRENT_PAGE = 1;
 
-      result = await Product.find(
-        filter,
-        "-createdAt -updatedAt -isDeleted -deletedAt"
-      )
-        .skip(offset)
-        .limit(defaultLimit)
-        .sort(sort)
-        .populate(population)
-        .exec();
-    }
+    const limit = +pageSize || DEFAULT_PAGE_SIZE;
+    const page = +currentPage || DEFAULT_CURRENT_PAGE;
+    const offset = (page - 1) * limit;
+
+    const totalItems = await Product.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const result = await Product.find(
+      filter,
+      "-createdAt -updatedAt -isDeleted -deletedAt"
+    )
+      .skip(offset)
+      .limit(limit)
+      .sort(sort)
+      .populate(population)
+      .exec();
 
     return {
       meta: {
-        // currentPage: +currentPage,
-        // pageSize: +pageSize,
-        // totalItems,
-        // totalPages,
+        currentPage: page,
+        pageSize: limit,
+        totalItems,
+        totalPages,
       },
       result,
     };
   } catch (error) {
-    console.log(error);
-    throw error;
+    console.error("GetAllProductsService error:", error);
+    throw new Error(`Lỗi khi lấy danh sách sản phẩm: ${error.message}`);
   }
 };
 export const SoftDeleteProductService = async (ProductId) => {
-  console.log(ProductId);
   try {
-    if (!ProductId) {
-      throw new Error("ID sản phẩm không hợp lệ");
+    if (!mongoose.Types.ObjectId.isValid(ProductId)) {
+      throw new Error("Không tìm thấy sản phẩm");
     }
+    const product = await Product.findById(ProductId);
+    if (product.isDeleted) {
+      throw new Error("Sản phẩm đã bị xóa trước đó");
+    }
+    const deletedAt = new Date();
+
     const deletedProduct = await Product.findByIdAndUpdate(
       ProductId,
       {
         isDeleted: true,
-        deletedAt: new Date(),
+        deletedAt,
       },
       { new: true }
     );
 
-    console.log(deletedProduct);
     if (!deletedProduct) {
-      throw new Error();
+      throw new Error("Không tìm thấy sản phẩm để xóa");
     }
 
     await Variants.updateMany(
       { productId: ProductId },
-      { isDeleted: true, deletedAt: new Date() }
+      { isDeleted: true, deletedAt }
     );
 
-    return deletedProduct;
+    return { message: "Xóa sản phẩm thành công" };
   } catch (error) {
-    console.error("Lỗi khi xóa sản phẩm:", error);
-    throw error;
+    console.error("Lỗi khi soft delete sản phẩm:", error.message);
+    throw new Error(error.message);
   }
 };
 export const RestoreProductService = async (ProductId) => {

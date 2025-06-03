@@ -81,28 +81,21 @@ export const loginGoogleSuccess = async (req, res) => {
   try {
     const data = await handleGoogleLogin(req.user);
 
-    res.cookie("refresh_token", data.refreshToken, {
-      httpOnly: true,
-      maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
-    });
     if (data.EC === 0) {
-      return res.status(200).json({
-        statusCode: 200,
-        message: "Login successfully",
-        accessToken: data.accessToken,
+      res.cookie("refresh_token", data.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
       });
+
+      const redirectUrl = `http://localhost:5173?accessToken=${data.accessToken}`;
+      return res.redirect(redirectUrl);
     } else {
-      return res.status(500).json({
-        statusCode: 500,
-        message: data.EM,
-      });
+      return res.redirect(`http://localhost:5173/login?error=${data.EM}`);
     }
   } catch (err) {
-    return res.status(500).json({
-      statusCode: 500,
-      message: "Lỗi đăng nhập Google",
-      error: err.message,
-    });
+    console.error("Lỗi đăng nhập Google:", err);
+    return res.redirect("http://localhost:5173/login?error=Đăng nhập thất bại");
   }
 };
 export const loginFaceBookSuccess = async (req, res) => {
@@ -163,7 +156,6 @@ export const getAccount = async (req, res) => {
   }
 };
 export const requestPasswordReset = async (req, res) => {
-
   const { email } = req.body;
   try {
     const response = await ForgetPasswordService(email);
