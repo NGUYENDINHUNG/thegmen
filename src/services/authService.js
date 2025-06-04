@@ -300,6 +300,12 @@ export const ForgetPasswordService = async (email) => {
         EM: "Email không tồn tại",
       };
     }
+    if (Users.googleId || Users.facebookId) {
+      return {
+        EC: 1,
+        EM: "Tài khoản đăng nhập bằng bên thứ 3 không thể sử dụng chức năng quên mật khẩu",
+      };
+    }
     const payload = {
       _id: Users.id,
       email: Users.email,

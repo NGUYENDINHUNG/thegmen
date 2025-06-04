@@ -9,6 +9,7 @@ import {
   GetAllProductsService,
   SoftDeleteProductService,
   RestoreProductService,
+  FilterProductsService,
 } from "../services/productsService.js";
 
 export const CreateProduct = async (req, res) => {
@@ -188,6 +189,23 @@ export const RestoreProduct = async (req, res) => {
     return res.status(500).json({
       statusCode: 500,
       message: error.message || "Khôi phục sản phẩm thất bại",
+    });
+  }
+};
+
+export const FilterProducts = async (req, res) => {
+  try {
+    const data = await FilterProductsService(req.query);
+
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Lọc sản phẩm thành công",
+      data: data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      message: error.message || "Lọc sản phẩm thất bại",
     });
   }
 };

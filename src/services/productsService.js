@@ -130,7 +130,6 @@ export const UpdateProductsService = async (ProductId, updateData) => {
     };
   }
 };
-
 export const GetProductsBySlugService = async (slug) => {
   try {
     if (!slug) {
@@ -205,54 +204,6 @@ export const GetProductsBySlugService = async (slug) => {
     throw error;
   }
 };
-// export const GetAllProductsService = async (
-//   pageSize,
-//   currentPage,
-//   queryString
-// ) => {
-//   try {
-//     const { filter, sort } = aqp(queryString);
-//     delete filter.current;
-//     delete filter.pageSize;
-
-//     const DEFAULT_PAGE_SIZE = 5;
-//     const DEFAULT_CURRENT_PAGE = 1;
-
-//     const limit = +pageSize || DEFAULT_PAGE_SIZE;
-//     const page = +currentPage || DEFAULT_CURRENT_PAGE;
-//     const offset = (page - 1) * limit;
-
-//     const sortObj =
-//       sort && typeof sort === "object" && Object.keys(sort).length > 0
-//         ? sort
-//         : { _id: -1 };
-
-//     const result = await Product.find(filter)
-//       .select("name price slug avatar images description categories isDeleted")
-//       .populate("categories", "name slug")
-//       .sort(sortObj)
-//       .skip(offset)
-//       .limit(limit)
-//       .lean();
-
-//     const totalItems = await Product.countDocuments(filter);
-//     const totalPages = Math.ceil(totalItems / limit);
-
-//     return {
-//       meta: {
-//         currentPage: page,
-//         pageSize: limit,
-//         totalItems,
-//         totalPages,
-//       },
-//       result,
-//     };
-//   } catch (error) {
-//     console.error("GetAllProductsService error:", error);
-//     throw new Error(`Lỗi khi lấy danh sách sản phẩm: ${error.message}`);
-//   }
-// };
-
 export const GetAllProductsService = async (
   pageSize,
   currentPage,
@@ -260,7 +211,7 @@ export const GetAllProductsService = async (
 ) => {
   try {
     const { filter, sort } = aqp(queryString);
-    delete filter.current;
+    delete filter.currentPage;
     delete filter.pageSize;
 
     const DEFAULT_PAGE_SIZE = 5;
@@ -298,9 +249,7 @@ export const GetAllProductsService = async (
         ...new Set(product.variants.map((index) => index.size)),
       ].filter(Boolean);
 
-      // Tạo object mới không bao gồm variants
       const { variants, ...productWithoutVariants } = product;
-
       return {
         ...productWithoutVariants,
         COLOR: colors,
@@ -378,5 +327,90 @@ export const RestoreProductService = async (ProductId) => {
   } catch (error) {
     console.error("Lỗi khi khôi phục sản phẩm:", error);
     throw error;
+  }
+};
+export const FilterProductsService = async (queryParams) => {
+  try {
+    const {
+      minPrice,
+      maxPrice,
+      categories,
+      UNISEXTYPE,
+      sort,
+      page = 1,
+      limit = 10,
+    } = queryParams;
+
+    const filter = { isDeleted: false };
+
+    if (minPrice || maxPrice) {
+      const finalPriceCondition = {
+        $and: [
+          { finalPrice: { $exists: true, $ne: null } },
+          minPrice ? { finalPrice: { $gte: Number(minPrice) } } : {},
+          maxPrice ? { finalPrice: { $lte: Number(maxPrice) } } : {},
+        ],
+      };
+
+
+      const priceCondition = {
+        $and: [
+          { $or: [{ finalPrice: { $exists: false } }, { finalPrice: null }] },
+          minPrice ? { price: { $gte: Number(minPrice) } } : {},
+          maxPrice ? { price: { $lte: Number(maxPrice) } } : {},
+        ],
+      };
+
+      filter.$or = [finalPriceCondition, priceCondition];
+    }
+ // Lọc theo loại sản phẩm (UNISEXTYPE) nếu có
+    if (UNISEXTYPE) {
+      filter.UNISEXTYPE = UNISEXTYPE;
+    }
+    let sortOption = { createdAt: -1 };
+    if (sort) {
+      if (sort === "price_asc") {
+        sortOption = { finalPrice: 1, price: 1 };
+      } else if (sort === "price_desc") {
+        sortOption = { finalPrice: -1, price: -1 };
+      } else if (sort === "oldest") {
+        sortOption = { createdAt: 1 };
+      }
+    }
+
+    const skip = (page - 1) * limit;
+
+    const products = await Product.find(filter)
+      .select(
+        "_id name description slug avatar images price finalPrice discountType discount UNISEXTYPE"
+      )
+      .populate({
+        path: 'categories',
+        match: { name: categories },
+        select: 'name slug'
+      })
+      .sort(sortOption) 
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const totalItems = await Product.countDocuments(filter);
+
+    return {
+      meta: {
+        currentPage: Number(page),
+        pageSize: Number(limit),
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+      },
+      result: products,
+    };
+  } catch (error) {
+    console.error("FilterProductsService error:", error);
+    return {
+      EC: 1,
+      EM: "Lỗi khi lọc sản phẩm",
+      debugMessage: error.message,
+    };
   }
 };
