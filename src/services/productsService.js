@@ -1,10 +1,7 @@
-// co' cai dau buoi
-
 import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
 import slugify from "slugify";
 import Variants from "../models/variantsModel.schema.js";
-import GroupProduct from "../models/groupProduct.schema.js";
 import mongoose from "mongoose";
 
 export const CreateProductService = async (productData) => {
@@ -12,23 +9,47 @@ export const CreateProductService = async (productData) => {
     const {
       name,
       description,
-      content,
-      color,
       avatar,
       images,
       price,
       discount,
       discountType,
+      type,
+      color,
+      size,
+      stock,
       categories,
       sizeSuggestCategories,
+      featured,
+      UNISEXTYPE,
     } = productData;
 
+    if (!name || !price) {
+      return {
+        EC: 400,
+        EM: "Tên và giá sản phẩm là bắt buộc",
+      };
+    }
+
+    let finalPrice = price;
     if (discount) {
       if (discountType === "PERCENTAGE" && (discount < 0 || discount > 100)) {
-        throw new Error("Giảm giá theo phần trăm phải từ 0 đến 100");
+        return {
+          EC: 400,
+          EM: "Giảm giá theo phần trăm phải từ 0 đến 100",
+        };
       }
       if (discountType === "FIXED_AMOUNT" && discount > price) {
-        throw new Error("Giảm giá cố định không được lớn hơn giá sản phẩm");
+        return {
+          EC: 400,
+          EM: "Giảm giá cố định không được lớn hơn giá sản phẩm",
+        };
+      }
+
+      if (discountType === "PERCENTAGE") {
+        finalPrice = price - (price * discount) / 100;
+      } else if (discountType === "FIXED_AMOUNT") {
+        finalPrice = price - discount;
       }
     }
 
@@ -37,22 +58,30 @@ export const CreateProductService = async (productData) => {
     const newProduct = await Product.create({
       name,
       description,
-      content,
-      color,
       avatar,
       images,
       price,
       discount,
       discountType,
+      type,
+      color,
+      size,
+      stock,
       categories,
       sizeSuggestCategories,
-      slug: slug,
+      featured,
+      slug,
+      UNISEXTYPE,
+      finalPrice: Math.round(finalPrice),
     });
 
     return newProduct;
   } catch (error) {
     console.log("Error in CreateProductService:", error);
-    throw error;
+    return {
+      EC: 500,
+      EM: error.message || "Lỗi server, vui lòng thử lại sau",
+    };
   }
 };
 export const UpdateProductsService = async (ProductId, updateData) => {
@@ -61,14 +90,25 @@ export const UpdateProductsService = async (ProductId, updateData) => {
     if (!existingProduct) {
       return {
         EC: 404,
-        EM: "Không tìm thấy sản phẩm"
+        EM: "Không tìm thấy sản phẩm",
       };
     }
-    if (!updateData || Object.keys(updateData).length === 0) {
-      return {
-        EC: 400,
-        EM: "Dữ liệu cập nhật không hợp lệ"
-      };
+
+    if (updateData.price || updateData.discount || updateData.discountType) {
+      const price = updateData.price || existingProduct.price;
+      const discount = updateData.discount || existingProduct.discount;
+      const discountType =
+        updateData.discountType || existingProduct.discountType;
+
+      let finalPrice = price;
+      if (discount) {
+        if (discountType === "PERCENTAGE") {
+          finalPrice = price - (price * discount) / 100;
+        } else if (discountType === "FIXED_AMOUNT") {
+          finalPrice = price - discount;
+        }
+      }
+      updateData.finalPrice = Math.round(finalPrice);
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(
@@ -80,17 +120,17 @@ export const UpdateProductsService = async (ProductId, updateData) => {
     return {
       EC: 0,
       EM: "Cập nhật sản phẩm thành công",
-      data: updatedProduct
+      data: updatedProduct,
     };
-
   } catch (error) {
     console.error("Error in UpdateProductsService:", error);
     return {
       EC: 500,
-      EM: "Lỗi server, vui lòng thử lại sau"
+      EM: "Lỗi server, vui lòng thử lại sau",
     };
   }
 };
+
 export const GetProductsBySlugService = async (slug) => {
   try {
     if (!slug) {
@@ -100,7 +140,7 @@ export const GetProductsBySlugService = async (slug) => {
       { slug: slug },
       "-createdAt -updatedAt -isDeleted -deletedAt -__v"
     )
-      .populate("variants", "size stock sku ")
+      .populate("variants", "size stock sku color images")
       .populate({
         path: "sizeSuggestCategories",
         select: "-createdAt -updatedAt -isDeleted -deletedAt -__v",
@@ -117,32 +157,49 @@ export const GetProductsBySlugService = async (slug) => {
       throw new Error("Không tìm thấy sản phẩm");
     }
 
-    const groupItem = await GroupProduct.findOne({
-      productId: product._id,
-    }).lean();
+    const hasColorVariants = product.variants.some((variant) => variant.color);
 
-    let groupProducts = [];
-    if (groupItem?.groupKey) {
-      const relatedGroupProducts = await GroupProduct.find({
-        groupKey: groupItem.groupKey,
-      })
-        .populate({
-          path: "productId",
-          select: "avatar name slug",
-        })
-        .lean();
-      groupProducts = relatedGroupProducts.map((index) => ({
-        _id: index._id,
-        color: index.color,
-        product: index.productId,
+    if (hasColorVariants) {
+      const groupedVariants = product.variants.reduce((acc, variant) => {
+        const color = variant.color || "default";
+        if (!acc[color]) {
+          acc[color] = {
+            color: color,
+            sizes: [],
+            images: variant.images || [],
+          };
+        }
+
+        acc[color].sizes.push({
+          size: variant.size,
+          stock: variant.stock,
+          sku: variant.sku,
+        });
+
+        return acc;
+      }, {});
+
+      const variantsArray = Object.values(groupedVariants);
+      return {
+        product: {
+          ...product,
+          variants: variantsArray,
+        },
+      };
+    } else {
+      const sizesArray = product.variants.map((variant) => ({
+        size: variant.size,
+        stock: variant.stock,
+        sku: variant.sku,
       }));
+
+      return {
+        product: {
+          ...product,
+          variants: sizesArray,
+        },
+      };
     }
-    return {
-      product: {
-        ...product,
-        groupProducts,
-      },
-    };
   } catch (error) {
     console.error("Lỗi khi tìm sản phẩm theo slug:", error);
     throw error;
@@ -154,7 +211,7 @@ export const GetProductsBySlugService = async (slug) => {
 //   queryString
 // ) => {
 //   try {
-//     const { filter, sort, population } = aqp(queryString);
+//     const { filter, sort } = aqp(queryString);
 //     delete filter.current;
 //     delete filter.pageSize;
 
@@ -165,18 +222,21 @@ export const GetProductsBySlugService = async (slug) => {
 //     const page = +currentPage || DEFAULT_CURRENT_PAGE;
 //     const offset = (page - 1) * limit;
 
-//     const totalItems = await Product.countDocuments(filter);
-//     const totalPages = Math.ceil(totalItems / limit);
+//     const sortObj =
+//       sort && typeof sort === "object" && Object.keys(sort).length > 0
+//         ? sort
+//         : { _id: -1 };
 
-//     const result = await Product.find(
-//       filter,
-//       "-createdAt -updatedAt -isDeleted -deletedAt"
-//     )
+//     const result = await Product.find(filter)
+//       .select("name price slug avatar images description categories isDeleted")
+//       .populate("categories", "name slug")
+//       .sort(sortObj)
 //       .skip(offset)
 //       .limit(limit)
-//       .sort(sort)
-//       .populate(population)
-//       .exec();
+//       .lean();
+
+//     const totalItems = await Product.countDocuments(filter);
+//     const totalPages = Math.ceil(totalItems / limit);
 
 //     return {
 //       meta: {
@@ -210,138 +270,45 @@ export const GetAllProductsService = async (
     const page = +currentPage || DEFAULT_CURRENT_PAGE;
     const offset = (page - 1) * limit;
 
+    const sortObj =
+      sort && typeof sort === "object" && Object.keys(sort).length > 0
+        ? sort
+        : { _id: -1 };
 
-    const sortObj = (sort && typeof sort === 'object' && Object.keys(sort).length > 0) ? sort : { _id: -1 };
+    const result = await Product.find(filter)
+      .select(
+        "name price slug avatar images description categories isDeleted variants"
+      )
+      .populate("categories", "name slug")
+      .populate({
+        path: "variants",
+        select: "size color stock sku",
+        match: { isDeleted: false },
+      })
+      .sort(sortObj)
+      .skip(offset)
+      .limit(limit)
+      .lean();
 
+    const processedResult = result.map((product) => {
+      const colors = [
+        ...new Set(product.variants.map((index) => index.color)),
+      ].filter(Boolean);
+      const sizes = [
+        ...new Set(product.variants.map((index) => index.size)),
+      ].filter(Boolean);
 
-    // const aggregatePipeline = [
-    //   { $match: filter },
-    //   { $sort: sortObj },
-    //   {
-    //     $group: {
-    //       _id: "$groupKey", 
-    //       representative: { $first: "$$ROOT" },
-    //       groupProducts: {
-    //         $push: {
-    //           color: "$color",
-    //           productId: "$_id",
-    //           avatar: { $ifNull: ["$avatar", { $arrayElemAt: ["$images", 0] }] }
-    //         }
-    //       }
-    //     }
-    //   },
-    //   {
-    //     $replaceRoot: {
-    //       newRoot: {
-    //         $mergeObjects: [
-    //           "$representative",
-    //           { groupProducts: "$groupProducts" }
-    //         ]
-    //       }
-    //     }
-    //   },
-    //   { $skip: offset },
-    //   { $limit: limit }
-    // ];
-    const aggregatePipeline = [
-      { $match: filter },
-      { $sort: sortObj },
-      {
-        $group: {
-          _id: "$groupKey",
-          representative: { $first: "$$ROOT" },
-          groupProducts: {
-            $push: {
-              color: "$color",
-              productId: "$_id",
-              avatar: { $ifNull: ["$avatar", { $arrayElemAt: ["$images", 0] }] },
-              slug: "$slug"
-            }
-          }
-        }
-      },
-      {
-        $replaceRoot: {
-          newRoot: {
-            $mergeObjects: [
-              "$representative",
-              { groupProducts: "$groupProducts" }
-            ]
-          }
-        }
-      },
-      // Populate categories
-      {
-        $lookup: {
-          from: "categories",
-          localField: "categories",
-          foreignField: "_id",
-          as: "categories"
-        }
-      },
-      // Populate variants
-      {
-        $lookup: {
-          from: "variants",
-          let: { variantIds: "$variants" },
-          pipeline: [
-            { $match: { $expr: { $and: [
-              { $in: ["$_id", "$$variantIds"] },
-              { $eq: ["$isDeleted", false] }
-            ] } } }
-          ],
-          as: "variants"
-        }
-      },
-      // Populate sizeSuggestCategories
-      {
-        $lookup: {
-          from: "sizesuggestcategories",
-          localField: "sizeSuggestCategories",
-          foreignField: "_id",
-          as: "sizeSuggestCategories"
-        }
-      },
-      // Unwind sizeSuggestCategories to populate sizeOptions
-      { $unwind: { path: "$sizeSuggestCategories", preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: "sizeoption",
-          localField: "sizeSuggestCategories.sizeOptions",
-          foreignField: "_id",
-          as: "sizeSuggestCategories.sizeOptions"
-        }
-      },
-      // Group back sizeSuggestCategories
-      {
-        $group: {
-          _id: "$_id",
-          doc: { $first: "$$ROOT" },
-          sizeSuggestCategories: { $push: "$sizeSuggestCategories" }
-        }
-      },
-      {
-        $addFields: {
-          "doc.sizeSuggestCategories": "$sizeSuggestCategories"
-        }
-      },
-      { $replaceRoot: { newRoot: "$doc" } },
-      { $skip: offset },
-      { $limit: limit }
-    ];
-    const result = await Product.aggregate(aggregatePipeline);
+      // Tạo object mới không bao gồm variants
+      const { variants, ...productWithoutVariants } = product;
 
-    // Đếm tổng số group (loại sản phẩm)
-    const totalItemsAgg = await Product.aggregate([
-      { $match: filter },
-      {
-        $group: {
-          _id: "$groupKey"
-        }
-      },
-      { $count: "total" }
-    ]);
-    const totalItems = totalItemsAgg[0]?.total || 0;
+      return {
+        ...productWithoutVariants,
+        COLOR: colors,
+        SIZE: sizes,
+      };
+    });
+
+    const totalItems = await Product.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
@@ -351,14 +318,13 @@ export const GetAllProductsService = async (
         totalItems,
         totalPages,
       },
-      result,
+      result: processedResult,
     };
   } catch (error) {
     console.error("GetAllProductsService error:", error);
     throw new Error(`Lỗi khi lấy danh sách sản phẩm: ${error.message}`);
   }
 };
-
 export const SoftDeleteProductService = async (ProductId) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(ProductId)) {

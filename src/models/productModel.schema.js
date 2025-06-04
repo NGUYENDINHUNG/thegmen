@@ -11,13 +11,7 @@ const ProductSchema = new Schema(
     description: {
       type: String,
     },
-    content: {
-      type: String,
-    },
     slug: {
-      type: String,
-    },
-    color: {
       type: String,
     },
     avatar: {
@@ -29,11 +23,17 @@ const ProductSchema = new Schema(
     },
     price: {
       type: Number,
+      required: true,
+      min: 0,
+    },
+    finalPrice: {
+      type: Number,
+      min: 0,
     },
     discountType: {
       type: String,
       enum: ["PERCENTAGE", "FIXED_AMOUNT"],
-      default: "PERCENTAGE",
+      default: null,
     },
     discount: {
       type: Number,
@@ -41,6 +41,23 @@ const ProductSchema = new Schema(
       min: 0,
       max: 100,
     },
+    UNISEXTYPE: {
+      type: String,
+      enum: ["MEN", "WOMEN", "KIDS", "UNISEX"],
+    },
+    color: {
+      type: String,
+      default: null,
+    },
+    size: {
+      type: String,
+      default: null,
+    },
+    stock: {
+      type: Number,
+      default: null,
+    },
+
     variants: {
       type: [Schema.Types.ObjectId],
       ref: "variants",

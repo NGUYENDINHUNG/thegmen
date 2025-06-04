@@ -23,25 +23,35 @@ export const CreateProduct = async (req, res) => {
       content,
       color,
       sizeSuggestCategories,
+      UNISEXTYPE,
     } = req.body;
 
     let avatarUrl = "";
     let imageUrls = [];
 
-    // 1. Upload ảnh bìa
     if (req.files?.avatar) {
-      const result = await uploadSingleFile(req.files.avatar);
-      avatarUrl = result.path;
+      try {
+        const result = await uploadSingleFile(req.files.avatar);
+        avatarUrl = result.path;
+      } catch (error) {
+        console.log("Error uploading avatar:", error);
+      }
     }
-    console.log("avatarUrl", avatarUrl);
-    // 2. Upload ảnh sản phẩm
-    if (Array.isArray(req.files.images)) {
-      const result = await uploadMultipleFiles(req.files.images);
-      imageUrls = result.detail.map((item) => item.path);
-    } else {
-      const result = await uploadSingleFile(req.files.images);
-      imageUrls = result.path;
+
+    if (req.files?.images) {
+      try {
+        if (Array.isArray(req.files.images)) {
+          const result = await uploadMultipleFiles(req.files.images);
+          imageUrls = result.detail.map((item) => item.path);
+        } else {
+          const result = await uploadSingleFile(req.files.images);
+          imageUrls = [result.path];
+        }
+      } catch (error) {
+        console.log("Error uploading images:", error);
+      }
     }
+
     const data = await CreateProductService({
       name,
       price,
@@ -54,6 +64,7 @@ export const CreateProduct = async (req, res) => {
       color,
       avatar: avatarUrl,
       images: imageUrls,
+      UNISEXTYPE,
     });
 
     return res.status(201).json({

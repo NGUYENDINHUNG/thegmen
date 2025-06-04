@@ -1,75 +1,75 @@
-[{
-  "_id": {
-    "$oid": "6837d1a171cb6ad0b75315fe"
-  },
-  "name": "NEW POLO COLLECTION 2025",
-  "contents": "<p><img src=\"https://s3.ap-southeast-1.amazonaws.com/thegmen.vn/2025/3/17424432757732k7ve.jpg\" ></p>",
-  "slug": "new-polo-collection-2025",
-  "createdAt": {
-    "$date": "2025-05-29T03:16:49.882Z"
-  },
-  "updatedAt": {
-    "$date": "2025-05-29T03:16:49.882Z"
-  },
-  "__v": 0
-},
 {
-  "_id": {
-    "$oid": "6837d1d971cb6ad0b7531604"
-  },
-  "name": "SIÊU SALE ĐẠI LỄ",
-  "contents": "<p>SIÊU SALE ĐẠI LỄ - GIẢM ĐẾN 70%&nbsp;<img alt=\"🔥\" src=\"https://static.xx.fbcdn.net/images/emoji.php/v9/tef/2/16/1f525.png\" style=\"height:16px; width:16px\"><br>\n<br>\nNghỉ lễ 30/4 đang đến gần, chuẩn bị diện đẹp đi chơi thôi! THE GMEN tung ngay SIÊU SALE ĐẠI LỄ với giảm giá lên đến 70% cho hàng loạt dòng sản phẩm. Hàng trăm món đồ từ polo, sơ mi đến short đều có giá siêu hấp dẫn, không thể bỏ qua!<br>\n<br>\nĐặc biệt: Với hóa đơn từ 699k, bạn được tặng ngay 1 Boxer 0 đồng (giá gốc 199k)<br>\n<br>\n- Giảm lên đến 70% cho TOÀN BỘ SẢN PHẨM<br>\n- Săn ngay quần shorts chỉ 199k<br>\n- Mua sắm thả ga áo sơ mi giảm nửa giá -50%<br>\n<br>\n<img alt=\"🔥\" src=\"https://static.xx.fbcdn.net/images/emoji.php/v9/tef/2/16/1f525.png\" style=\"height:16px; width:16px\">&nbsp;Sale tất cả sản phẩm, trên toàn hệ thống<br>\nTừ 19/4, ghé ngay THE GMEN gần nhất để không bỏ lỡ SIÊU DEAL này!</p>",
-  "slug": "sieu-sale-dai-le",
-  "createdAt": {
-    "$date": "2025-05-29T03:17:45.456Z"
-  },
-  "updatedAt": {
-    "$date": "2025-05-29T03:17:45.456Z"
-  },
-  "__v": 0
-},
-{
-  "_id": {
-    "$oid": "6837d20071cb6ad0b753160a"
-  },
-  "name": "WINTER COLLECTION 2024",
-  "contents": "<p><img alt=\"\" src=\"https://s3.ap-southeast-1.amazonaws.com/thegmen.vn/2024/11/17305150176826ks5s8.jpg\" style=\"height:5315px; width:1771px\"></p>",
-  "slug": "winter-collection-2024",
-  "createdAt": {
-    "$date": "2025-05-29T03:18:24.835Z"
-  },
-  "updatedAt": {
-    "$date": "2025-05-29T03:18:24.835Z"
-  },
-  "__v": 0
-},
-{
-  "_id": {
-    "$oid": "6837d22f71cb6ad0b7531610"
-  },
-  "name": "TENDER TIES - BỘ SƯU TẬP NỈ 2024",
-  "contents": "<p><img alt=\"\" src=\"https://s3.ap-southeast-1.amazonaws.com/thegmen.vn/2024/9/1726719137856rrer.jpg\" style=\"height:5000px; width:1553px\"></p>",
-  "slug": "tender-ties-bo-suu-tap-ni-2024",
-  "createdAt": {
-    "$date": "2025-05-29T03:19:11.995Z"
-  },
-  "updatedAt": {
-    "$date": "2025-05-29T03:19:11.995Z"
-  },
-  "__v": 0
-},
-{
-  "_id": {
-    "$oid": "6837d25271cb6ad0b7531616"
-  },
-  "name": "LIGHTCOOL COLLECTION",
-  "contents": "<p><img alt=\"\" src=\"https://s3.ap-southeast-1.amazonaws.com/thegmen.vn/2024/9/1726719137856rrer.jpg\" style=\"height:5000px; width:1553px\"></p>",
-  "slug": "lightcool-collection",
-  "createdAt": {
-    "$date": "2025-05-29T03:19:46.918Z"
-  },
-  "updatedAt": {
-    "$date": "2025-05-29T03:19:46.918Z"
-  },
-  "__v": 0
-}]
+  "statusCode": 200,
+  "message": "Lấy sản phẩm thành công",
+  "data": {
+      "_id": "683580e266c166e46e4700b1",
+      "name": "Áo Polo nam S25 Line Waffle Polo vải Waffle phối viền vai, ráp vai tôn dáng - THE GMEN ELEGANT EST 2017",
+      "images": [
+          "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product2-1748336866389.jpg"
+      ],
+      "description": "<div class=\"desc\">Nguồn gốc xuất xứ: Việt Nam\nForm: Slimfit\nChất liệu: Cotton Supima\n- Cách dệt dạng lưới cực bền, không nhăn, mềm, nhẹ, mát \n- Bo cổ, bo tay được dệt cứng cáp, không bai nhão</div>",
+      "slug": "ao-polo-nam-s25-line-waffle-polo-vai-waffle-phoi-vien-vai-rap-vai-ton-dang-the-gmen-elegant-est-2017",
+      "variants": [
+          {
+              "_id": "683580fb66c166e46e4700b7",
+              "color": "màu xanh",
+              "size": "XXL",
+              "stock": 10,
+              "sku": "SP0111",
+              "images": [
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product2-1748336890150.jpg",
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product1-1748336890808.jpg",
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/menu_5-1739892270396-1748336891093.png"
+              ],
+              "productId": "683580e266c166e46e4700b1",
+              "__v": 0
+          },
+          {
+              "_id": "6835810366c166e46e4700be",
+              "color": "màu xanh",
+              "size": "S",
+              "stock": 10,
+              "sku": "SP0111",
+              "images": [
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product2-1748336897774.jpg",
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product1-1748336898392.jpg",
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/menu_5-1739892270396-1748336898753.png"
+              ],
+              "productId": "683580e266c166e46e4700b1",
+              "__v": 0
+          },
+          {
+              "_id": "6835810766c166e46e4700c5",
+              "color": "màu xanh",
+              "size": "M",
+              "stock": 10,
+              "sku": "SP0111",
+              "images": [
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product2-1748336902754.jpg",
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product1-1748336902960.jpg",
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/menu_5-1739892270396-1748336903211.png"
+              ],
+              "productId": "683580e266c166e46e4700b1",
+              "__v": 0
+          },
+          {
+              "_id": "6835810c66c166e46e4700cc",
+              "color": "màu xanh",
+              "size": "XL",
+              "stock": 10,
+              "sku": "SP0111",
+              "images": [
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product2-1748336907517.jpg",
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product1-1748336907710.jpg",
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/menu_5-1739892270396-1748336907935.png"
+              ],
+              "productId": "683580e266c166e46e4700b1",
+              "__v": 0
+          }
+      ],
+      "collections": [],
+      "supplierId": "6834a0bebe30a5f2e48d4305",
+      "categoryId": "6834a14fbe30a5f2e48d431e",
+      "__v": 0
+  }
+}

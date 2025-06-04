@@ -3,29 +3,31 @@ import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
 
 export const createVariantService = async (
+  color,
+  images,
   size,
   stock,
   sku,
-  position,
-  productId
+  Products,
 ) => {
   try {
     const existProduct = await Product.findOne({
-      _id: productId,
+      _id: Products,
       isDeleted: false,
     });
     if (!existProduct) {
       throw new Error("Sản phẩm không tồn tại hoặc đã bị xóa");
     }
     const newVariant = await Variant.create({
+      color,
+      images,
       size,
       stock,
       sku,
-      position,
-      productId,
+      Products,
     });
 
-    await Product.findByIdAndUpdate(productId, {
+    await Product.findByIdAndUpdate(Products, {
       $push: { variants: newVariant._id },
     });
 

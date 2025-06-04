@@ -10,7 +10,6 @@ import VoucherRouter from "./VoucherRoutes.js";
 import FileRouter from "./fileRoutes.js";
 import SizeOptionRouter from "./sizeOptionRoutes.js";
 import SizeSuggestCategoryRouter from "./SizeSuggestCategoryRoutes.js";
-import GroupProductRouter from "./GroupProducts.js";
 import AuthRouter from "../Public/Auth.js";
 
 const AdminRouter = express.Router();
@@ -28,6 +27,6 @@ AdminRouter.use("/orders", OrderRouter);
 AdminRouter.use("/files", FileRouter);
 AdminRouter.use("/sizeSuggestCategories", SizeSuggestCategoryRouter);
 AdminRouter.use("/sizeOptions", SizeOptionRouter);
-AdminRouter.use("/groupProducts", GroupProductRouter);
+
 
 export default AdminRouter;

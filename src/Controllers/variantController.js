@@ -14,16 +14,31 @@ import {
 
 export const createVariant = async (req, res) => {
   try {
-    const { size, stock, sku, position, productId } = req.body;
+    const { color, size, stock, sku, Products } = req.body;
+ 
+    let imageUrls = [];
 
+    if (req.files?.images) {
+      try {
+        if (Array.isArray(req.files.images)) {
+          const result = await uploadMultipleFiles(req.files.images);
+          imageUrls = result.detail.map((item) => item.path);
+        } else {
+          const result = await uploadSingleFile(req.files.images);
+          imageUrls = [result.path];
+        }
+      } catch (error) {
+        console.log("Error uploading images:", error);
+      }
+    }
     const variant = await createVariantService(
+      color,
+      imageUrls,
       size,
       stock,
       sku,
-      position,
-      productId
+      Products
     );
-
     return res.status(200).json({
       statusCode: 200,
       message: "Tạo biến thể thành công",
