@@ -44,7 +44,7 @@ const verifyToken = async (req, res, next) => {
     console.error("Lỗi verify token:", error.message);
 
     if (error.name === "TokenExpiredError") {
-      return res.status(410).json({
+      return res.status(400).json({
         message: "Token đã hết hạn, vui lòng đăng nhập lại",
         errorCode: "TOKEN_EXPIRED",
       }); 
@@ -54,7 +54,7 @@ const verifyToken = async (req, res, next) => {
         errorCode: "INVALID_TOKEN",
       });
     }
-    return res.status(401).json({
+    return res.status(400).json({
       message: "Không thể xác thực người dùng",
       errorCode: "AUTH_FAILED",
     });
