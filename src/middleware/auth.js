@@ -49,7 +49,7 @@ const verifyToken = async (req, res, next) => {
         errorCode: "TOKEN_EXPIRED",
       }); 
     } else if (error.name === "JsonWebTokenError") {
-      return res.status(410).json({
+      return res.status(401).json({
         message: "Token không hợp lệ",
         errorCode: "INVALID_TOKEN",
       });
