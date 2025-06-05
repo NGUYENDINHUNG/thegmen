@@ -44,12 +44,12 @@ const verifyToken = async (req, res, next) => {
     console.error("Lỗi verify token:", error.message);
 
     if (error.name === "TokenExpiredError") {
-      return res.status(401).json({
+      return res.status(410).json({
         message: "Token đã hết hạn, vui lòng đăng nhập lại",
         errorCode: "TOKEN_EXPIRED",
-      });
+      }); 
     } else if (error.name === "JsonWebTokenError") {
-      return res.status(401).json({
+      return res.status(410).json({
         message: "Token không hợp lệ",
         errorCode: "INVALID_TOKEN",
       });

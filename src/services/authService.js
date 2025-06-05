@@ -115,7 +115,7 @@ export const handleGoogleLogin = async (profile) => {
 
     const userRole = await Role.findOne({ name: "USER" });
 
-    let user = await User.findOne({ googleId });
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
     if (!user) {
       user = await User.create({
         googleId,
@@ -124,6 +124,9 @@ export const handleGoogleLogin = async (profile) => {
         avatar,
         role: userRole?._id,
       });
+    } else if (!user.googleId) {
+      user.googleId = googleId;
+      await user.save();
     }
 
     const payload = {
@@ -139,7 +142,6 @@ export const handleGoogleLogin = async (profile) => {
       expiresIn: process.env.JWT_EXPIRE,
     });
 
-    console.log("Generated tokens:", { accessToken, refreshToken });
     await UpdateUserRefreshToken(user._id, refreshToken);
 
     return {

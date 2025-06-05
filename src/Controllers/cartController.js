@@ -2,7 +2,7 @@ import {
   addToCartService,
   getCartByUserService,
   removeItemFromCartService,
-} from "../services/CartService.js";
+} from "../services/cartService.js";
 
 export const addToCart = async (req, res) => {
   try {

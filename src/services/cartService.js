@@ -26,13 +26,21 @@ export const addToCartService = async (
     if (!product) throw new Error("Sản phẩm không tồn tại");
     stock = product.stock;
   }
-
-  const itemIndex = cart.items.findIndex(
-    (item) =>
-      item.productId.toString() === productId &&
-      (!variantId ||
-        (item.variantId && item.variantId.toString() === variantId))
-  );
+ 
+  
+  const itemIndex = cart.items.findIndex((item) => {
+    if (variantId) {
+      return (
+        item.productId.toString() === productId &&
+        item.variantId && item.variantId.toString() === variantId
+      );
+    } else {
+      return (
+        item.productId.toString() === productId &&
+        (!item.variantId || item.variantId === null)
+      );
+    }
+  });
   let currentQuantity = 0;
   if (itemIndex > -1) {
     currentQuantity = cart.items[itemIndex].quantity;
