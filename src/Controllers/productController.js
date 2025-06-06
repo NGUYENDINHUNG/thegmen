@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import {
   uploadMultipleFiles,
   uploadSingleFile,
@@ -23,12 +24,12 @@ export const CreateProduct = async (req, res) => {
       categories,
       content,
       color,
-      sizeSuggestCategories,
       UNISEXTYPE,
     } = req.body;
 
     let avatarUrl = "";
     let imageUrls = [];
+    let sizeGuideUrl = "";
 
     if (req.files?.avatar) {
       try {
@@ -36,6 +37,14 @@ export const CreateProduct = async (req, res) => {
         avatarUrl = result.path;
       } catch (error) {
         console.log("Error uploading avatar:", error);
+      }
+    }
+    if (req.files?.sizeGuide) {
+      try {
+        const result = await uploadSingleFile(req.files.sizeGuide);
+        sizeGuideUrl = result.path;
+      } catch (error) {
+        console.log("Error uploading sizeGuide:", error);
       }
     }
 
@@ -60,11 +69,11 @@ export const CreateProduct = async (req, res) => {
       discountType,
       description,
       categories,
-      sizeSuggestCategories,
       content,
       color,
       avatar: avatarUrl,
       images: imageUrls,
+      sizeGuide: sizeGuideUrl,
       UNISEXTYPE,
     });
 
@@ -110,8 +119,19 @@ export const UpdateProduct = async (req, res) => {
 
 export const GetOnProduct = async (req, res) => {
   const { slug } = req.params;
+  let userId = null;
+
+  const token = req.headers.authorization?.split(" ")[1];
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded._id;
+    } catch (error) {
+      console.log("Error verifying token:", error);
+    }
+  }
   try {
-    const product = await GetProductsBySlugService(slug);
+    const product = await GetProductsBySlugService(slug, userId);
     return res.status(200).json({
       statusCode: 200,
       message: "Lấy sản phẩm thành công",

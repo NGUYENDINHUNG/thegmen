@@ -21,6 +21,9 @@ const ProductSchema = new Schema(
       type: [String],
       default: [],
     },
+    sizeGuide: {
+      type: String,
+    },
     price: {
       type: Number,
       required: true,
@@ -41,23 +44,13 @@ const ProductSchema = new Schema(
       min: 0,
       max: 100,
     },
-    UNISEXTYPE: {
+    TYPE: {
       type: String,
       enum: ["MEN", "WOMEN", "KIDS", "UNISEX"],
     },
-    color: {
-      type: String,
-      default: null,
-    },
-    size: {
-      type: String,
-      default: null,
-    },
-    stock: {
-      type: Number,
-      default: null,
-    },
-
+    color: String,
+    size: String,
+    stock: Number,
     variants: {
       type: [Schema.Types.ObjectId],
       ref: "variants",
@@ -67,11 +60,6 @@ const ProductSchema = new Schema(
     categories: {
       type: [Schema.Types.ObjectId],
       ref: "categories",
-      default: [],
-    },
-    sizeSuggestCategories: {
-      type: [Schema.Types.ObjectId],
-      ref: "sizeSuggestCategories",
       default: [],
     },
     isDeleted: {

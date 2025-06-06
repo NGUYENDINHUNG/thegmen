@@ -26,13 +26,13 @@ export const addToCartService = async (
     if (!product) throw new Error("Sản phẩm không tồn tại");
     stock = product.stock;
   }
- 
-  
+
   const itemIndex = cart.items.findIndex((item) => {
     if (variantId) {
       return (
         item.productId.toString() === productId &&
-        item.variantId && item.variantId.toString() === variantId
+        item.variantId &&
+        item.variantId.toString() === variantId
       );
     } else {
       return (
@@ -49,6 +49,7 @@ export const addToCartService = async (
   if (currentQuantity + quantity > stock) {
     throw new Error("Số lượng vượt quá tồn kho");
   }
+  console.log(currentQuantity + quantity);
 
   if (itemIndex > -1) {
     cart.items[itemIndex].quantity += quantity;
@@ -62,23 +63,33 @@ export const addToCartService = async (
 };
 
 export const getCartByUserService = async (userId) => {
-  const cart = await Cart.findOne({ userId }).populate({
-    path: "items.productId items.variantId",
-  });
-
+  const cart = await Cart.findOne({ userId }).populate([
+    {
+      path: "items.productId",
+      select:
+        "-featured -categories -sizeSuggestCategories -isDeleted -deletedAt -createdAt -updatedAt -__v -stock -description -images",
+    },
+    {
+      path: "items.variantId",
+      select: "-isDeleted -deletedAt -createdAt -updatedAt -__v -stock",
+    },
+  ]);
   if (!cart) return null;
 
   let totalQuantity = 0;
   let totalPrice = 0;
   cart.items.forEach((item) => {
     totalQuantity += item.quantity;
-    if (item.productId && item.productId.price) {
-      totalPrice += item.productId.price * item.quantity;
+    if (item.productId) {
+      const price = item.productId.finalPrice || item.productId.price;
+      if (price) {
+        totalPrice += price * item.quantity;
+      }
     }
   });
   console.log(totalPrice);
   return {
-    ...cart.toObject(),
+    cart,
     totalQuantity,
     totalPrice,
   };
@@ -91,7 +102,28 @@ export const removeItemFromCartService = async (
 ) => {
   const cart = await Cart.findOne({ userId });
   if (!cart) return null;
-  cart.items = cart.items.filter((item) => item.productId.toString() !== productId || (variantId && item.variantId && item.variantId.toString() !== variantId) );
-  await cart.save();
+
+  // Tìm index của item cần xóa
+  const itemIndex = cart.items.findIndex((item) => {
+    if (variantId) {
+      return (
+        item.productId.toString() === productId &&
+        item.variantId &&
+        item.variantId.toString() === variantId
+      );
+    } else {
+      return (
+        item.productId.toString() === productId &&
+        (!item.variantId || item.variantId === null)
+      );
+    }
+  });
+
+  if (itemIndex > -1) {
+    cart.items.splice(itemIndex, 1);
+    cart.updatedAt = new Date();
+    await cart.save();
+  }
+
   return cart;
 };

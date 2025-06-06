@@ -3,6 +3,7 @@ import aqp from "api-query-params";
 import slugify from "slugify";
 import Variants from "../models/variantsModel.schema.js";
 import mongoose from "mongoose";
+import Favorites from "../models/favoritesModel.schema.js";
 
 export const CreateProductService = async (productData) => {
   try {
@@ -11,6 +12,7 @@ export const CreateProductService = async (productData) => {
       description,
       avatar,
       images,
+      sizeGuide,
       price,
       discount,
       discountType,
@@ -19,7 +21,7 @@ export const CreateProductService = async (productData) => {
       size,
       stock,
       categories,
-      sizeSuggestCategories,
+    
       featured,
       UNISEXTYPE,
     } = productData;
@@ -68,7 +70,7 @@ export const CreateProductService = async (productData) => {
       size,
       stock,
       categories,
-      sizeSuggestCategories,
+      sizeGuide,
       featured,
       slug,
       UNISEXTYPE,
@@ -130,7 +132,7 @@ export const UpdateProductsService = async (ProductId, updateData) => {
     };
   }
 };
-export const GetProductsBySlugService = async (slug) => {
+export const GetProductsBySlugService = async (slug, userId) => {
   try {
     if (!slug) {
       throw new Error("Slug không hợp lệ");
@@ -140,14 +142,6 @@ export const GetProductsBySlugService = async (slug) => {
       "-createdAt -updatedAt -isDeleted -deletedAt -__v"
     )
       .populate("variants", "size stock sku color images")
-      .populate({
-        path: "sizeSuggestCategories",
-        select: "-createdAt -updatedAt -isDeleted -deletedAt -__v",
-        populate: {
-          path: "sizeOptions",
-          select: "-createdAt -updatedAt -isDeleted -deletedAt -__v",
-        },
-      })
       .populate("categories", "name slug")
       .select("-isDeleted -deletedAt -__v")
       .lean();
@@ -156,6 +150,15 @@ export const GetProductsBySlugService = async (slug) => {
       throw new Error("Không tìm thấy sản phẩm");
     }
 
+    let isFavorite = false;
+    if (userId) {
+      const favorite = await Favorites.findOne({
+        userId,
+        productId: product._id,
+      });
+      isFavorite = Boolean(favorite);
+    }
+    console.log(isFavorite);
     const hasColorVariants = product.variants.some((variant) => variant.color);
 
     if (hasColorVariants) {
@@ -183,6 +186,7 @@ export const GetProductsBySlugService = async (slug) => {
         product: {
           ...product,
           variants: variantsArray,
+          isFavorite: isFavorite,
         },
       };
     } else {
@@ -196,6 +200,7 @@ export const GetProductsBySlugService = async (slug) => {
         product: {
           ...product,
           variants: sizesArray,
+          isFavorite: isFavorite,
         },
       };
     }
@@ -352,7 +357,6 @@ export const FilterProductsService = async (queryParams) => {
         ],
       };
 
-
       const priceCondition = {
         $and: [
           { $or: [{ finalPrice: { $exists: false } }, { finalPrice: null }] },
@@ -363,7 +367,7 @@ export const FilterProductsService = async (queryParams) => {
 
       filter.$or = [finalPriceCondition, priceCondition];
     }
- // Lọc theo loại sản phẩm (UNISEXTYPE) nếu có
+    // Lọc theo loại sản phẩm (UNISEXTYPE) nếu có
     if (UNISEXTYPE) {
       filter.UNISEXTYPE = UNISEXTYPE;
     }
@@ -385,11 +389,11 @@ export const FilterProductsService = async (queryParams) => {
         "_id name description slug avatar images price finalPrice discountType discount UNISEXTYPE"
       )
       .populate({
-        path: 'categories',
+        path: "categories",
         match: { name: categories },
-        select: 'name slug'
+        select: "name slug",
       })
-      .sort(sortOption) 
+      .sort(sortOption)
       .skip(skip)
       .limit(limit)
       .lean();

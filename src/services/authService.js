@@ -264,13 +264,9 @@ export const processNewToken = async (refreshToken, res) => {
       EC: 0,
       EM: "Làm mới token thành công",
       accessToken,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-      },
     };
   } catch (error) {
+    
     console.log("««««« error »»»»»", error);
 
     if (error.name === "TokenExpiredError") {
