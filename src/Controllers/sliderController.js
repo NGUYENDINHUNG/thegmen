@@ -7,8 +7,14 @@ import {
 
 export const CreateSliders = async (req, res) => {
   try {
-    const { imageUrl, linkUrl, position } = req.body;
-    const result = await CreateSlidersService(imageUrl, linkUrl, position);
+    const { imageUrl, linkUrl, position, title, description } = req.body;
+    const result = await CreateSlidersService(
+      imageUrl,
+      linkUrl,
+      position,
+      title,
+      description
+    );
     return res.status(200).json({
       statusCode: 200,
       message: "Create slider successfully",

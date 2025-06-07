@@ -19,12 +19,11 @@ export const CreateProduct = async (req, res) => {
       name,
       price,
       discount,
-      discountType,
       description,
       categories,
       content,
       color,
-      UNISEXTYPE,
+      TYPE,
     } = req.body;
 
     let avatarUrl = "";
@@ -66,7 +65,6 @@ export const CreateProduct = async (req, res) => {
       name,
       price,
       discount,
-      discountType,
       description,
       categories,
       content,
@@ -74,7 +72,7 @@ export const CreateProduct = async (req, res) => {
       avatar: avatarUrl,
       images: imageUrls,
       sizeGuide: sizeGuideUrl,
-      UNISEXTYPE,
+      TYPE,
     });
 
     return res.status(201).json({
@@ -217,11 +215,19 @@ export const FilterProducts = async (req, res) => {
   try {
     const data = await FilterProductsService(req.query);
 
+    if (data.EC !== 0) {
+      return res.status(200).json({
+        statusCode: 200,
+        message: data.EM,
+        data: data.data,
+      });
+    } else {  
     return res.status(200).json({
       statusCode: 200,
-      message: "Lọc sản phẩm thành công",
-      data: data,
-    });
+        message: "Lọc sản phẩm thành công",
+        data: data,
+      });
+    }
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,

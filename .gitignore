@@ -4,3 +4,8 @@
 
 # Ignore node_modules
 node_modules/
+
+# ... existing code ...
+
+# Ignore seed folder
+src/seed/

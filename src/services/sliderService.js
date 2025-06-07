@@ -1,11 +1,13 @@
-import Sliders from "../models/sliderModule.schema.js";
+import Sliders from "../models/sliderModel.schema.js";
 
-export const CreateSlidersService = async (imageUrl, linkUrl, position) => {
+export const CreateSlidersService = async (imageUrl, linkUrl, position, title, description) => {
   try {
     let result = await Sliders.create({
       imageUrl: imageUrl,
       linkUrl: linkUrl,
       position: position,
+      title: title,
+      description: description,
     });
     return result;
   } catch (error) {
@@ -44,7 +46,7 @@ export const GetAllSlidersService = async () => {
   try {
     const sliders = await Sliders.find(
       { isActive: true },
-      "imageUrl linkUrl position"
+      "-__v -createdAt -updatedAt"
     );
     return sliders;
   } catch (error) {

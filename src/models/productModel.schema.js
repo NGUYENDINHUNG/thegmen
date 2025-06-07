@@ -19,7 +19,6 @@ const ProductSchema = new Schema(
     },
     images: {
       type: [String],
-      default: [],
     },
     sizeGuide: {
       type: String,
@@ -32,11 +31,6 @@ const ProductSchema = new Schema(
     finalPrice: {
       type: Number,
       min: 0,
-    },
-    discountType: {
-      type: String,
-      enum: ["PERCENTAGE", "FIXED_AMOUNT"],
-      default: null,
     },
     discount: {
       type: Number,

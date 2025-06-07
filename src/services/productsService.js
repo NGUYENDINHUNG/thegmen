@@ -4,7 +4,7 @@ import slugify from "slugify";
 import Variants from "../models/variantsModel.schema.js";
 import mongoose from "mongoose";
 import Favorites from "../models/favoritesModel.schema.js";
-
+import Category from "../models/categoriesModel.schema.js";
 export const CreateProductService = async (productData) => {
   try {
     const {
@@ -15,13 +15,11 @@ export const CreateProductService = async (productData) => {
       sizeGuide,
       price,
       discount,
-      discountType,
-      type,
+      TYPE,
       color,
       size,
       stock,
       categories,
-    
       featured,
       UNISEXTYPE,
     } = productData;
@@ -35,24 +33,7 @@ export const CreateProductService = async (productData) => {
 
     let finalPrice = price;
     if (discount) {
-      if (discountType === "PERCENTAGE" && (discount < 0 || discount > 100)) {
-        return {
-          EC: 400,
-          EM: "Giảm giá theo phần trăm phải từ 0 đến 100",
-        };
-      }
-      if (discountType === "FIXED_AMOUNT" && discount > price) {
-        return {
-          EC: 400,
-          EM: "Giảm giá cố định không được lớn hơn giá sản phẩm",
-        };
-      }
-
-      if (discountType === "PERCENTAGE") {
-        finalPrice = price - (price * discount) / 100;
-      } else if (discountType === "FIXED_AMOUNT") {
-        finalPrice = price - discount;
-      }
+      finalPrice = price - (price * discount) / 100;
     }
 
     const slug = slugify(name, { lower: true, strict: true, locale: "vi" });
@@ -64,8 +45,7 @@ export const CreateProductService = async (productData) => {
       images,
       price,
       discount,
-      discountType,
-      type,
+      TYPE,
       color,
       size,
       stock,
@@ -176,6 +156,7 @@ export const GetProductsBySlugService = async (slug, userId) => {
           size: variant.size,
           stock: variant.stock,
           sku: variant.sku,
+          id: variant._id,
         });
 
         return acc;
@@ -339,78 +320,102 @@ export const FilterProductsService = async (queryParams) => {
     const {
       minPrice,
       maxPrice,
-      categories,
-      UNISEXTYPE,
-      sort,
+      category,
+      type,
       page = 1,
       limit = 10,
     } = queryParams;
 
     const filter = { isDeleted: false };
 
-    if (minPrice || maxPrice) {
-      const finalPriceCondition = {
-        $and: [
-          { finalPrice: { $exists: true, $ne: null } },
-          minPrice ? { finalPrice: { $gte: Number(minPrice) } } : {},
-          maxPrice ? { finalPrice: { $lte: Number(maxPrice) } } : {},
-        ],
-      };
-
-      const priceCondition = {
-        $and: [
-          { $or: [{ finalPrice: { $exists: false } }, { finalPrice: null }] },
-          minPrice ? { price: { $gte: Number(minPrice) } } : {},
-          maxPrice ? { price: { $lte: Number(maxPrice) } } : {},
-        ],
-      };
-
-      filter.$or = [finalPriceCondition, priceCondition];
-    }
-    // Lọc theo loại sản phẩm (UNISEXTYPE) nếu có
-    if (UNISEXTYPE) {
-      filter.UNISEXTYPE = UNISEXTYPE;
-    }
-    let sortOption = { createdAt: -1 };
-    if (sort) {
-      if (sort === "price_asc") {
-        sortOption = { finalPrice: 1, price: 1 };
-      } else if (sort === "price_desc") {
-        sortOption = { finalPrice: -1, price: -1 };
-      } else if (sort === "oldest") {
-        sortOption = { createdAt: 1 };
+    if (type) {
+      const validTypes = ["MEN", "WOMEN", "KIDS", "UNISEX"];
+      if (!validTypes.includes(type)) {
+        return { EC: 400, EM: "Type không hợp lệ", data: null };
       }
+      filter.TYPE = type;
     }
 
-    const skip = (page - 1) * limit;
+    if (minPrice || maxPrice) {
+      filter.$or = [
+        {
+          $and: [
+            { finalPrice: { $exists: true, $ne: null } },
+            ...(minPrice ? [{ finalPrice: { $gte: Number(minPrice) } }] : []),
+            ...(maxPrice ? [{ finalPrice: { $lte: Number(maxPrice) } }] : []),
+          ],
+        },
+        {
+          $and: [
+            { $or: [{ finalPrice: { $exists: false } }, { finalPrice: null }] },
+            ...(minPrice ? [{ price: { $gte: Number(minPrice) } }] : []),
+            ...(maxPrice ? [{ price: { $lte: Number(maxPrice) } }] : []),
+          ],
+        },
+      ];
+    }
 
+    if (category) {
+      const catDoc = await Category.findOne({
+        $or: [{ name: category }, { slug: category }],
+      }).select("_id");
+      if (!catDoc) {
+        return {
+          EC: 11,
+          EM: "Không có sản phẩm phù hợp với điều kiện tìm kiếm",
+          data: {
+            result: [],
+          },
+        };
+      }
+      filter.categories = catDoc._id;
+    }
+
+    // 5. Phân trang
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const limitNum = Math.max(Number(limit) || 10, 1);
+    const skip = (pageNum - 1) * limitNum;
+
+    // 6. Query
     const products = await Product.find(filter)
       .select(
-        "_id name description slug avatar images price finalPrice discountType discount UNISEXTYPE"
+        "_id name description slug avatar images price finalPrice discount TYPE categories"
       )
-      .populate({
-        path: "categories",
-        match: { name: categories },
-        select: "name slug",
-      })
-      .sort(sortOption)
+      .populate("categories", "name slug")
       .skip(skip)
-      .limit(limit)
+      .limit(limitNum)
       .lean();
 
-    const totalItems = await Product.countDocuments(filter);
+    if (!products || products.length === 0) {
+      return {
+        EC: 11,
+        EM: "Không có sản phẩm phù hợp với điều kiện tìm kiếm",
+        data: {
+          meta: {
+            currentPage: pageNum,
+            pageSize: limitNum,
+            totalItems: 0,
+            totalPages: 0,
+          },
+          result: [],
+        },
+      };
+    }
 
     return {
-      meta: {
-        currentPage: Number(page),
-        pageSize: Number(limit),
-        totalItems,
-        totalPages: Math.ceil(totalItems / limit),
+      EC: 0,
+      EM: "Lọc sản phẩm thành công",
+      data: {
+        meta: {
+          currentPage: pageNum,
+          pageSize: limitNum,
+          totalItems: products.length,
+          totalPages: Math.ceil(products.length / limitNum),
+        },
+        result: products,
       },
-      result: products,
     };
   } catch (error) {
-    console.error("FilterProductsService error:", error);
     return {
       EC: 1,
       EM: "Lỗi khi lọc sản phẩm",
@@ -418,3 +423,116 @@ export const FilterProductsService = async (queryParams) => {
     };
   }
 };
+// export const GetProductsBySlugService = async (slug, userId, color) => {
+//   try {
+//     if (!slug) {
+//       return { EC: 400, EM: "Slug không hợp lệ", data: null };
+//     }
+//     const product = await Product.findOne(
+//       { slug: slug },
+//       "-createdAt -updatedAt -isDeleted -deletedAt -__v"
+//     )
+//       .populate("variants", "size stock sku color images")
+//       .populate("categories", "name slug")
+//       .select("-isDeleted -deletedAt -__v")
+//       .lean();
+
+//     if (!product) {
+//       return { EC: 404, EM: "Không tìm thấy sản phẩm", data: null };
+//     }
+
+//     let isFavorite = false;
+//     if (userId) {
+//       const favorite = await Favorites.findOne({
+//         userId,
+//         productId: product._id,
+//       });
+//       isFavorite = Boolean(favorite);
+//     }
+
+//     // Nếu có truyền color, chỉ trả về variant của màu đó
+//     if (color) {
+//       const colorVariants = product.variants.filter(v => v.color === color);
+//       if (!colorVariants.length) {
+//         return {
+//           EC: 404,
+//           EM: "Không tìm thấy sản phẩm với màu này",
+//           data: null
+//         };
+//       }
+//       // Gom lại thành 1 object như FE mong muốn
+//       const sizes = colorVariants.map(v => ({
+//         size: v.size,
+//         stock: v.stock,
+//         sku: v.sku
+//       }));
+//       return {
+//         product: {
+//           ...product,
+//           variants: [
+//             {
+//               color: color,
+//               sizes: sizes,
+//               images: colorVariants[0].images || []
+//             }
+//           ],
+//           isFavorite: isFavorite,
+//         }
+//       };
+//     }
+
+//     // Nếu không truyền color, giữ nguyên logic cũ
+//     const hasColorVariants = product.variants.some((variant) => variant.color);
+
+//     if (hasColorVariants) {
+//       const groupedVariants = product.variants.reduce((acc, variant) => {
+//         const color = variant.color || "default";
+//         if (!acc[color]) {
+//           acc[color] = {
+//             color: color,
+//             sizes: [],
+//             images: variant.images || [],
+//           };
+//         }
+
+//         acc[color].sizes.push({
+//           size: variant.size,
+//           stock: variant.stock,
+//           sku: variant.sku,
+//         });
+
+//         return acc;
+//       }, {});
+
+//       const variantsArray = Object.values(groupedVariants);
+//       return {
+//         product: {
+//           ...product,
+//           variants: variantsArray,
+//           isFavorite: isFavorite,
+//         },
+//       };
+//     } else {
+//       const sizesArray = product.variants.map((variant) => ({
+//         size: variant.size,
+//         stock: variant.stock,
+//         sku: variant.sku,
+//       }));
+
+//       return {
+//         product: {
+//           ...product,
+//           variants: sizesArray,
+//           isFavorite: isFavorite,
+//         },
+//       };
+//     }
+//   } catch (error) {
+//     return {
+//       EC: 500,
+//       EM: "Lỗi server, vui lòng thử lại sau",
+//       data: null,
+//       debugMessage: error.message,
+//     };
+//   }
+// };

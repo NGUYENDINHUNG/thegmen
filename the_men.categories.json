@@ -18,7 +18,7 @@
               "sku": "SP0111",
               "images": [
                   "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product2-1748336890150.jpg",
-                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product1-1748336890808.jpg",
+                  "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/product1-1748336890808.jpg",   
                   "https://hungdev-backup-2025.s3.ap-southeast-1.amazonaws.com/uploads/menu_5-1739892270396-1748336891093.png"
               ],
               "productId": "683580e266c166e46e4700b1",
