@@ -8,6 +8,9 @@ const ProductSchema = new Schema(
       type: String,
       required: true,
     },
+    description_short: {
+      type: String,
+    },
     description: {
       type: String,
     },

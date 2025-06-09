@@ -9,6 +9,7 @@ export const CreateProductService = async (productData) => {
   try {
     const {
       name,
+      description_short,
       description,
       avatar,
       images,
@@ -41,6 +42,7 @@ export const CreateProductService = async (productData) => {
     const newProduct = await Product.create({
       name,
       description,
+      description_short,
       avatar,
       images,
       price,
