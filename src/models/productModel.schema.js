@@ -14,6 +14,9 @@ const ProductSchema = new Schema(
     description: {
       type: String,
     },
+    additional_info: {
+      type: String,
+    },
     slug: {
       type: String,
     },
