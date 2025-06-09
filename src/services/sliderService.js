@@ -1,6 +1,12 @@
 import Sliders from "../models/sliderModel.schema.js";
 
-export const CreateSlidersService = async (imageUrl, linkUrl, position, title, description) => {
+export const CreateSlidersService = async (
+  imageUrl,
+  linkUrl,
+  position,
+  title,
+  description
+) => {
   try {
     let result = await Sliders.create({
       imageUrl: imageUrl,
