@@ -9,7 +9,9 @@ export const createVoucherService = async (voucherData) => {
     const voucher = await Voucher.create(voucherData);
     return voucher;
   } catch (error) {
+    console.log(error);
     throw error;
+    
   }
 };
 
@@ -17,6 +19,7 @@ export const getAllVouchersService = async () => {
   try {
     return await Voucher.find({});
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
@@ -28,6 +31,7 @@ export const updateVoucherService = async (id, updateData) => {
       runValidators: true,
     });
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
@@ -40,6 +44,7 @@ export const getVoucherByCodeService = async (code) => {
     }
     return voucher;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
@@ -74,15 +79,10 @@ export const validateAndApplyVoucherService = async (
     if (usedVoucher && usedVoucher.usageCount >= voucher.maxUsagePerUser) {
       throw new Error("Bạn đã sử dụng hết số lần cho phép với voucher này.");
     }
-    // Tính toán giá trị giảm giá
-    let discountAmount = 0;
-    if (voucher.discountType === "percentage") {
-      discountAmount = (orderValue * voucher.discountValue) / 100;
-    } else {
-      discountAmount = voucher.discountValue;
-    }
-    console.log(discountAmount);
-    // Cập nhật số lần sử dụng voucher cho user
+
+    const discountAmount = (orderValue * voucher.discountValue) / 100;
+    
+
     if (usedVoucher) {
       usedVoucher.usageCount += 1;
     } else {
@@ -98,6 +98,7 @@ export const validateAndApplyVoucherService = async (
       finalAmount,
     };
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };

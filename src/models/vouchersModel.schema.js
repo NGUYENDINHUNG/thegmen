@@ -4,11 +4,6 @@ const { Schema } = mongoose;
 const VoucherSchema = new Schema({
   code: { type: String, required: true, unique: true, trim: true },
   name: { type: String, required: true, trim: true },
-  discountType: {
-    type: String,
-    enum: ["percentage", "fixed"],
-    required: true,
-  },
   discountValue: { type: Number, required: true, min: 0 },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },

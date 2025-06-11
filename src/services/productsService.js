@@ -498,6 +498,8 @@ export const GetRelatedProductsService = async (slug, limit = 4) => {
   }
 };
 
+
+
 // export const GetProductsByTypeService = async (type, page = 1, limit = 10) => {
 //   try {
 //     const validTypes = ["MEN", "WOMEN", "KIDS", "UNISEX"];

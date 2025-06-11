@@ -59,7 +59,6 @@ export const applyVoucher = async (req, res) => {
       data: {
         voucherId: result.voucher._id,
         code: result.voucher.code,
-        discountType: result.voucher.discountType,
         discountValue: result.voucher.discountValue,
         discountAmount: result.discountAmount,
         finalAmount: result.finalAmount,

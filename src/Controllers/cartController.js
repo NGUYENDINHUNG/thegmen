@@ -27,11 +27,12 @@ export const addToCart = async (req, res) => {
 export const getCartByUser = async (req, res) => {
   try {
     const userId = req.user._id;
-
-    const cart = await getCartByUserService(userId);
+    const { voucherCode } = req.query;
+    const cart = await getCartByUserService(userId, voucherCode);
 
     if (!cart) {
       return res.status(404).json({
+        statusCode: 404,
         message: "Không tìm thấy giỏ hàng",
       });
     }
