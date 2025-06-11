@@ -118,6 +118,7 @@ export const createOrderService = async (userId, addressId, voucherCode) => {
     await Cart.findOneAndDelete({ userId });
     return savedOrder;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
@@ -224,6 +225,7 @@ export const buyNowService = async (
 
     return savedOrder;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
