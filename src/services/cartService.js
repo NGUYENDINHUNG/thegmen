@@ -80,7 +80,7 @@ export const getCartByUserService = async (userId) => {
     {
       path: "items.productId",
       select:
-        "-featured -categories -sizeSuggestCategories -isDeleted -deletedAt -createdAt -updatedAt -__v -stock -description -images",
+        "-featured -categories  -isDeleted -deletedAt -createdAt -updatedAt -__v -stock -description ",
     },
     {
       path: "items.variantId",

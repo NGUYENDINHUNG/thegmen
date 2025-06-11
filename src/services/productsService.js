@@ -1,10 +1,10 @@
 import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
-import slugify from "slugify";
 import Variants from "../models/variantsModel.schema.js";
 import mongoose from "mongoose";
 import Favorites from "../models/favoritesModel.schema.js";
 import Category from "../models/categoriesModel.schema.js";
+
 export const CreateProductService = async (productData) => {
   try {
     const {
@@ -32,14 +32,10 @@ export const CreateProductService = async (productData) => {
         EM: "Tên và giá sản phẩm là bắt buộc",
       };
     }
-
     let finalPrice = price;
     if (discount) {
       finalPrice = price - (price * discount) / 100;
     }
-
-    const slug = slugify(name, { lower: true, strict: true, locale: "vi" });
-
     const newProduct = await Product.create({
       name,
       description,
@@ -56,7 +52,6 @@ export const CreateProductService = async (productData) => {
       categories,
       sizeGuide,
       featured,
-      slug,
       UNISEXTYPE,
       finalPrice: Math.round(finalPrice),
     });
@@ -70,6 +65,7 @@ export const CreateProductService = async (productData) => {
     };
   }
 };
+
 export const UpdateProductsService = async (ProductId, updateData) => {
   try {
     const existingProduct = await Product.findById(ProductId);
@@ -83,16 +79,10 @@ export const UpdateProductsService = async (ProductId, updateData) => {
     if (updateData.price || updateData.discount || updateData.discountType) {
       const price = updateData.price || existingProduct.price;
       const discount = updateData.discount || existingProduct.discount;
-      const discountType =
-        updateData.discountType || existingProduct.discountType;
 
       let finalPrice = price;
       if (discount) {
-        if (discountType === "PERCENTAGE") {
-          finalPrice = price - (price * discount) / 100;
-        } else if (discountType === "FIXED_AMOUNT") {
-          finalPrice = price - discount;
-        }
+        finalPrice = price - (price * discount) / 100;
       }
       updateData.finalPrice = Math.round(finalPrice);
     }
@@ -116,6 +106,7 @@ export const UpdateProductsService = async (ProductId, updateData) => {
     };
   }
 };
+
 export const GetProductsBySlugService = async (slug, userId) => {
   try {
     if (!slug) {
@@ -194,13 +185,14 @@ export const GetProductsBySlugService = async (slug, userId) => {
     throw error;
   }
 };
+
 export const GetAllProductsService = async (
   pageSize,
   currentPage,
   queryString
 ) => {
   try {
-    const { filter, sort } = aqp(queryString);
+    const { filter } = aqp(queryString);
     delete filter.currentPage;
     delete filter.pageSize;
 
@@ -210,11 +202,6 @@ export const GetAllProductsService = async (
     const limit = +pageSize || DEFAULT_PAGE_SIZE;
     const page = +currentPage || DEFAULT_CURRENT_PAGE;
     const offset = (page - 1) * limit;
-
-    const sortObj =
-      sort && typeof sort === "object" && Object.keys(sort).length > 0
-        ? sort
-        : { _id: -1 };
 
     const result = await Product.find(filter)
       .select(
@@ -226,7 +213,6 @@ export const GetAllProductsService = async (
         select: "size color stock sku",
         match: { isDeleted: false },
       })
-      .sort(sortObj)
       .skip(offset)
       .limit(limit)
       .lean();
@@ -239,9 +225,16 @@ export const GetAllProductsService = async (
         ...new Set(product.variants.map((index) => index.size)),
       ].filter(Boolean);
 
-      const { variants, ...productWithoutVariants } = product;
       return {
-        ...productWithoutVariants,
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        slug: product.slug,
+        avatar: product.avatar,
+        images: product.images,
+        description: product.description,
+        categories: product.categories,
+        isDeleted: product.isDeleted,
         COLOR: colors,
         SIZE: sizes,
       };
@@ -264,6 +257,7 @@ export const GetAllProductsService = async (
     throw new Error(`Lỗi khi lấy danh sách sản phẩm: ${error.message}`);
   }
 };
+
 export const SoftDeleteProductService = async (ProductId) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(ProductId)) {
@@ -299,6 +293,7 @@ export const SoftDeleteProductService = async (ProductId) => {
     throw new Error(error.message);
   }
 };
+
 export const RestoreProductService = async (ProductId) => {
   try {
     const restoredProduct = await Product.findByIdAndUpdate(
@@ -319,6 +314,7 @@ export const RestoreProductService = async (ProductId) => {
     throw error;
   }
 };
+
 export const FilterProductsService = async (queryParams) => {
   try {
     const {
@@ -427,116 +423,259 @@ export const FilterProductsService = async (queryParams) => {
     };
   }
 };
-// export const GetProductsBySlugService = async (slug, userId, color) => {
+
+export const GetRelatedProductsService = async (slug, limit = 4) => {
+  try {
+    const currentProduct = await Product.findOne({ slug: slug })
+      .select("categories TYPE")
+      .populate("categories", "_id");
+
+    if (!currentProduct) {
+      return {
+        EC: 404,
+        EM: "Không tìm thấy sản phẩm",
+        data: null,
+      };
+    }
+
+    const categoryIds = currentProduct.categories.map(
+      (category) => category._id
+    );
+    const relatedProducts = await Product.find({
+      _id: { $ne: currentProduct._id },
+      isDeleted: false,
+      categories: { $in: categoryIds },
+      TYPE: currentProduct.TYPE,
+    })
+      .select(
+        "name price finalPrice discount avatar images slug TYPE categories variants"
+      )
+      .populate("categories", "name slug")
+      .populate("variants", "color size")
+      .limit(limit)
+      .lean();
+
+    const processedResult = relatedProducts.map((product) => {
+      const colors = [...new Set(product.variants.map((v) => v.color))].filter(
+        Boolean
+      );
+
+      return {
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        finalPrice: product.finalPrice,
+        discount: product.discount,
+        avatar: product.avatar,
+        images: product.images,
+        slug: product.slug,
+        TYPE: product.TYPE,
+        categories: product.categories,
+        COLOR: colors,
+      };
+    });
+
+    if (processedResult.length === 0) {
+      return {
+        EC: 404,
+        EM: "Không tìm thấy sản phẩm liên quan",
+        data: null,
+      };
+    } else {
+    return {
+      EC: 0,
+      EM: "Lấy sản phẩm liên quan thành công",
+      data: processedResult,
+    };
+  }
+    } catch (error) {
+    console.error("GetRelatedProductsService error:", error);
+    return {
+      EC: 500,
+      EM: "Lỗi server, vui lòng thử lại sau",
+      data: null,
+    };
+  }
+};
+
+// export const GetProductsByTypeService = async (type, page = 1, limit = 10) => {
 //   try {
-//     if (!slug) {
-//       return { EC: 400, EM: "Slug không hợp lệ", data: null };
-//     }
-//     const product = await Product.findOne(
-//       { slug: slug },
-//       "-createdAt -updatedAt -isDeleted -deletedAt -__v"
-//     )
-//       .populate("variants", "size stock sku color images")
-//       .populate("categories", "name slug")
-//       .select("-isDeleted -deletedAt -__v")
-//       .lean();
-
-//     if (!product) {
-//       return { EC: 404, EM: "Không tìm thấy sản phẩm", data: null };
-//     }
-
-//     let isFavorite = false;
-//     if (userId) {
-//       const favorite = await Favorites.findOne({
-//         userId,
-//         productId: product._id,
-//       });
-//       isFavorite = Boolean(favorite);
-//     }
-
-//     // Nếu có truyền color, chỉ trả về variant của màu đó
-//     if (color) {
-//       const colorVariants = product.variants.filter(v => v.color === color);
-//       if (!colorVariants.length) {
-//         return {
-//           EC: 404,
-//           EM: "Không tìm thấy sản phẩm với màu này",
-//           data: null
-//         };
-//       }
-//       // Gom lại thành 1 object như FE mong muốn
-//       const sizes = colorVariants.map(v => ({
-//         size: v.size,
-//         stock: v.stock,
-//         sku: v.sku
-//       }));
+//     const validTypes = ["MEN", "WOMEN", "KIDS", "UNISEX"];
+//     if (!validTypes.includes(type)) {
 //       return {
-//         product: {
-//           ...product,
-//           variants: [
-//             {
-//               color: color,
-//               sizes: sizes,
-//               images: colorVariants[0].images || []
-//             }
-//           ],
-//           isFavorite: isFavorite,
-//         }
+//         EC: 400,
+//         EM: "Loại sản phẩm không hợp lệ",
+//         data: null,
 //       };
 //     }
 
-//     // Nếu không truyền color, giữ nguyên logic cũ
-//     const hasColorVariants = product.variants.some((variant) => variant.color);
+//     const skip = (page - 1) * limit;
 
-//     if (hasColorVariants) {
-//       const groupedVariants = product.variants.reduce((acc, variant) => {
-//         const color = variant.color || "default";
-//         if (!acc[color]) {
-//           acc[color] = {
-//             color: color,
-//             sizes: [],
-//             images: variant.images || [],
-//           };
-//         }
+//     const [products, total] = await Promise.all([
+//       Product.find({
+//         TYPE: type,
+//         isDeleted: false,
+//       })
+//         .select(
+//           "name price finalPrice discount avatar images slug TYPE categories"
+//         )
+//         .populate("categories", "name slug")
+//         .skip(skip)
+//         .limit(limit)
+//         .lean(),
+//       Product.countDocuments({
+//         TYPE: type,
+//         isDeleted: false,
+//       }),
+//     ]);
 
-//         acc[color].sizes.push({
-//           size: variant.size,
-//           stock: variant.stock,
-//           sku: variant.sku,
-//         });
-
-//         return acc;
-//       }, {});
-
-//       const variantsArray = Object.values(groupedVariants);
+//     const processedResult = products.map((product) => {
+//       const { variants, ...productWithoutVariants } = product;
 //       return {
-//         product: {
-//           ...product,
-//           variants: variantsArray,
-//           isFavorite: isFavorite,
+//         ...productWithoutVariants,
+//         COLOR: product.variants?.map((v) => v.color).filter(Boolean) || [],
+//         SIZE: product.variants?.map((v) => v.size).filter(Boolean) || [],
+//       };
+//     });
+
+//     return {
+//       EC: 0,
+//       EM: "Lấy sản phẩm theo loại thành công",
+//       data: {
+//         meta: {
+//           currentPage: page,
+//           pageSize: limit,
+//           totalItems: total,
+//           totalPages: Math.ceil(total / limit),
 //         },
-//       };
-//     } else {
-//       const sizesArray = product.variants.map((variant) => ({
-//         size: variant.size,
-//         stock: variant.stock,
-//         sku: variant.sku,
-//       }));
-
-//       return {
-//         product: {
-//           ...product,
-//           variants: sizesArray,
-//           isFavorite: isFavorite,
-//         },
-//       };
-//     }
+//         result: processedResult,
+//       },
+//     };
 //   } catch (error) {
+//     console.error("GetProductsByTypeService error:", error);
 //     return {
 //       EC: 500,
 //       EM: "Lỗi server, vui lòng thử lại sau",
 //       data: null,
-//       debugMessage: error.message,
+//     };
+//   }
+// };
+
+// export const GetProductsByCategoryService = async (
+//   categoryId,
+//   page = 1,
+//   limit = 10
+// ) => {
+//   try {
+//     const skip = (page - 1) * limit;
+
+//     const [products, total] = await Promise.all([
+//       Product.find({
+//         categories: categoryId,
+//         isDeleted: false,
+//       })
+//         .select(
+//           "name price finalPrice discount avatar images slug TYPE categories"
+//         )
+//         .populate("categories", "name slug")
+//         .skip(skip)
+//         .limit(limit)
+//         .lean(),
+//       Product.countDocuments({
+//         categories: categoryId,
+//         isDeleted: false,
+//       }),
+//     ]);
+
+//     const processedResult = products.map((product) => {
+//       const { variants, ...productWithoutVariants } = product;
+//       return {
+//         ...productWithoutVariants,
+//         COLOR: product.variants?.map((v) => v.color).filter(Boolean) || [],
+//         SIZE: product.variants?.map((v) => v.size).filter(Boolean) || [],
+//       };
+//     });
+
+//     return {
+//       EC: 0,
+//       EM: "Lấy sản phẩm theo danh mục thành công",
+//       data: {
+//         meta: {
+//           currentPage: page,
+//           pageSize: limit,
+//           totalItems: total,
+//           totalPages: Math.ceil(total / limit),
+//         },
+//         result: processedResult,
+//       },
+//     };
+//   } catch (error) {
+//     console.error("GetProductsByCategoryService error:", error);
+//     return {
+//       EC: 500,
+//       EM: "Lỗi server, vui lòng thử lại sau",
+//       data: null,
+//     };
+//   }
+// };
+
+// export const GetTopSellingProductsService = async (limit = 10) => {
+//   try {
+//     // Giả sử bạn có một collection OrderItems để theo dõi số lượng sản phẩm đã bán
+//     const topSellingProducts = await OrderItem.aggregate([
+//       {
+//         $match: {
+//           isDeleted: false,
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$productId",
+//           totalSold: { $sum: "$quantity" },
+//         },
+//       },
+//       {
+//         $sort: { totalSold: -1 },
+//       },
+//       {
+//         $limit: limit,
+//       },
+//       {
+//         $lookup: {
+//           from: "products",
+//           localField: "_id",
+//           foreignField: "_id",
+//           as: "product",
+//         },
+//       },
+//       {
+//         $unwind: "$product",
+//       },
+//       {
+//         $replaceRoot: { newRoot: "$product" },
+//       },
+//     ]);
+
+//     const processedResult = topSellingProducts.map((product) => {
+//       const { variants, ...productWithoutVariants } = product;
+//       return {
+//         ...productWithoutVariants,
+//         COLOR: product.variants?.map((v) => v.color).filter(Boolean) || [],
+//         SIZE: product.variants?.map((v) => v.size).filter(Boolean) || [],
+//       };
+//     });
+
+//     return {
+//       EC: 0,
+//       EM: "Lấy sản phẩm bán chạy thành công",
+//       data: processedResult,
+//     };
+//   } catch (error) {
+//     console.error("GetTopSellingProductsService error:", error);
+//     return {
+//       EC: 500,
+//       EM: "Lỗi server, vui lòng thử lại sau",
+//       data: null,
 //     };
 //   }
 // };

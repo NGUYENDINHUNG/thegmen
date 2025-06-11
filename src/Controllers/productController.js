@@ -11,6 +11,7 @@ import {
   SoftDeleteProductService,
   RestoreProductService,
   FilterProductsService,
+  GetRelatedProductsService,
 } from "../services/productsService.js";
 
 export const CreateProduct = async (req, res) => {
@@ -225,9 +226,9 @@ export const FilterProducts = async (req, res) => {
         message: data.EM,
         data: data.data,
       });
-    } else {  
-    return res.status(200).json({
-      statusCode: 200,
+    } else {
+      return res.status(200).json({
+        statusCode: 200,
         message: "Lọc sản phẩm thành công",
         data: data,
       });
@@ -236,6 +237,34 @@ export const FilterProducts = async (req, res) => {
     return res.status(500).json({
       statusCode: 500,
       message: error.message || "Lọc sản phẩm thất bại",
+    });
+  }
+};
+
+export const GetRelatedProducts = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { limit } = req.query;
+
+    const result = await GetRelatedProductsService(slug, limit);
+    if (result.EC !== 0) {
+      return res.status(400).json({
+        statusCode: 400,
+        message: result.EM,
+        data: null,
+      });
+    } else {
+      return res.status(200).json({
+        statusCode: 200,
+        message: result.EM,
+        data: result.data,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      statusCode: 500,
+      message: error.message || "Lỗi server, vui lòng thử lại sau",
+      data: null,
     });
   }
 };
