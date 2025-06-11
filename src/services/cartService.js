@@ -105,11 +105,11 @@ export const getCartByUserService = async (userId) => {
       }
     }
   });
-  console.log(totalPrice);
   return {
     cart,
     totalQuantity,
     totalPrice,
+    item: cart.items.length 
   };
 };
 
