@@ -35,7 +35,7 @@ export const createOrderService = async (userId, addressId, voucherCode) => {
         }
       }
     }
-    const orderItems = [];
+    const orderItems = [];   
     let originalTotal = 0;
 
     cart.items.forEach((item) => {
