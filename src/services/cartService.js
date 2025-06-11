@@ -1,7 +1,6 @@
 import Cart from "../models/cartModel.schema.js";
 import Variants from "../models/variantsModel.schema.js";
 import Product from "../models/productModel.schema.js";
-import { validateAndApplyVoucherService } from "./vouchersSevice.js";
 
 export const addToCartService = async (
   userId,
@@ -76,22 +75,25 @@ export const addToCartService = async (
     throw new Error(`Thêm sản phẩm vào giỏ hàng thất bại: ${error.message}`);
   }
 };
-export const getCartByUserService = async (userId, voucherCode) => {
+
+export const getCartByUserService = async (userId) => {
   const cart = await Cart.findOne({ userId }).populate([
     {
       path: "items.productId",
       select:
-        "-featured -categories  -isDeleted -deletedAt -createdAt -updatedAt -__v -stock -description ",
+        "-featured -categories -isDeleted -deletedAt -createdAt -updatedAt -__v -stock -description",
     },
     {
       path: "items.variantId",
       select: "-isDeleted -deletedAt -createdAt -updatedAt -__v -stock",
     },
   ]);
+  
   if (!cart) return null;
 
   let totalQuantity = 0;
   let totalPrice = 0;
+  
   cart.items.forEach((item) => {
     totalQuantity += item.quantity;
     if (item.productId) {
@@ -106,38 +108,12 @@ export const getCartByUserService = async (userId, voucherCode) => {
       }
     }
   });
-  let voucherDiscount = 0;
-  let finalAmount = totalPrice;
-  let voucherInfo = null;
 
-  if (voucherCode) {
-    try {
-      const result = await validateAndApplyVoucherService(
-        voucherCode,
-        totalPrice,
-        userId
-      );
-      voucherDiscount = result.discountAmount;
-      finalAmount = result.finalAmount;
-      voucherInfo = {
-        id: result.voucher._id,
-        code: result.voucher.code,
-        discountType: result.voucher.discountType,
-        discountValue: result.voucher.discountValue,
-        discountAmount: voucherDiscount,
-      };
-    } catch (error) {
-      console.error("Lỗi áp dụng voucher:", error);
-    }
-  }
   return {
     cart,
     totalQuantity,
     totalPrice,
-    item: cart.items.length,
-    voucherInfo,
-    voucherDiscount,
-    finalAmount,
+    item: cart.items.length
   };
 };
 
