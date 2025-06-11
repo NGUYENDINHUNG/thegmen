@@ -1,3 +1,4 @@
+import Cart from "../models/cartModel.schema.js";
 import {
   createVoucherService,
   getAllVouchersService,
@@ -52,7 +53,10 @@ export const applyVoucher = async (req, res) => {
       orderValue,
       userId
     );
-
+    await Cart.findOneAndUpdate(
+      { userId },
+      { finalAmount: result.finalAmount }
+    );
     return res.status(200).json({
       status: 200,
       message: "Áp dụng voucher thành công",

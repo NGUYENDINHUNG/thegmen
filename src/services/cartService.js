@@ -109,10 +109,17 @@ export const getCartByUserService = async (userId) => {
     }
   });
 
+  if (!cart.finalAmount) {
+    cart.finalAmount = totalPrice;
+    await cart.save();
+  }
+
+
   return {
     cart,
     totalQuantity,
     totalPrice,
+    finalAmount: cart.finalAmount,
     item: cart.items.length
   };
 };
