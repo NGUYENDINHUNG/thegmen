@@ -377,7 +377,7 @@ export const LogoutService = async (refreshToken, res) => {
     throw new Error("Lỗi khi đăng xuất: " + error.message);
   }
 };
-export const updateAccountService = async (userId, updateData) => {
+export const updateAccountService = async (userId, updateData , oldPassword) => {
   if (!userId) {
     throw new Error("Không tìm thấy user");
   }
@@ -385,6 +385,19 @@ export const updateAccountService = async (userId, updateData) => {
   delete updateData.permission;
 
   if (updateData.password) {
+    if (!oldPassword) {
+      throw new Error("Vui lòng nhập mật khẩu cũ để đổi mật khẩu mới");
+    }
+    const user = await User.findById(userId).select("+password");
+    if (!user) throw new Error("User không tồn tại");
+
+    if (!user.password) {
+      throw new Error("Tài khoản của bạn đăng nhập bằng bên thứ 3, không thể đổi mật khẩu.");
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) throw new Error("Mật khẩu cũ không đúng");
+
     const salt = await bcrypt.genSalt(10);
     updateData.password = await bcrypt.hash(updateData.password, salt);
   }

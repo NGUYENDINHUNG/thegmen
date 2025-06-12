@@ -224,9 +224,11 @@ export const logout = async (req, res) => {
     });
   }
 };
+// BE/src/controllers/authController.js
 export const updateAccount = async (req, res) => {
   const userId = req.user._id; 
   const updateData = { ...(req.body || {}) };
+  const oldPassword = req.body.oldPassword;
 
   try {
     // Xử lý upload avatar nếu có
@@ -241,7 +243,7 @@ export const updateAccount = async (req, res) => {
         });
       }
     }
-    const updatedUser = await updateAccountService(userId, updateData);
+    const updatedUser = await updateAccountService(userId, updateData, oldPassword);
     res.status(200).json({
       status: 200,
       message: "Cập nhật tài khoản thành công",
