@@ -13,7 +13,7 @@ export const uploadSingleFile = async (file) => {
   const params = {
     Bucket: process.env.AWS_S3_BUCKET,
     Key: `uploads/${finalName}`,
-    Body: file.buffer,
+    Body: file.data,
     ContentType: file.mimetype,
     ACL: "public-read",
   };

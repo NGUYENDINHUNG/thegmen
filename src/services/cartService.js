@@ -83,7 +83,7 @@ export const getCartByUserService = async (userId) => {
     },
     {
       path: "items.variantId",
-      select: "_id color size sku",
+      select: "_id color size sku images",
     },
     {
       path: "appliedVoucher.voucherId",

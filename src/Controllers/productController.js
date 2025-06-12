@@ -97,8 +97,68 @@ export const CreateProduct = async (req, res) => {
 export const UpdateProduct = async (req, res) => {
   try {
     const { ProductId } = req.params;
+    const {
+      name,
+      price,
+      discount,
+      description_short,
+      additional_info,
+      description,
+      categories,
+      content,
+      color,
+      TYPE,
+    } = req.body || {};
+    let avatarUrl = "";
+    let imageUrls = [];
+    let sizeGuideUrl = "";
 
-    const updateData = await UpdateProductsService(ProductId, req.body);
+    if (req.files?.avatar) {
+      try {
+        const result = await uploadSingleFile(req.files.avatar);
+        avatarUrl = result.path;
+      } catch (error) {
+        console.log("Error uploading avatar:", error);
+      }
+    }
+    if (req.files?.sizeGuide) {
+      try {
+        const result = await uploadSingleFile(req.files.sizeGuide);
+        sizeGuideUrl = result.path;
+      } catch (error) {
+        console.log("Error uploading sizeGuide:", error);
+      }
+    }
+
+    if (req.files?.images) {
+      try {
+        if (Array.isArray(req.files.images)) {
+          const result = await uploadMultipleFiles(req.files.images);
+          imageUrls = result.detail.map((item) => item.path);
+        } else {
+          const result = await uploadSingleFile(req.files.images);
+          imageUrls = [result.path];
+        }
+      } catch (error) {
+        console.log("Error uploading images:", error);
+      }
+    }
+
+    const updateData = await UpdateProductsService(ProductId, {
+      name,
+      price,
+      discount,
+      description_short,
+      additional_info,
+      description,
+      categories,
+      content,
+      color,
+      avatar: avatarUrl,
+      images: imageUrls,
+      sizeGuide: sizeGuideUrl,
+      TYPE,
+    });
     if (updateData.EC !== 0) {
       return res.status(200).json({
         statusCode: 200,

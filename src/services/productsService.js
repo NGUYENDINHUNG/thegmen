@@ -68,6 +68,22 @@ export const CreateProductService = async (productData) => {
 
 export const UpdateProductsService = async (ProductId, updateData) => {
   try {
+    const {
+      name,
+      description_short,
+      description,
+      additional_info,
+      avatar,
+      images,
+      sizeGuide,
+      price,
+      discount,
+      TYPE,
+      color,
+      size,
+      stock,
+      categories,
+    } = updateData;
     const existingProduct = await Product.findById(ProductId);
     if (!existingProduct) {
       return {
@@ -76,7 +92,7 @@ export const UpdateProductsService = async (ProductId, updateData) => {
       };
     }
 
-    if (updateData.price || updateData.discount || updateData.discountType) {
+    if (updateData.price || updateData.discount) {
       const price = updateData.price || existingProduct.price;
       const discount = updateData.discount || existingProduct.discount;
 
@@ -89,7 +105,22 @@ export const UpdateProductsService = async (ProductId, updateData) => {
 
     const updatedProduct = await Product.findByIdAndUpdate(
       ProductId,
-      { $set: updateData },
+      { $set: {
+        name,
+        description_short,
+        description,
+        additional_info,
+        avatar,
+        images,
+        sizeGuide,
+        price,
+        discount,
+        TYPE,
+        color,
+        size,
+        stock,
+        categories,
+      } },  
       { new: true }
     );
 
