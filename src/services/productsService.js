@@ -105,22 +105,24 @@ export const UpdateProductsService = async (ProductId, updateData) => {
 
     const updatedProduct = await Product.findByIdAndUpdate(
       ProductId,
-      { $set: {
-        name,
-        description_short,
-        description,
-        additional_info,
-        avatar,
-        images,
-        sizeGuide,
-        price,
-        discount,
-        TYPE,
-        color,
-        size,
-        stock,
-        categories,
-      } },  
+      {
+        $set: {
+          name,
+          description_short,
+          description,
+          additional_info,
+          avatar,
+          images,
+          sizeGuide,
+          price,
+          discount,
+          TYPE,
+          color,
+          size,
+          stock,
+          categories,
+        },
+      },
       { new: true }
     );
 
@@ -348,14 +350,7 @@ export const RestoreProductService = async (ProductId) => {
 
 export const FilterProductsService = async (queryParams) => {
   try {
-    const {
-      minPrice,
-      maxPrice,
-      category,
-      type,
-      page = 1,
-      limit = 10,
-    } = queryParams;
+    const { minPrice, maxPrice, category, type, page, limit } = queryParams;
 
     const filter = { isDeleted: false };
 
@@ -395,6 +390,12 @@ export const FilterProductsService = async (queryParams) => {
           EC: 11,
           EM: "Không có sản phẩm phù hợp với điều kiện tìm kiếm",
           data: {
+            meta: {
+              currentPage: page ? Number(page) : undefined,
+              pageSize: limit ? Number(limit) : undefined,
+              totalItems: 0,
+              totalPages: 0,
+            },
             result: [],
           },
         };
@@ -402,36 +403,26 @@ export const FilterProductsService = async (queryParams) => {
       filter.categories = catDoc._id;
     }
 
-    // 5. Phân trang
-    const pageNum = Math.max(Number(page) || 1, 1);
-    const limitNum = Math.max(Number(limit) || 10, 1);
-    const skip = (pageNum - 1) * limitNum;
+    // Phân trang nếu có truyền page và limit
+    const pageNum = page ? Math.max(Number(page), 1) : undefined;
+    const limitNum = limit ? Math.max(Number(limit), 1) : undefined;
+    const skip = pageNum && limitNum ? (pageNum - 1) * limitNum : undefined;
 
-    // 6. Query
-    const products = await Product.find(filter)
+    // Đếm tổng số sản phẩm phù hợp filter
+    const totalItems = await Product.countDocuments(filter);
+    const totalPages = limitNum ? Math.ceil(totalItems / limitNum) : 1;
+
+    // Query sản phẩm theo filter và phân trang nếu có
+    let query = Product.find(filter)
       .select(
         "_id name description slug avatar images price finalPrice discount TYPE categories"
       )
-      .populate("categories", "name slug")
-      .skip(skip)
-      .limit(limitNum)
-      .lean();
+      .populate("categories", "name slug");
 
-    if (!products || products.length === 0) {
-      return {
-        EC: 11,
-        EM: "Không có sản phẩm phù hợp với điều kiện tìm kiếm",
-        data: {
-          meta: {
-            currentPage: pageNum,
-            pageSize: limitNum,
-            totalItems: 0,
-            totalPages: 0,
-          },
-          result: [],
-        },
-      };
+    if (skip !== undefined && limitNum !== undefined) {
+      query = query.skip(skip).limit(limitNum);
     }
+    const products = await query.lean();
 
     return {
       EC: 0,
@@ -440,8 +431,8 @@ export const FilterProductsService = async (queryParams) => {
         meta: {
           currentPage: pageNum,
           pageSize: limitNum,
-          totalItems: products.length,
-          totalPages: Math.ceil(products.length / limitNum),
+          totalItems,
+          totalPages,
         },
         result: products,
       },
@@ -513,13 +504,13 @@ export const GetRelatedProductsService = async (slug, limit = 4) => {
         data: null,
       };
     } else {
-    return {
-      EC: 0,
-      EM: "Lấy sản phẩm liên quan thành công",
-      data: processedResult,
-    };
-  }
-    } catch (error) {
+      return {
+        EC: 0,
+        EM: "Lấy sản phẩm liên quan thành công",
+        data: processedResult,
+      };
+    }
+  } catch (error) {
     console.error("GetRelatedProductsService error:", error);
     return {
       EC: 500,
@@ -528,8 +519,6 @@ export const GetRelatedProductsService = async (slug, limit = 4) => {
     };
   }
 };
-
-
 
 // export const GetProductsByTypeService = async (type, page = 1, limit = 10) => {
 //   try {
