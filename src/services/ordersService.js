@@ -2,7 +2,6 @@ import Order from "../models/orderModel.Schema.js";
 import Cart from "../models/cartModel.schema.js";
 import Address from "../models/addressModel.schema.js";
 import User from "../models/userModel.schema.js";
-import { validateAndApplyVoucherService } from "./vouchersSevice.js";
 import Variants from "../models/variantsModel.schema.js";
 import Product from "../models/productModel.schema.js";
 
@@ -56,26 +55,26 @@ export const createOrderService = async (userId, addressId, voucherCode) => {
     let voucherInfo = null;
     let totalAmount = originalTotal;
 
-    if (voucherCode) {
-      try {
-        const result = await validateAndApplyVoucherService(
-          voucherCode,
-          originalTotal,
-          userId
-        );
-        voucherDiscount = result.discountAmount;
-        totalAmount = result.finalAmount;
-        voucherInfo = {
-          id: result.voucher._id,
-          code: result.voucher.code,
-          discountType: result.voucher.discountType,
-          discountValue: result.voucher.discountValue,
-          discountAmount: voucherDiscount,
-        };
-      } catch (error) {
-        console.error("Lỗi áp dụng voucher:", error);
-      }
-    }
+    // if (voucherCode) {
+    //   try {
+    //     const result = await validateAndApplyVoucherService(
+    //       voucherCode,
+    //       originalTotal,
+    //       userId
+    //     );
+    //     voucherDiscount = result.discountAmount;
+    //     totalAmount = result.finalAmount;
+    //     voucherInfo = {
+    //       id: result.voucher._id,
+    //       code: result.voucher.code,
+    //       discountType: result.voucher.discountType,
+    //       discountValue: result.voucher.discountValue,
+    //       discountAmount: voucherDiscount,
+    //     };
+    //   } catch (error) {
+    //     console.error("Lỗi áp dụng voucher:", error);
+    //   }
+    // }
     //create code order
     const orderCode = generateOrderCode();
     //create order

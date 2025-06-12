@@ -75,54 +75,60 @@ export const addToCartService = async (
     throw new Error(`Thêm sản phẩm vào giỏ hàng thất bại: ${error.message}`);
   }
 };
-
 export const getCartByUserService = async (userId) => {
   const cart = await Cart.findOne({ userId }).populate([
     {
       path: "items.productId",
-      select:
-        "-featured -categories -isDeleted -deletedAt -createdAt -updatedAt -__v -stock -description",
+      select: "_id name finalPrice price avatar discount slug",
     },
     {
       path: "items.variantId",
-      select: "-isDeleted -deletedAt -createdAt -updatedAt -__v -stock",
+      select: "_id color size sku",
+    },
+    {
+      path: "appliedVoucher.voucherId",
+      select: "_id code name discountValue",
     },
   ]);
-  
+
   if (!cart) return null;
 
   let totalQuantity = 0;
   let totalPrice = 0;
-  
+
   cart.items.forEach((item) => {
-    totalQuantity += item.quantity;
-    if (item.productId) {
-      const finalPrice = item.productId.finalPrice;
-      const basePrice = item.productId.price;
-      const price =
-        finalPrice !== undefined && finalPrice !== null
-          ? finalPrice
-          : basePrice;
-      if (price) {
-        totalPrice += price * item.quantity;
-      }
+    const product = item.productId;
+    if (product) {
+      const price = product.finalPrice ?? product.price ?? 0;
+      totalQuantity += item.quantity;
+      totalPrice += price * item.quantity;
     }
   });
 
-  if (!cart.finalAmount) {
-    cart.finalAmount = totalPrice;
-    await cart.save();
-  }
+  let discountAmount = 0;
+  let voucherInfo = null;
 
+  if (cart.appliedVoucher?.voucherId) {
+    const finalAmount = cart.finalAmount ?? totalPrice;
+    discountAmount = totalPrice - finalAmount;
+    voucherInfo = {
+      voucherId: cart.appliedVoucher.voucherId._id,
+      code: cart.appliedVoucher.code,
+      discountValue: cart.appliedVoucher.discountValue,
+    };
+  }
 
   return {
     cart,
     totalQuantity,
+    item: cart.items.length,
     totalPrice,
-    finalAmount: cart.finalAmount,
-    item: cart.items.length
+    discountAmount,
+    finalAmount: cart.finalAmount || totalPrice,
+    voucherInfo,
   };
 };
+
 
 export const removeItemFromCartService = async (
   userId,
@@ -203,103 +209,3 @@ export const updateCartItemService = async (
     throw new Error(`Cập nhật giỏ hàng thất bại: ${error.message}`);
   }
 };
-
-// const fetchUserCart = async (userId) => {
-//   return await Cart.findOne({ userId }).populate([
-//     {
-//       path: "items.productId",
-//       select:
-//         "-featured -categories -isDeleted -deletedAt -createdAt -updatedAt -__v -stock -description",
-//     },
-//     {
-//       path: "items.variantId",
-//       select: "-isDeleted -deletedAt -createdAt -updatedAt -__v -stock",
-//     },
-//   ]);
-// };
-
-// const calculateCartTotals = (items) => {
-//   let totalQuantity = 0;
-//   let totalPrice = 0;
-
-//   for (const item of items) {
-//     if (!item.productId || item.productId.isDeleted) continue;
-
-//     const price =
-//       item.variantId?.price ??
-//       item.productId.finalPrice ??
-//       item.productId.price;
-
-//     if (!price) continue;
-
-//     totalQuantity += item.quantity;
-//     totalPrice += price * item.quantity;
-//   }
-
-//   return { totalQuantity, totalPrice };
-// };
-
-// const tryApplyVoucher = async (voucherCode, totalPrice, userId) => {
-//   if (!voucherCode) {
-//     return { discountAmount: 0, voucher: null, error: null };
-//   }
-
-//   try {
-//     const result = await validateAndApplyVoucherService(
-//       voucherCode,
-//       totalPrice,
-//       userId
-//     );
-//     return {
-//       discountAmount: result.discountAmount,
-//       voucher: result.voucher,
-//       error: null,
-//     };
-//   } catch (err) {
-//     return { discountAmount: 0, voucher: null, error: err.message };
-//   }
-// };
-
-// const formatCartResponse = (
-//   cart,
-//   totalQuantity,
-//   totalPrice,
-//   voucherResult,
-//   finalAmount
-// ) => {
-//   return {
-//     cart,
-//     item: cart.items.length,
-//     totalQuantity,
-//     totalPrice,
-//     voucherDiscount: voucherResult.discountAmount,
-//     finalAmount,
-//     voucherInfo: voucherResult.voucher
-//       ? {
-//           id: voucherResult.voucher._id,
-//           code: voucherResult.voucher.code,
-//           discountType: voucherResult.voucher.discountType,
-//           discountValue: voucherResult.voucher.discountValue,
-//           discountAmount: voucherResult.discountAmount,
-//         }
-//       : null,
-//     voucherError: voucherResult.error,
-//   };
-// };
-
-// export const getCartByUserService = async (userId, voucherCode) => {
-//   const cart = await fetchUserCart(userId);
-//   if (!cart) return null;
-
-//   const { totalPrice, totalQuantity } = calculateCartTotals(cart.items);
-//   const voucherResult = await tryApplyVoucher(voucherCode, totalPrice, userId);
-//   const finalAmount = totalPrice - voucherResult.discountAmount;
-
-//   return formatCartResponse(
-//     cart,
-//     totalQuantity,
-//     totalPrice,
-//     voucherResult,
-//     finalAmount
-//   );
-// };

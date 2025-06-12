@@ -1,6 +1,6 @@
 import express from "express";
 import { 
-  updateUserBySuperAdmin, 
+  // updateUserBySuperAdmin, 
   getAllUsers, 
   getUserById, 
   deleteUser 
@@ -20,7 +20,7 @@ userRouter.get("/", checkPermission("View_Users"), getAllUsers);
 userRouter.get("/:userId", checkPermission("View_Users"), getUserById);
 
 // Update user
-userRouter.put("/:userId", checkPermission("Update_Users"), updateUserBySuperAdmin);
+// userRouter.put("/:userId", checkPermission("Update_Users"), updateUserBySuperAdmin);
 
 // Delete user
 userRouter.delete("/:userId", checkPermission("Delete_Users"), deleteUser);

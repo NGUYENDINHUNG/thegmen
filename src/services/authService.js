@@ -266,7 +266,6 @@ export const processNewToken = async (refreshToken, res) => {
       accessToken,
     };
   } catch (error) {
-    
     console.log("««««« error »»»»»", error);
 
     if (error.name === "TokenExpiredError") {
@@ -377,4 +376,29 @@ export const LogoutService = async (refreshToken, res) => {
   } catch (error) {
     throw new Error("Lỗi khi đăng xuất: " + error.message);
   }
+};
+export const updateAccountService = async (userId, updateData) => {
+  if (!userId) {
+    throw new Error("Không tìm thấy user");
+  }
+  delete updateData.role;
+  delete updateData.permission;
+
+  if (updateData.password) {
+    const salt = await bcrypt.genSalt(10);
+    updateData.password = await bcrypt.hash(updateData.password, salt);
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    updateData || {},
+    {
+      new: true,
+      select: "-password -refreshToken",
+    }
+  );
+  if (!updatedUser) {
+    throw new Error("User not found");
+  }
+  return updatedUser;
 };

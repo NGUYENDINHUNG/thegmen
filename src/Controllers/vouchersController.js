@@ -3,7 +3,7 @@ import {
   createVoucherService,
   getAllVouchersService,
   updateVoucherService,
-  validateAndApplyVoucherService,
+  validateAndApplyVoucherForCartService,
 } from "../services/vouchersSevice.js";
 
 export const createVoucher = async (req, res) => {
@@ -43,27 +43,45 @@ export const updateVoucher = async (req, res) => {
   }
 };
 
-export const applyVoucher = async (req, res) => {
+export const applyVoucherToCart = async (req, res) => {
   try {
-    const { voucherCode, orderValue } = req.body;
+    const { code, orderValue } = req.body;
     const userId = req.user._id;
 
-    const result = await validateAndApplyVoucherService(
-      voucherCode,
+    const result = await validateAndApplyVoucherForCartService(
+      code,
       orderValue,
       userId
     );
+
     await Cart.findOneAndUpdate(
       { userId },
-      { finalAmount: result.finalAmount }
+      {
+        finalAmount: result.finalAmount,
+        appliedVoucher: {
+          voucherId: result.voucher._id,
+          code: result.voucher.code,
+          discountValue: result.voucher.discountValue,
+        },
+      },
+      { new: true }
     );
+
     return res.status(200).json({
       status: 200,
       message: "Áp dụng voucher thành công",
       data: {
-        voucherId: result.voucher._id,
-        code: result.voucher.code,
-        discountValue: result.voucher.discountValue,
+        voucher: {
+          _id: result.voucher._id,
+          code: result.voucher.code,
+          name: result.voucher.name,
+          discountValue: result.voucher.discountValue,
+          startDate: result.voucher.startDate,
+          endDate: result.voucher.endDate,
+          quantity: result.voucher.quantity,
+          status: result.voucher.status,
+          maxUsagePerUser: result.voucher.maxUsagePerUser,
+        },
         discountAmount: result.discountAmount,
         finalAmount: result.finalAmount,
       },
@@ -75,4 +93,3 @@ export const applyVoucher = async (req, res) => {
     });
   }
 };
-

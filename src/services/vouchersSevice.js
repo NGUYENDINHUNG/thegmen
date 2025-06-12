@@ -1,5 +1,6 @@
 import Voucher from "../models/vouchersModel.schema.js";
 import User from "../models/userModel.schema.js";
+import Cart from "../models/cartModel.schema.js";
 export const createVoucherService = async (voucherData) => {
   try {
     const exist = await Voucher.findOne({ code: voucherData.code });
@@ -11,7 +12,6 @@ export const createVoucherService = async (voucherData) => {
   } catch (error) {
     console.log(error);
     throw error;
-    
   }
 };
 
@@ -48,16 +48,24 @@ export const getVoucherByCodeService = async (code) => {
     throw error;
   }
 };
-export const validateAndApplyVoucherService = async (
+export const validateAndApplyVoucherForCartService = async (
   code,
   orderValue,
   userId
 ) => {
   try {
-    const voucher = await Voucher.findOne({ code });
-    if (!voucher) {
-      throw new Error("Voucher không tồn tại");
+    console.log(code, orderValue, userId);
+    // Kiểm tra code có tồn tại không
+    if (!code) {
+      throw new Error("Vui lòng nhập mã voucher");
     }
+
+    const voucher = await Voucher.findOne({ code: code }); 
+    if (!voucher) {
+      throw new Error("Mã voucher không tồn tại");
+    }
+
+    // Validate voucher
     const now = new Date();
     if (now < voucher.startDate || now > voucher.endDate) {
       throw new Error("Voucher đã hết hạn hoặc chưa đến thời gian sử dụng");
@@ -68,37 +76,58 @@ export const validateAndApplyVoucherService = async (
     if (voucher.quantity <= 0) {
       throw new Error("Voucher đã hết số lượng");
     }
+
+    // Kiểm tra user
     const user = await User.findById(userId);
     if (!user) {
       throw new Error("Người dùng không tồn tại");
     }
 
-    const usedVoucher = user.usedVouchers.find(
-      (item) => item.voucherId.toString() === voucher._id.toString()
+    // Kiểm tra số lần sử dụng
+    const usedVoucher = user.usedVouchers?.find(
+      (item) => item?.voucherId?.toString() === voucher._id.toString()
     );
     if (usedVoucher && usedVoucher.usageCount >= voucher.maxUsagePerUser) {
       throw new Error("Bạn đã sử dụng hết số lần cho phép với voucher này.");
     }
 
-    const discountAmount = (orderValue * voucher.discountValue) / 100;
-    
+    // Kiểm tra voucher đã được sử dụng trong cart
+    const currentCart = await Cart.findOne({ userId });
+    if (currentCart?.appliedVoucher?.voucherId) {
+      if (currentCart.appliedVoucher.voucherId.toString() === voucher._id.toString()) {
+        throw new Error("Voucher này đã được áp dụng trong giỏ hàng của bạn");
+      }
 
-    if (usedVoucher) {
-      usedVoucher.usageCount += 1;
-    } else {
-      user.usedVouchers.push({ voucherId: voucher._id, usageCount: 1 });
+      // Hoàn trả voucher cũ
+      const oldVoucher = await Voucher.findById(currentCart.appliedVoucher.voucherId);
+      if (oldVoucher) {
+        oldVoucher.quantity += 1;
+        await oldVoucher.save();
+      }
+
+      const oldUsedVoucher = user.usedVouchers?.find(
+        (item) => item?.voucherId?.toString() === currentCart.appliedVoucher.voucherId.toString()
+      );
+      if (oldUsedVoucher) {
+        oldUsedVoucher.usageCount -= 1;
+        if (oldUsedVoucher.usageCount === 0) {
+          user.usedVouchers = user.usedVouchers.filter(
+            (item) => item?.voucherId?.toString() !== currentCart.appliedVoucher.voucherId.toString()
+          );
+        }
+      }
     }
-    voucher.quantity -= 1;
-    await voucher.save();
-    await user.save();
+
+    const discountAmount = (orderValue * voucher.discountValue) / 100;
     const finalAmount = orderValue - discountAmount;
+
     return {
       voucher,
       discountAmount,
       finalAmount,
     };
   } catch (error) {
-    console.log(error);
+    console.log("Lỗi validate voucher:", error);
     throw error;
   }
 };

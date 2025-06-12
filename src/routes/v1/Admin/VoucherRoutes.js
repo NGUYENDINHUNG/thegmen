@@ -2,7 +2,7 @@ import express from "express";
 import {
   createVoucher,
   updateVoucher,
-} from "../../../Controllers/vouchersController.js";
+} from "../../../controllers/vouchersController.js";
 import checkPermission from "../../../middleware/checkPermission.js";
 const VoucherRouter = express.Router();
 

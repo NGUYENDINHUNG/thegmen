@@ -16,6 +16,11 @@ const CartSchema = new Schema({
   },
   items: [CartItemSchema],
   finalAmount: { type: Number, default: 0 }, 
+  appliedVoucher: {
+    voucherId: { type: Schema.Types.ObjectId, ref: "voucher" },
+    code: { type: String },
+    discountValue: { type: Number },
+  },
   updatedAt: { type: Date, default: Date.now },
 });
 

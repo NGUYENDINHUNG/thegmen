@@ -8,6 +8,7 @@ import {
   ForgetPasswordService,
   resetPasswordService,
   LogoutService,
+  updateAccountService,
 } from "../services/authService.js";
 import { uploadSingleFile } from "../services/fileService.js";
 
@@ -145,6 +146,7 @@ export const getAccount = async (req, res) => {
       });
     }
     const { name, email, phoneNumber, address, avatar } = req.user;
+    console.log(req.user);
     return res.status(200).json({
       statusCode: 200,
       message: "Lấy thông tin người dùng thành công",
@@ -218,6 +220,37 @@ export const logout = async (req, res) => {
     return res.status(500).json({
       statusCode: 500,
       message: "Đăng xuất thất bại.",
+      error: error.message,
+    });
+  }
+};
+export const updateAccount = async (req, res) => {
+  const userId = req.user._id; 
+  const updateData = { ...(req.body || {}) };
+
+  try {
+    // Xử lý upload avatar nếu có
+    if (req.files && req.files.avatar) {
+      const uploadResult = await uploadSingleFile(req.files.avatar);
+      if (uploadResult.status === "success") {
+        updateData.avatar = uploadResult.path;
+      } else {
+        return res.status(500).json({
+          message: "Upload avatar thất bại",
+          error: uploadResult.error,
+        });
+      }
+    }
+    const updatedUser = await updateAccountService(userId, updateData);
+    res.status(200).json({
+      status: 200,
+      message: "Cập nhật tài khoản thành công",
+      user: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 500,
+      message: "Cập nhật tài khoản thất bại",
       error: error.message,
     });
   }
