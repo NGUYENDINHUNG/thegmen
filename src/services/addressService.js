@@ -88,12 +88,34 @@ export const deleteAddressService = async (userId, addressId) => {
     if (!address) {
       throw new Error("Bạn không có quyền xóa địa chỉ này.");
     }
-    const deletedAddress = await Address.findByIdAndDelete(addressId);
 
+    const wasDefault = address.isDefault;
+
+    const deletedAddress = await Address.findByIdAndDelete(addressId);
     if (!deletedAddress) {
       throw new Error("Địa chỉ không tồn tại hoặc đã bị xóa");
     }
+ // Xóa khỏi mảng addresses của user
     await User.updateOne({ _id: userId }, { $pull: { addresses: addressId } });
+
+    if (wasDefault) {
+      const latestAddress = await Address.findOne({ userId }).sort({ createdAt: -1 });
+      if (latestAddress) {
+        latestAddress.isDefault = true;
+        await latestAddress.save();
+      }
+    } else {
+      // Kiểm tra lại: user còn địa chỉ nào là mặc định không?
+      const stillHasDefault = await Address.exists({ userId, isDefault: true });
+      if (!stillHasDefault) {
+        // Nếu không còn, lấy địa chỉ mới nhất còn lại làm mặc định
+        const latestAddress = await Address.findOne({ userId }).sort({ createdAt: -1 });
+        if (latestAddress) {
+          latestAddress.isDefault = true;
+          await latestAddress.save();
+        }
+      }
+    }
 
     return deletedAddress;
   } catch (error) {

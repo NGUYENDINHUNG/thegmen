@@ -51,7 +51,8 @@ export const getVoucherByCodeService = async (code) => {
 export const validateAndApplyVoucherForCartService = async (
   code,
   orderValue,
-  userId
+  userId,
+  ignoreCurrentCartCheck = false
 ) => {
   try {
     console.log(code, orderValue, userId);
@@ -93,10 +94,10 @@ export const validateAndApplyVoucherForCartService = async (
 
     // Kiểm tra voucher đã được sử dụng trong cart
     const currentCart = await Cart.findOne({ userId });
-    if (currentCart?.appliedVoucher?.voucherId) {
-      if (currentCart.appliedVoucher.voucherId.toString() === voucher._id.toString()) {
-        throw new Error("Voucher này đã được áp dụng trong giỏ hàng của bạn");
-      }
+  if (!ignoreCurrentCartCheck && currentCart?.appliedVoucher?.voucherId) {
+    if (currentCart.appliedVoucher.voucherId.toString() === voucher._id.toString()) {
+      throw new Error("Voucher này đã được áp dụng trong giỏ hàng của bạn");
+    }
 
       // Hoàn trả voucher cũ
       const oldVoucher = await Voucher.findById(currentCart.appliedVoucher.voucherId);

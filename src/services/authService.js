@@ -409,8 +409,9 @@ export const updateAvatarService = async (userId, imageUrl) => {
 
 export const updatePasswordService = async (userId, oldPassword, newPassword) => {
   if (!userId) throw new Error("Không tìm thấy user");
-  if (!oldPassword || !newPassword) throw new Error("Thiếu mật khẩu cũ hoặc mới");
-
+  if (!oldPassword ) throw new Error("Thiếu mật khẩu cũ");
+  if(!newPassword) throw new Error("Thiếu mật khẩu mới");
+   if(oldPassword === newPassword) throw new Error("Mật khẩu cũ và mới không được giống nhau");
   const user = await User.findById(userId).select("+password");
   if (!user) throw new Error("User không tồn tại");
 
