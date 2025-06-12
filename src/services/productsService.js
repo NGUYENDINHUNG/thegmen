@@ -350,7 +350,7 @@ export const RestoreProductService = async (ProductId) => {
 
 export const FilterProductsService = async (queryParams) => {
   try {
-    const { minPrice, maxPrice, category, type, page, limit } = queryParams;
+    const { minPrice, maxPrice, category, type,currentPage,pageSize } = queryParams;
 
     const filter = { isDeleted: false };
 
@@ -391,8 +391,8 @@ export const FilterProductsService = async (queryParams) => {
           EM: "Không có sản phẩm phù hợp với điều kiện tìm kiếm",
           data: {
             meta: {
-              currentPage: page ? Number(page) : undefined,
-              pageSize: limit ? Number(limit) : undefined,
+              currentPage: currentPage ? Number(currentPage) : undefined,
+              pageSize: pageSize ? Number(pageSize) : undefined,
               totalItems: 0,
               totalPages: 0,
             },
@@ -404,8 +404,8 @@ export const FilterProductsService = async (queryParams) => {
     }
 
     // Phân trang nếu có truyền page và limit
-    const pageNum = page ? Math.max(Number(page), 1) : undefined;
-    const limitNum = limit ? Math.max(Number(limit), 1) : undefined;
+    const pageNum = currentPage ? Math.max(Number(currentPage), 1) : undefined;
+    const limitNum = pageSize ? Math.max(Number(pageSize), 1) : undefined;
     const skip = pageNum && limitNum ? (pageNum - 1) * limitNum : undefined;
 
     // Đếm tổng số sản phẩm phù hợp filter
