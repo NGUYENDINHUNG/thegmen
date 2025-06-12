@@ -80,24 +80,23 @@ export const updateCartItem = async (req, res) => {
   try {
     const userId = req.user._id;
     const { productId, variantId, quantity } = req.body;
-
-    const cart = await updateCartItemService(
-      userId,
-      productId,
-      variantId,
-      quantity
-    );
-
+    console.log(req.body);
+    const result = await updateCartItemService(userId, productId, variantId, quantity);
+   
     return res.status(200).json({
-      statusCode: 200,
-      message: "cập nhật giỏ hàng thành công",
-      data: cart,
+      status: 200,
+      message: "Cập nhật giỏ hàng thành công",
+      data: {
+        cart: result.cart,
+        totalPrice: result.totalPrice,
+        discountAmount: result.discountAmount,
+        finalAmount: result.finalAmount,
+      },
     });
   } catch (error) {
     return res.status(500).json({
-      statusCode: 500,
-      message: "cập nhật giỏ hàng thất bại",
-      error: error.message,
+      status: 500,
+      message: error.message || "Cập nhật giỏ hàng thất bại",
     });
   }
 };

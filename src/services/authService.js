@@ -377,7 +377,7 @@ export const LogoutService = async (refreshToken, res) => {
     throw new Error("Lỗi khi đăng xuất: " + error.message);
   }
 };
-export const updateAccountService = async (userId, updateData , oldPassword) => {
+export const updateAccountService = async (userId, updateData, oldPassword) => {
   if (!userId) {
     throw new Error("Không tìm thấy user");
   }
@@ -392,7 +392,9 @@ export const updateAccountService = async (userId, updateData , oldPassword) => 
     if (!user) throw new Error("User không tồn tại");
 
     if (!user.password) {
-      throw new Error("Tài khoản của bạn đăng nhập bằng bên thứ 3, không thể đổi mật khẩu.");
+      throw new Error(
+        "Tài khoản của bạn đăng nhập bằng bên thứ 3, không thể đổi mật khẩu."
+      );
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
@@ -402,16 +404,24 @@ export const updateAccountService = async (userId, updateData , oldPassword) => 
     updateData.password = await bcrypt.hash(updateData.password, salt);
   }
 
-  const updatedUser = await User.findByIdAndUpdate(
-    userId,
-    updateData || {},
-    {
-      new: true,
-      select: "-password -refreshToken",
-    }
-  );
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData || {}, {
+    new: true,
+    select: "-password -refreshToken",
+  });
   if (!updatedUser) {
     throw new Error("User not found");
   }
+  return updatedUser;
+};
+export const updateAvatarService = async (userId, imageUrl) => {
+  if (!userId) throw new Error("Không tìm thấy user");
+  if (!imageUrl) throw new Error("Thiếu đường dẫn avatar");
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { avatar: imageUrl },
+    { new: true, select: "name email phoneNumber address avatar" }
+  );
+  if (!updatedUser) throw new Error("User not found");
   return updatedUser;
 };

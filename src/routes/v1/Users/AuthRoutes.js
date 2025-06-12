@@ -6,6 +6,7 @@ import {
   requestPasswordReset,
   resetPassword,
   updateAccount,
+  updateAvatar,
 } from "../../../controllers/authController.js";
 import { verifyToken } from "../../../middleware/auth.js";
 const AuthRouter = express.Router();
@@ -16,5 +17,6 @@ AuthRouter.use(verifyToken);
 AuthRouter.post("/logout", logout);
 AuthRouter.get("/account", getAccount);
 AuthRouter.put("/update-account", updateAccount);
+AuthRouter.put("/update-avatar", updateAvatar);
 AuthRouter.post("/reset-password", resetPassword);
 export default AuthRouter;

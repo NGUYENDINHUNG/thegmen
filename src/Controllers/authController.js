@@ -9,8 +9,10 @@ import {
   resetPasswordService,
   LogoutService,
   updateAccountService,
+  updateAvatarService,
 } from "../services/authService.js";
 import { uploadSingleFile } from "../services/fileService.js";
+import User from "../models/userModel.schema.js";
 
 export const Register = async (req, res) => {
   try {
@@ -145,18 +147,20 @@ export const getAccount = async (req, res) => {
         message: "Không tìm thấy thông tin người dùng hoặc token đã hết hạn",
       });
     }
-    const { name, email, phoneNumber, address, avatar } = req.user;
-    console.log(req.user);
+    const userId = req.user._id;
+
+    const user = await User.findById(userId).select(
+      "name email phoneNumber address avatar"
+    );
+    if (!user) {
+      return res.status(404).json({
+        message: "Không tìm thấy người dùng",
+      });
+    }
     return res.status(200).json({
       statusCode: 200,
       message: "Lấy thông tin người dùng thành công",
-      user: {
-        name,
-        email,
-        phoneNumber,
-        address,
-        avatar,
-      },
+      user,
     });
   } catch (error) {
     return res.status(500).json({
@@ -224,26 +228,17 @@ export const logout = async (req, res) => {
     });
   }
 };
-// BE/src/controllers/authController.js
 export const updateAccount = async (req, res) => {
-  const userId = req.user._id; 
+  const userId = req.user._id;
   const updateData = { ...(req.body || {}) };
   const oldPassword = req.body.oldPassword;
 
   try {
-    // Xử lý upload avatar nếu có
-    if (req.files && req.files.avatar) {
-      const uploadResult = await uploadSingleFile(req.files.avatar);
-      if (uploadResult.status === "success") {
-        updateData.avatar = uploadResult.path;
-      } else {
-        return res.status(500).json({
-          message: "Upload avatar thất bại",
-          error: uploadResult.error,
-        });
-      }
-    }
-    const updatedUser = await updateAccountService(userId, updateData, oldPassword);
+    const updatedUser = await updateAccountService(
+      userId,
+      updateData,
+      oldPassword
+    );
     res.status(200).json({
       status: 200,
       message: "Cập nhật tài khoản thành công",
@@ -253,6 +248,32 @@ export const updateAccount = async (req, res) => {
     res.status(500).json({
       status: 500,
       message: "Cập nhật tài khoản thất bại",
+      error: error.message,
+    });
+  }
+};
+export const updateAvatar = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    let imageUrl = " ";
+    if (!req.files || Object.keys(req.files).length === 0) {
+      console.log("không có file được up lên.");
+    } else {
+      let results = await uploadSingleFile(req.files.avatar);
+      imageUrl = results.path;
+    }
+
+    const updatedUser = await updateAvatarService(userId, imageUrl);
+
+    return res.status(200).json({
+      status: 200,
+      message: "Cập nhật avatar thành công",
+      user: updatedUser,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: "Cập nhật avatar thất bại",
       error: error.message,
     });
   }

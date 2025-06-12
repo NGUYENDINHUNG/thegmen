@@ -1,6 +1,7 @@
 import Cart from "../models/cartModel.schema.js";
 import Variants from "../models/variantsModel.schema.js";
 import Product from "../models/productModel.schema.js";
+import { validateAndApplyVoucherForCartService } from "./vouchersSevice.js";
 
 export const addToCartService = async (
   userId,
@@ -170,42 +171,85 @@ export const updateCartItemService = async (
   quantity
 ) => {
   try {
-    quantity = Number(quantity);
+    // 1. Ép kiểu quantity về số (phòng trường hợp nhận được string)
+    const newQuantity = Number(quantity);
 
-    let cart = await Cart.findOne({ userId });
+    // 2. Tìm giỏ hàng của user
+    let cart = await Cart.findOne({ userId }).populate("items.productId");
     if (!cart) throw new Error("Giỏ hàng không tồn tại");
 
+    // 3. Tìm vị trí sản phẩm trong giỏ hàng (có thể có variant hoặc không)
     const itemIndex = cart.items.findIndex((item) => {
+      // Nếu có variantId, so sánh cả productId và variantId
       if (variantId) {
         return (
-          item.productId.toString() === productId &&
+          item.productId._id.toString() === productId &&
           item.variantId &&
           item.variantId.toString() === variantId
         );
       } else {
+        // Nếu không có variantId, chỉ so sánh productId
         return (
-          item.productId.toString() === productId &&
+          item.productId._id.toString() === productId &&
           (!item.variantId || item.variantId === null)
         );
       }
     });
 
+    // 4. Nếu không tìm thấy sản phẩm trong giỏ hàng, báo lỗi
     if (itemIndex === -1) {
       throw new Error("Sản phẩm không có trong giỏ hàng");
     }
 
-    if (quantity <= 0) {
-      // Xóa item nếu quantity <= 0
+    // 5. Nếu số lượng <= 0, xóa sản phẩm khỏi giỏ hàng
+    if (newQuantity <= 0) {
       cart.items.splice(itemIndex, 1);
     } else {
-      // Cập nhật số lượng mới
-      cart.items[itemIndex].quantity = quantity;
+      // Ngược lại, cập nhật số lượng mới cho sản phẩm
+      cart.items[itemIndex].quantity = newQuantity;
     }
 
+    // 6. Tính lại tổng giá trị giỏ hàng (totalPrice)
+    let totalPrice = 0;
+    cart.items.forEach((item) => {
+      // Lấy giá cuối cùng (finalPrice nếu có, không thì price)
+      const price = item.productId.finalPrice ?? item.productId.price ?? 0;
+      totalPrice += price * item.quantity;
+    });
+
+    // 7. Nếu có voucher đang áp dụng, tính lại discount và finalAmount
+    let discountAmount = 0;
+    let finalAmount = totalPrice;
+    if (cart.appliedVoucher?.code) {
+      // Gọi service tính lại giảm giá dựa trên voucher và tổng giá mới
+      const voucherResult = await validateAndApplyVoucherForCartService(
+        cart.appliedVoucher.code,
+        totalPrice,
+        userId
+      );
+      discountAmount = voucherResult.discountAmount;
+      finalAmount = voucherResult.finalAmount;
+      cart.finalAmount = finalAmount; // Lưu lại tổng tiền sau giảm vào cart
+    } else {
+      // Nếu không có voucher, tổng tiền sau giảm chính là tổng giá
+      cart.finalAmount = totalPrice;
+    }
+
+    // 8. Cập nhật thời gian sửa đổi giỏ hàng
     cart.updatedAt = new Date();
+
+    // 9. Lưu lại giỏ hàng vào database
     await cart.save();
-    return cart;
+
+    // 10. Trả về kết quả chi tiết cho client
+    return {
+      cart,           // Thông tin giỏ hàng mới nhất
+      totalPrice,     // Tổng giá trị giỏ hàng trước giảm giá
+      discountAmount, // Số tiền được giảm nhờ voucher (nếu có)
+      finalAmount,    // Tổng tiền phải trả sau khi giảm giá
+    };
   } catch (error) {
+    // Nếu có lỗi, trả về thông báo lỗi rõ ràng
     throw new Error(`Cập nhật giỏ hàng thất bại: ${error.message}`);
   }
 };
