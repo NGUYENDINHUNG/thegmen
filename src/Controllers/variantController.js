@@ -14,7 +14,7 @@ import {
 
 export const createVariant = async (req, res) => {
   try {
-    const { color, size, stock, sku, Products } = req.body;
+    const { color, colorName, size, stock, sku, Products } = req.body;
  
     let imageUrls = [];
 
@@ -33,6 +33,7 @@ export const createVariant = async (req, res) => {
     }
     const variant = await createVariantService(
       color,
+      colorName,
       imageUrls,
       size,
       stock,

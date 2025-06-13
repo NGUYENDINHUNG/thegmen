@@ -4,6 +4,7 @@ import aqp from "api-query-params";
 
 export const createVariantService = async (
   color,
+  colorName,
   images,
   size,
   stock,
@@ -20,6 +21,7 @@ export const createVariantService = async (
     }
     const newVariant = await Variant.create({
       color,
+      colorName,
       images,
       size,
       stock,

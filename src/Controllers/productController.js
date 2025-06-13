@@ -106,6 +106,7 @@ export const UpdateProduct = async (req, res) => {
       description,
       categories,
       content,
+      slug,
       color,
       TYPE,
     } = req.body || {};
@@ -154,6 +155,7 @@ export const UpdateProduct = async (req, res) => {
       categories,
       content,
       color,
+      slug,
       avatar: avatarUrl,
       images: imageUrls,
       sizeGuide: sizeGuideUrl,

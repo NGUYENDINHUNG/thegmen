@@ -26,6 +26,17 @@ export const CreateProductService = async (productData) => {
       UNISEXTYPE,
     } = productData;
 
+
+    const slug = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Xóa dấu
+    .replace(/[đĐ]/g, 'd') // Chuyển đ/Đ thành d
+    .replace(/([^0-9a-z-\s])/g, '') // Xóa ký tự đặc biệt
+    .replace(/(\s+)/g, '-') // Thay khoảng trắng bằng dấu -
+    .replace(/-+/g, '-') // Xóa dấu - liên tiếp
+    .replace(/^-+|-+$/g, ''); // Xóa dấu - ở đầu và cuối
+
     if (!name || !price) {
       return {
         EC: 400,
@@ -50,6 +61,7 @@ export const CreateProductService = async (productData) => {
       size,
       stock,
       categories,
+      slug,
       sizeGuide,
       featured,
       UNISEXTYPE,
@@ -80,6 +92,7 @@ export const UpdateProductsService = async (ProductId, updateData) => {
       discount,
       TYPE,
       color,
+      slug,
       size,
       stock,
       categories,
@@ -114,6 +127,7 @@ export const UpdateProductsService = async (ProductId, updateData) => {
           avatar,
           images,
           sizeGuide,
+          slug,
           price,
           discount,
           TYPE,

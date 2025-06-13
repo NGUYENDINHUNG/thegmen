@@ -7,6 +7,9 @@ const VariantsSchema = new Schema(
     color: {
       type: String,
     },
+    colorName: {
+      type: String,
+    },
     size: {
       type: String,
     },
