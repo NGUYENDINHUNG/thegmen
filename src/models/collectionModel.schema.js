@@ -8,6 +8,9 @@ const CollectionSchema = new Schema(
       type: String,
       required: true,
     },
+    subTitle: {
+      type: String,
+    },
     description: {
       type: String,
     },

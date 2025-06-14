@@ -460,7 +460,7 @@ export const FilterProductsService = async (queryParams) => {
   }
 };
 
-export const GetRelatedProductsService = async (slug, limit = 4) => {
+export const GetRelatedProductsService = async (slug, limit) => {
   try {
     const currentProduct = await Product.findOne({ slug: slug })
       .select("categories TYPE")

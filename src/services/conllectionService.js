@@ -4,6 +4,7 @@ import Product from "../models/productModel.schema.js";
 
 export const CreateCollectionService = async (
   title,
+  subTitle,
   description,
   images = []
 ) => {
@@ -11,6 +12,7 @@ export const CreateCollectionService = async (
     const slug = slugify(title, { lower: true, strict: true, locale: "vi" });
     let result = await Collection.create({
       title: title,
+      subTitle: subTitle,
       slug: slug,
       description: description,
       images: images,
@@ -161,7 +163,6 @@ export const AddProductToCollectionService = async (
       $addToSet: { products: productId },
     });
 
-
     return { message: "Thêm sản phẩm vào bộ sưu tập thành công" };
   } catch (error) {
     console.error("Error in AddProductToCollectionService:", error);
@@ -198,15 +199,15 @@ export const RemoveProductFromCollectionService = async (
   }
 };
 
-export const GetProductsByCollectionIdService = async (
-  collectionId,
+export const GetProductsByCollectionSlugService = async (
+  slug,
   pageSize,
   currentPage
 ) => {
   try {
     const collection = await Collection.findOne({
-      _id: collectionId,
-      // isDeleted: false,
+      slug: slug,
+      isDeleted: false,
     });
 
     if (!collection) {
@@ -216,17 +217,53 @@ export const GetProductsByCollectionIdService = async (
     let query = Product.find({
       _id: { $in: collection.products },
       isDeleted: false,
-    });
+    })
+      .select("_id name slug price finalPrice avatar images TYPE")
+      .populate("categories", "name slug")
+      .populate("variants", "color size");
 
+    // Xử lý pagination
     if (pageSize && currentPage) {
-      let offset = (currentPage - 1) * pageSize;
+      const offset = (currentPage - 1) * pageSize;
       query = query.skip(offset).limit(pageSize);
     }
-    const products = await query.exec();
 
-    return products;
+    const products = await query.lean();
+
+    const processedResult = products.map((product) => {
+      const colors = [...new Set(product.variants.map((v) => v.color))].filter(
+        Boolean
+      );
+      return {
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        finalPrice: product.finalPrice,
+        discount: product.discount,
+        avatar: product.avatar,
+        images: product.images,
+        slug: product.slug,
+        TYPE: product.TYPE,
+        categories: product.categories,
+        COLOR: colors,
+      };
+    });
+
+    if (processedResult.length === 0) {
+      return {
+        EC: 404,
+        EM: "Không tìm thấy sản phẩm liên quan",
+        data: null,
+      };
+    }
+
+    return processedResult;
   } catch (error) {
-    console.error("Error in GetProductsByCollectionIdService:", error);
-    throw error;
+    console.error("GetProductsByCollectionSlugService error:", error);
+    return {
+      EC: 500,
+      EM: "Lỗi server, vui lòng thử lại sau",
+      data: null,
+    };
   }
 };

@@ -7,12 +7,13 @@ import {
   AddProductToCollectionService,
   RemoveProductFromCollectionService,
   GetAllCollectionsService,
+  GetProductsByCollectionSlugService,
 } from "../services/conllectionService.js";
 import { uploadSingleFile } from "../services/fileService.js";
 
 export const CreateCollection = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, subTitle, description } = req.body;
     let imageUrl = " ";
     if (!req.files || Object.keys(req.files).length === 0) {
       console.log("No files were uploaded.");
@@ -21,7 +22,12 @@ export const CreateCollection = async (req, res) => {
       imageUrl = results.path;
     }
 
-    const data = await CreateCollectionService(title, description, imageUrl);
+    const data = await CreateCollectionService(
+      title,
+      subTitle,
+      description,
+      imageUrl
+    );
 
     return res.status(200).json({
       statusCode: 200,
@@ -40,9 +46,10 @@ export const CreateCollection = async (req, res) => {
 export const UpdateCollection = async (req, res) => {
   try {
     const slug = req.params.slug;
-    const { name, description, images } = req.body || {};
+    const { title, subTitle, description, images } = req.body || {};
     let updateData = {
-      name,
+      title,
+      subTitle,
       description,
       images,
     };
@@ -191,6 +198,29 @@ export const RemoveProductFromCollection = async (req, res) => {
     return res.status(400).json({
       statusCode: 400,
       message: error.message || "Xóa sản phẩm khỏi bộ sưu tập thất bại",
+      error: error,
+    });
+  }
+};
+
+export const GetProductsByCollectionSlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { pageSize, currentPage } = req.query;
+    const products = await GetProductsByCollectionSlugService(
+      slug,
+      pageSize,
+      currentPage
+    );
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Lấy sản phẩm theo bộ sưu tập thành công",
+      data: products,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      statusCode: 404,
+      message: error.message || "Lấy sản phẩm theo bộ sưu tập thất bại",
       error: error,
     });
   }

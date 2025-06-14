@@ -6,7 +6,7 @@ import {
   RestoreCollection,
   AddProductToCollection,
   RemoveProductFromCollection,
-} from "../../../Controllers/conllectionController.js";
+} from "../../../controllers/conllectionController.js";
 
 import checkPermission from "../../../middleware/checkPermission.js";
 
@@ -34,7 +34,7 @@ CollectionRouter.put(
 );
 CollectionRouter.post(
   "/addProduct",
-  checkPermission("AddProduct_Collection"),
+ // checkPermission("AddProduct_Collection"),
   AddProductToCollection
 );
 CollectionRouter.post(

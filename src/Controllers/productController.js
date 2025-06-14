@@ -310,8 +310,8 @@ export const GetRelatedProducts = async (req, res) => {
 
     const result = await GetRelatedProductsService(slug, limit);
     if (result.EC !== 0) {
-      return res.status(400).json({
-        statusCode: 400,
+      return res.status(404).json({
+        statusCode: 404,
         message: result.EM,
         data: null,
       });

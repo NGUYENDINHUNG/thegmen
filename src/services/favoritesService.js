@@ -6,9 +6,19 @@ import Product from "../models/productModel.schema.js";
 export const getFavoritesService = async (userId) => {
   const favorites = await Favorites.find({ userId }).populate({
     path: "productId",
-    select: "name price finalPrice images avatar discount",
+    select: "name price slug avatar images finalPrice discount  ",
+    populate: {
+      path: "categories",
+      select: "name slug"
+    }
   });
-  return favorites;
+
+  const userFavorites = {
+    userId,
+    products: favorites.map((favorites) => favorites.productId),
+  };
+
+  return userFavorites;
 };
 
 export const addFavoriteService = async (userId, productIdentifier) => {
