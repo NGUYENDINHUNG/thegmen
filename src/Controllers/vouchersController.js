@@ -2,6 +2,7 @@ import Cart from "../models/cartModel.schema.js";
 import {
   createVoucherService,
   getAllVouchersService,
+  removeVoucherFromCartService,
   updateVoucherService,
   validateAndApplyVoucherForCartService,
 } from "../services/vouchersSevice.js";
@@ -90,6 +91,23 @@ export const applyVoucherToCart = async (req, res) => {
     return res.status(400).json({
       success: false,
       message: error.message || "Không thể áp dụng voucher",
+    });
+  }
+};
+export const removeVoucherFromCart = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const result = await removeVoucherFromCartService(userId);
+
+    return res.status(200).json({
+      status: 200,
+      message: "Xóa voucher thành công",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Không thể xóa voucher",
     });
   }
 };

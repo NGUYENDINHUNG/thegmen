@@ -3,16 +3,15 @@ import Collection from "../models/collectionModel.schema.js";
 import Product from "../models/productModel.schema.js";
 
 export const CreateCollectionService = async (
-  title,
+  name,
   subTitle,
   description,
   images = []
 ) => {
   try {
-    const slug = slugify(title, { lower: true, strict: true, locale: "vi" });
+    const slug = slugify(name, { lower: true, strict: true, locale: "vi" });
     let result = await Collection.create({
-      title: title,
-      subTitle: subTitle,
+      name: name,
       slug: slug,
       description: description,
       images: images,

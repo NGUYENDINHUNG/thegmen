@@ -13,7 +13,7 @@ import { uploadSingleFile } from "../services/fileService.js";
 
 export const CreateCollection = async (req, res) => {
   try {
-    const { title, subTitle, description } = req.body;
+    const { name, subTitle, description } = req.body;
     let imageUrl = " ";
     if (!req.files || Object.keys(req.files).length === 0) {
       console.log("No files were uploaded.");
@@ -23,7 +23,7 @@ export const CreateCollection = async (req, res) => {
     }
 
     const data = await CreateCollectionService(
-      title,
+      name,
       subTitle,
       description,
       imageUrl
