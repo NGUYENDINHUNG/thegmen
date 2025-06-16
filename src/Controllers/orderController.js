@@ -2,6 +2,7 @@ import {
   buyNowService,
   createOrderService,
   getOrdersByUserService,
+  getOrdersByUserServiceDetail,
   removeOrderService,
   UpdateOrderService,
 } from "../services/ordersService.js";
@@ -106,7 +107,7 @@ export const byNowOrder = async (req, res) => {
 export const getUserOrders = async (req, res) => {
   try {
     const userId = req.user._id;
-    const result = await getOrdersByUserService(userId);
+    const result = await getOrdersByUserServiceDetail(userId);
 
     return res.status(200).json(result);
   } catch (error) {
@@ -143,6 +144,22 @@ export const updateOrder = async (req, res) => {
       status: 200,
       success: true,
       message: "Đơn hàng đã được cập nhật thành công",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+export const getListOrder = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const result = await getOrdersByUserService(userId);
+    return res.status(200).json({
+      status: 200,
+      message: "Lấy danh sách đơn hàng thành công",
       data: result,
     });
   } catch (error) {

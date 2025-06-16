@@ -6,9 +6,8 @@ import Variants from "../models/variantsModel.schema.js";
 import Product from "../models/productModel.schema.js";
 
 const generateOrderCode = () => {
-  const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 7).toUpperCase();
-  return `ORD-${timestamp}-${random}`;
+  return `ORD-${random}`;
 };
 
 export const createOrderService = async (userId, addressId) => {
@@ -253,33 +252,6 @@ export const buyNowService = async (
     throw error;
   }
 };
-// export const getOrdersByUserService = async (userId) => {
-//   try {
-//     const orders = await Order.find({ userId })
-//       .sort({ createdAt: -1 })
-//       .populate({
-//         path: "items.productId",
-//         select: "name images finalPrice",
-//       });
-
-//     if (!orders) {
-//       return {
-//         status: 400,
-//         message: "Không có đơn hàng nào",
-//         data: [],
-//       };
-//     }
-
-//     return {
-//       status: 200,
-//       message: "Lấy danh sách đơn hàng thành công",
-//       data: orders,
-//     };
-//   } catch (error) {
-//     throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
-//   }
-// };
-
 export const UpdateOrderService = async (orderId, status) => {
   const order = await Order.findByIdAndUpdate(
     orderId,
@@ -317,7 +289,7 @@ export const removeOrderService = async (orderId) => {
     message: "Hủy đơn hàng thành công ",
   };
 };
-export const getOrdersByUserService = async (userId) => {
+export const getOrdersByUserServiceDetail = async (userId) => {
   try {
     const orders = await Order.find({ userId })
       .sort({ createdAt: -1 })
@@ -346,7 +318,6 @@ export const getOrdersByUserService = async (userId) => {
       createdAt: order.createdAt,
       items: order.items.map((item) => ({
         productName: item.name,
-        price: item.price.toLocaleString("vi-VN") + " VNĐ",
         quantity: item.quantity,
       })),
     }));
@@ -356,6 +327,38 @@ export const getOrdersByUserService = async (userId) => {
       message: "Lấy danh sách đơn hàng thành công",
       data: formattedOrders,
     };
+  } catch (error) {
+    throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
+  }
+};
+export const getOrdersByUserService = async (userId) => {
+  try {
+    const orders = await Order.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "items.productId",
+        select: "name images ",
+      });
+
+    if (!orders) {
+      return {
+        status: 400,
+        message: "Không có đơn hàng nào",
+        data: [],
+      };
+    }
+
+    // Format lại dữ liệu trả về
+    const formattedOrders = orders.map((order) => ({
+      _id: order._id,
+      status: order.status,
+      totalAmount: order.totalAmount,
+      totalItems: order.items.length,
+      orderCode: order.orderCode,
+      createdAt: order.createdAt,
+    }));
+
+    return formattedOrders;
   } catch (error) {
     throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
   }
