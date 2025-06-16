@@ -3,7 +3,7 @@ import Cart from "../models/cartModel.schema.js";
 import Address from "../models/addressModel.schema.js";
 import User from "../models/userModel.schema.js";
 import Variants from "../models/variantsModel.schema.js";
-import Product from "../models/productModel.schema.js";
+// import Product from "../models/productModel.schema.js";
 
 const generateOrderCode = () => {
   const random = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -146,112 +146,112 @@ export const createOrderService = async (userId, addressId) => {
   }
 };
 
-export const buyNowService = async (
-  userId,
-  addressId,
-  productId,
-  variantId,
-  quantity,
-  voucherCode
-) => {
-  try {
-    const address = await Address.findById(addressId);
-    if (!address) {
-      throw new Error("Địa chỉ không tồn tại");
-    }
-    const product = await Product.findById(productId);
-    if (!product) {
-      throw new Error("Sản phẩm không tồn tại");
-    }
-    if (variantId) {
-      const variant = await Variants.findById(variantId);
-      if (!variant) {
-        throw new Error("Biến thể sản phẩm không tồn tại");
-      }
-      if (variant.stock < quantity) {
-        throw new Error("Số lượng sản phẩm không đủ");
-      }
-    }
-    const orderItems = [
-      {
-        productId: product._id,
-        variantId: variantId || null,
-        quantity: quantity,
-        price: product.price,
-        name: product.name,
-      },
-    ];
+// export const buyNowService = async (
+//   userId,
+//   addressId,
+//   productId,
+//   variantId,
+//   quantity,
+//   voucherCode
+// ) => {
+//   try {
+//     const address = await Address.findById(addressId);
+//     if (!address) {
+//       throw new Error("Địa chỉ không tồn tại");
+//     }
+//     const product = await Product.findById(productId);
+//     if (!product) {
+//       throw new Error("Sản phẩm không tồn tại");
+//     }
+//     if (variantId) {
+//       const variant = await Variants.findById(variantId);
+//       if (!variant) {
+//         throw new Error("Biến thể sản phẩm không tồn tại");
+//       }
+//       if (variant.stock < quantity) {
+//         throw new Error("Số lượng sản phẩm không đủ");
+//       }
+//     }
+//     const orderItems = [
+//       {
+//         productId: product._id,
+//         variantId: variantId || null,
+//         quantity: quantity,
+//         price: product.price,
+//         name: product.name,
+//       },
+//     ];
 
-    const originalTotal = product.price * quantity;
-    let voucherDiscount = 0;
-    let voucherInfo = null;
-    let totalAmount = originalTotal;
+//     const originalTotal = product.price * quantity;
+//     let voucherDiscount = 0;
+//     let voucherInfo = null;
+//     let totalAmount = originalTotal;
 
-    if (voucherCode) {
-      try {
-        const result = await validateAndApplyVoucherService(
-          voucherCode,
-          originalTotal,
-          userId
-        );
-        voucherDiscount = result.discountAmount;
-        totalAmount = result.finalAmount;
-        voucherInfo = {
-          id: result.voucher._id,
-          code: result.voucher.code,
-          discountType: result.voucher.discountType,
-          discountValue: result.voucher.discountValue,
-          discountAmount: voucherDiscount,
-        };
-      } catch (error) {
-        console.error("Lỗi áp dụng voucher:", error);
-      }
-    }
+//     if (voucherCode) {
+//       try {
+//         const result = await validateAndApplyVoucherService(
+//           voucherCode,
+//           originalTotal,
+//           userId
+//         );
+//         voucherDiscount = result.discountAmount;
+//         totalAmount = result.finalAmount;
+//         voucherInfo = {
+//           id: result.voucher._id,
+//           code: result.voucher.code,
+//           discountType: result.voucher.discountType,
+//           discountValue: result.voucher.discountValue,
+//           discountAmount: voucherDiscount,
+//         };
+//       } catch (error) {
+//         console.error("Lỗi áp dụng voucher:", error);
+//       }
+//     }
 
-    const orderCode = generateOrderCode();
+//     const orderCode = generateOrderCode();
 
-    const order = new Order({
-      userId,
-      items: orderItems,
-      originalTotal,
-      totalAmount,
-      voucherDiscount,
-      voucherId: voucherInfo,
-      addressId,
-      shippingAddress: {
-        fullName: address.fullName,
-        phoneNumber: address.phoneNumber,
-        province: address.province,
-        district: address.district,
-        ward: address.ward,
-        address: address.address,
-      },
-      orderCode,
-      status: "pending",
-      paymentMethod: "COD",
-    });
+//     const order = new Order({
+//       userId,
+//       items: orderItems,
+//       originalTotal,
+//       totalAmount,
+//       voucherDiscount,
+//       voucherId: voucherInfo,
+//       addressId,
+//       shippingAddress: {
+//         fullName: address.fullName,
+//         phoneNumber: address.phoneNumber,
+//         province: address.province,
+//         district: address.district,
+//         ward: address.ward,
+//         address: address.address,
+//       },
+//       orderCode,
+//       status: "pending",
+//       paymentMethod: "COD",
+//     });
 
-    const savedOrder = await order.save();
+//     const savedOrder = await order.save();
 
-    // Cập nhật số lượng tồn kho
-    if (variantId) {
-      await Variants.findByIdAndUpdate(variantId, {
-        $inc: { stock: -quantity },
-      });
-    }
+//     // Cập nhật số lượng tồn kho
+//     if (variantId) {
+//       await Variants.findByIdAndUpdate(variantId, {
+//         $inc: { stock: -quantity },
+//       });
+//     }
 
-    await User.findByIdAndUpdate(
-      userId,
-      { $push: { order: savedOrder._id } },
-      { new: true }
-    );
+//     await User.findByIdAndUpdate(
+//       userId,
+//       { $push: { order: savedOrder._id } },
+//       { new: true }
+//     );
 
-    return savedOrder;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-};
+//     return savedOrder;
+//   } catch (error) {
+//     console.log(error);
+//     throw error;
+//   }
+// };
 export const UpdateOrderService = async (orderId, status) => {
   const order = await Order.findByIdAndUpdate(
     orderId,
@@ -361,5 +361,47 @@ export const getOrdersByUserService = async (userId) => {
     return formattedOrders;
   } catch (error) {
     throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
+  }
+};
+export const getDetailOrderService = async (orderId) => {
+  try {
+    // Tìm đơn hàng theo ID
+    const order = await Order.findById(orderId).populate({
+      path: "items.productId",
+      select: "name images ",
+    });
+
+    // Kiểm tra nếu không tìm thấy đơn hàng
+    if (!order) {
+      return {
+        status: 404,
+        message: "Không tìm thấy đơn hàng",
+        data: null,
+      };
+    }
+
+    // Format dữ liệu trả về
+    const formattedOrder = {
+      _id: order._id,
+      status: order.status,
+      totalAmount: order.totalAmount,
+      totalItems: order.items.reduce((total, item) => total + item.quantity, 0),
+      orderCode: order.orderCode,
+      createdAt: order.createdAt,
+      address: order.shippingAddress.address,
+      paymentMethod: order.paymentMethod,
+      originalTotal: order.originalTotal,
+      discount: order.voucherDiscount,
+      items: order.items.map((item) => ({
+        productName: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    };
+
+    return  formattedOrder;
+  } catch (error) {
+    console.error("Error in getDetailOrderService:", error);
+    throw new Error(`Lỗi khi lấy thông tin đơn hàng: ${error.message}`);
   }
 };
