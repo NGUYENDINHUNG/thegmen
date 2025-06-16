@@ -253,32 +253,32 @@ export const buyNowService = async (
     throw error;
   }
 };
-export const getOrdersByUserService = async (userId) => {
-  try {
-    const orders = await Order.find({ userId })
-      .sort({ createdAt: -1 })
-      .populate({
-        path: "items.productId",
-        select: "name images description",
-      });
+// export const getOrdersByUserService = async (userId) => {
+//   try {
+//     const orders = await Order.find({ userId })
+//       .sort({ createdAt: -1 })
+//       .populate({
+//         path: "items.productId",
+//         select: "name images finalPrice",
+//       });
 
-    if (!orders) {
-      return {
-        status: 400,
-        message: "Không có đơn hàng nào",
-        data: [],
-      };
-    }
+//     if (!orders) {
+//       return {
+//         status: 400,
+//         message: "Không có đơn hàng nào",
+//         data: [],
+//       };
+//     }
 
-    return {
-      status: 200,
-      message: "Lấy danh sách đơn hàng thành công",
-      data: orders,
-    };
-  } catch (error) {
-    throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
-  }
-};
+//     return {
+//       status: 200,
+//       message: "Lấy danh sách đơn hàng thành công",
+//       data: orders,
+//     };
+//   } catch (error) {
+//     throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
+//   }
+// };
 
 export const UpdateOrderService = async (orderId, status) => {
   const order = await Order.findByIdAndUpdate(
@@ -316,4 +316,47 @@ export const removeOrderService = async (orderId) => {
     success: true,
     message: "Hủy đơn hàng thành công ",
   };
+};
+export const getOrdersByUserService = async (userId) => {
+  try {
+    const orders = await Order.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "items.productId",
+        select: "name images ",
+      });
+
+    if (!orders) {
+      return {
+        status: 400,
+        message: "Không có đơn hàng nào",
+        data: [],
+      };
+    }
+
+    // Format lại dữ liệu trả về
+    const formattedOrders = orders.map((order) => ({
+      address: order.shippingAddress.address,
+      status: order.status,
+      paymentMethod: order.paymentMethod,
+      originalTotal: order.originalTotal,
+      totalAmount: order.totalAmount,
+      discount: order.voucherDiscount,
+      orderCode: order.orderCode,
+      createdAt: order.createdAt,
+      items: order.items.map((item) => ({
+        productName: item.name,
+        price: item.price.toLocaleString("vi-VN") + " VNĐ",
+        quantity: item.quantity,
+      })),
+    }));
+
+    return {
+      status: 200,
+      message: "Lấy danh sách đơn hàng thành công",
+      data: formattedOrders,
+    };
+  } catch (error) {
+    throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
+  }
 };
