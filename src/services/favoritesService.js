@@ -9,8 +9,8 @@ export const getFavoritesService = async (userId) => {
     select: "name price slug avatar images finalPrice discount  ",
     populate: {
       path: "categories",
-      select: "name slug"
-    }
+      select: "name slug",
+    },
   });
 
   const userFavorites = {

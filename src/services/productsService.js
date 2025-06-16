@@ -252,7 +252,7 @@ export const GetAllProductsService = async (
 
     const result = await Product.find(filter)
       .select(
-        "name price slug avatar images description categories isDeleted variants"
+        "name price discount finalPrice slug avatar images description categories isDeleted variants"
       )
       .populate("categories", "name slug")
       .populate({
@@ -276,6 +276,8 @@ export const GetAllProductsService = async (
         _id: product._id,
         name: product.name,
         price: product.price,
+        discount: product.discount,
+        finalPrice: product.finalPrice,
         slug: product.slug,
         avatar: product.avatar,
         images: product.images,

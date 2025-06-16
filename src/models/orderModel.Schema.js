@@ -22,7 +22,6 @@ const OrderSchema = new Schema(
       discountValue: { type: Number },
       discountAmount: { type: Number },
     },
-    addressId: { type: Schema.Types.ObjectId, ref: "address", required: true },
     shippingAddress: {
       fullName: String,
       phoneNumber: String,

@@ -8,72 +8,20 @@ import {
 
 export const createOrder = async (req, res) => {
   try {
-    const { addressId, voucherCode, paymentMethod = "COD" } = req.body;
+    const { addressId } = req.body;
     const userId = req.user._id;
 
-    if (!addressId) {
-      return res.status(400).json({
-        success: false,
-        message: "Vui lòng chọn địa chỉ giao hàng",
-      });
-    }
-
-    const order = await createOrderService(userId, addressId, voucherCode);
+    const result = await createOrderService(userId, addressId);
 
     return res.status(200).json({
       status: 200,
-      message: "Đặt hàng thành công",
-      data: {
-        orderId: order._id,
-        orderCode: order.orderCode,
-        status: order.status,
-        orderDate: order.createdAt,
-        paymentMethod: order.paymentMethod,
-        originalTotal: order.originalTotal,
-        totalAmount: order.totalAmount,
-        voucherDiscount: order.voucherDiscount,
-        voucher: order.voucherId || null,
-        items: order.items.map((item) => ({
-          productId: item.productId,
-          variantId: item.variantId,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          totalPrice: item.price * item.quantity,
-        })),
-        shippingAddress: order.shippingAddress,
-      },
+      message: "Tạo đơn hàng thành công",
+      data: result,
     });
   } catch (error) {
-    if (error.message.includes("Địa chỉ không tồn tại")) {
-      return res.status(404).json({
-        success: false,
-        message: "Địa chỉ giao hàng không tồn tại",
-        error: error.message,
-      });
-    }
-
-    if (error.message.includes("Giỏ hàng trống")) {
-      return res.status(400).json({
-        success: false,
-        message: "Giỏ hàng của bạn đang trống",
-        error: error.message,
-      });
-    }
-
-    if (error.message.includes("Lỗi áp dụng voucher")) {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-        error: error.message,
-      });
-    }
-
-    console.error("Lỗi tạo đơn hàng:", error);
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
-      message: "Có lỗi xảy ra khi tạo đơn hàng",
-      error: error.message,
+      message: error.message || "Không thể tạo đơn hàng",
     });
   }
 };

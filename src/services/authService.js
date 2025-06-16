@@ -383,14 +383,10 @@ export const updateAccountService = async (userId, updateData) => {
   delete updateData.permission;
   delete updateData.password;
 
-  const updatedUser = await User.findByIdAndUpdate(
-    userId,
-    updateData || {},
-    {
-      new: true,
-      select: "-password -refreshToken",
-    }
-  );
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData || {}, {
+    new: true,
+    select: "-password -refreshToken",
+  });
   if (!updatedUser) throw new Error("User not found");
   return updatedUser;
 };
@@ -406,17 +402,23 @@ export const updateAvatarService = async (userId, imageUrl) => {
   if (!updatedUser) throw new Error("User not found");
   return updatedUser;
 };
-
-export const updatePasswordService = async (userId, oldPassword, newPassword) => {
+export const updatePasswordService = async (
+  userId,
+  oldPassword,
+  newPassword
+) => {
   if (!userId) throw new Error("Không tìm thấy user");
-  if (!oldPassword ) throw new Error("Thiếu mật khẩu cũ");
-  if(!newPassword) throw new Error("Thiếu mật khẩu mới");
-   if(oldPassword === newPassword) throw new Error("Mật khẩu cũ và mới không được giống nhau");
+  if (!oldPassword) throw new Error("Thiếu mật khẩu cũ");
+  if (!newPassword) throw new Error("Thiếu mật khẩu mới");
+  if (oldPassword === newPassword)
+    throw new Error("Mật khẩu cũ và mới không được giống nhau");
   const user = await User.findById(userId).select("+password");
   if (!user) throw new Error("User không tồn tại");
 
   if (!user.password) {
-    throw new Error("Tài khoản của bạn đăng nhập bằng bên thứ 3, không thể đổi mật khẩu.");
+    throw new Error(
+      "Tài khoản của bạn đăng nhập bằng bên thứ 3, không thể đổi mật khẩu."
+    );
   }
 
   const isMatch = await bcrypt.compare(oldPassword, user.password);
