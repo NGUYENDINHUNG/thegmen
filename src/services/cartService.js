@@ -130,38 +130,38 @@ export const getCartByUserService = async (userId) => {
   };
 };
 
-export const removeItemFromCartService = async (
-  userId,
-  productId,
-  variantId
-) => {
-  const cart = await Cart.findOne({ userId });
-  if (!cart) return null;
+// export const removeItemFromCartService = async (
+//   userId,
+//   productId,
+//   variantId
+// ) => {
+//   const cart = await Cart.findOne({ userId });
+//   if (!cart) return null;
 
-  // Tìm index của item cần xóa
-  const itemIndex = cart.items.findIndex((item) => {
-    if (variantId) {
-      return (
-        item.productId.toString() === productId &&
-        item.variantId &&
-        item.variantId.toString() === variantId
-      );
-    } else {
-      return (
-        item.productId.toString() === productId &&
-        (!item.variantId || item.variantId === null)
-      );
-    }
-  });
+//   // Tìm index của item cần xóa
+//   const itemIndex = cart.items.findIndex((item) => {
+//     if (variantId) {
+//       return (
+//         item.productId.toString() === productId &&
+//         item.variantId &&
+//         item.variantId.toString() === variantId
+//       );
+//     } else {
+//       return (
+//         item.productId.toString() === productId &&
+//         (!item.variantId || item.variantId === null)
+//       );
+//     }
+//   });
 
-  if (itemIndex > -1) {
-    cart.items.splice(itemIndex, 1);
-    cart.updatedAt = new Date();
-    await cart.save();
-  }
+//   if (itemIndex > -1) {
+//     cart.items.splice(itemIndex, 1);
+//     cart.updatedAt = new Date();
+//     await cart.save();
+//   }
 
-  return cart;
-};
+//   return cart;
+// };
 
 export const updateCartItemService = async (
   userId,
@@ -252,3 +252,90 @@ export const updateCartItemService = async (
   }
 };
 
+export const removeItemFromCartService = async (
+  userId,
+  productId,
+  variantId
+) => {
+  try {
+    // 1. Tìm giỏ hàng và populate thông tin sản phẩm
+    const cart = await Cart.findOne({ userId }).populate([
+      {
+        path: "items.productId",
+        select: "_id name finalPrice price avatar discount",
+      },
+      {
+        path: "items.variantId",
+        select: "_id color size sku images",
+      },
+      {
+        path: "appliedVoucher.voucherId",
+        select: "_id code name discountValue",
+      },
+    ]);
+
+    if (!cart) return null;
+
+    // 2. Tìm index của item cần xóa
+    const itemIndex = cart.items.findIndex((item) => {
+      if (variantId) {
+        return (
+          item.productId._id.toString() === productId &&
+          item.variantId &&
+          item.variantId._id.toString() === variantId
+        );
+      } else {
+        return (
+          item.productId._id.toString() === productId &&
+          (!item.variantId || item.variantId === null)
+        );
+      }
+    });
+
+    if (itemIndex > -1) {
+      // 3. Xóa item khỏi giỏ hàng
+      cart.items.splice(itemIndex, 1);
+
+      // 4. Tính lại tổng tiền
+      let totalPrice = 0;
+      cart.items.forEach((item) => {
+        const product = item.productId;
+        const price = product.finalPrice ?? product.price ?? 0;
+        totalPrice += price * item.quantity;
+      });
+
+      // 5. Tính lại giá sau khi áp dụng voucher (nếu có)
+      let discountAmount = 0;
+      let finalAmount = totalPrice;
+
+      if (cart.appliedVoucher?.voucherId) {
+        const voucher = cart.appliedVoucher.voucherId;
+        discountAmount = (totalPrice * voucher.discountValue) / 100;
+        finalAmount = totalPrice - discountAmount;
+      }
+
+      // 6. Cập nhật giỏ hàng
+      cart.finalAmount = finalAmount;
+      cart.updatedAt = new Date();
+      await cart.save();
+
+      // 7. Trả về thông tin giỏ hàng đã cập nhật
+      return {
+        cart,
+        totalPrice,
+        discountAmount,
+        finalAmount,
+      };
+    }
+
+    return {
+      cart,
+      totalPrice: 0,
+      discountAmount: 0,
+      finalAmount: 0,
+    };
+  } catch (error) {
+    console.log("Lỗi xóa sản phẩm khỏi giỏ hàng:", error);
+    throw error;
+  }
+};
