@@ -100,8 +100,8 @@ export const UpdateProduct = async (req, res) => {
     const { ProductId } = req.params;
     const updateData = {};
 
-    Object.keys(req.body).forEach(key => {
-      if (req.body[key] !== undefined && req.body[key] !== '') {
+    Object.keys(req.body).forEach((key) => {
+      if (req.body[key] !== undefined && req.body[key] !== "") {
         updateData[key] = req.body[key];
       }
     });
@@ -140,7 +140,7 @@ export const UpdateProduct = async (req, res) => {
     }
 
     const result = await UpdateProductsService(ProductId, updateData);
-    
+
     if (result.EC === 404 || result.EC === 500) {
       return res.status(result.EC).json({
         statusCode: result.EC,
@@ -153,7 +153,6 @@ export const UpdateProduct = async (req, res) => {
       message: "Cập nhật sản phẩm thành công",
       data: result,
     });
-
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
@@ -313,20 +312,19 @@ export const GetRelatedProducts = async (req, res) => {
 
 export const getTrendingProducts = async (req, res) => {
   try {
-    const { type = 'ALL' } = req.query; 
+    const { type = "ALL" } = req.query;
     const result = await getTrendingProductsService(type);
 
     return res.status(200).json({
       statusCode: 200,
       message: "Lấy sản phẩm trending thành công",
-      data: result.data
+      data: result.data,
     });
-
   } catch (error) {
     return res.status(500).json({
-      status: 500,
+      statusCode: 500,
       message: error.message || "Lỗi server",
-      data: null
+      data: null,
     });
   }
 };

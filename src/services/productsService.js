@@ -424,7 +424,7 @@ export const FilterProductsService = async (queryParams) => {
 export const GetRelatedProductsService = async (slug, limit) => {
   try {
     const currentProduct = await Product.findOne({ slug: slug })
-      .select("categories TYPE")
+      .select("categories type")
       .populate("categories", "_id");
 
     if (!currentProduct) {
@@ -442,10 +442,10 @@ export const GetRelatedProductsService = async (slug, limit) => {
       _id: { $ne: currentProduct._id },
       isDeleted: false,
       categories: { $in: categoryIds },
-      TYPE: currentProduct.TYPE,
+      type: currentProduct.type,
     })
       .select(
-        "name price finalPrice discount avatar images slug TYPE categories variants"
+        "name price finalPrice discount avatar images slug type categories variants"
       )
       .populate("categories", "name slug")
       .populate("variants", "color size")
@@ -466,7 +466,7 @@ export const GetRelatedProductsService = async (slug, limit) => {
         avatar: product.avatar,
         images: product.images,
         slug: product.slug,
-        TYPE: product.TYPE,
+        type: product.type,
         categories: product.categories,
         COLOR: colors,
       };
@@ -503,7 +503,7 @@ export const getTrendingProductsService = async (type) => {
     };
 
     if (type && type !== "ALL") {
-      query.TYPE = type;
+      query.type = type;
     }
 
     // Bước 2: Lấy đơn hàng thành công
@@ -523,7 +523,7 @@ export const getTrendingProductsService = async (type) => {
 
     // Bước 4: Lấy thông tin sản phẩm
     const products = await Product.find(query)
-      .select("name price discount finalPrice avatar TYPE slug")
+      .select("name price discount finalPrice avatar type slug")
       .populate("categories", "name")
       .lean();
 
