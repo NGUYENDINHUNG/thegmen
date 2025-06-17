@@ -4,147 +4,12 @@ import Address from "../models/addressModel.schema.js";
 import User from "../models/userModel.schema.js";
 import Variants from "../models/variantsModel.schema.js";
 import { addToCartService, calculateCartTotals } from "./cartService.js";
-// import Product from "../models/productModel.schema.js";
+import sendEmail from "../util/email.util.js";
 
 const generateOrderCode = () => {
   const random = Math.random().toString(36).substring(2, 7).toUpperCase();
   return `ORD-${random}`;
 };
-// export const createOrderService = async (userId, addressId) => {
-//   try {
-//     // 1. Kiểm tra địa chỉ
-//     const address = await Address.findById(addressId);
-//     if (!address) {
-//       throw new Error("Địa chỉ không tồn tại");
-//     }
-
-//     // 2. Lấy thông tin giỏ hàng
-//     const cart = await Cart.findOne({ userId }).populate([
-//       {
-//         path: "items.productId",
-//         select: "_id name finalPrice price avatar discount slug",
-//       },
-//       {
-//         path: "items.variantId",
-//         select: "_id color size sku images stock",
-//       },
-//       {
-//         path: "appliedVoucher.voucherId",
-//         select: "_id code name discountValue",
-//       },
-//     ]);
-
-//     if (!cart || !cart.items || cart.items.length === 0) {
-//       throw new Error("Giỏ hàng trống");
-//     }
-
-//     // 3. Kiểm tra số lượng sản phẩm trong kho
-//     for (const item of cart.items) {
-//       if (item.variantId) {
-//         const variant = item.variantId; // Đã được populate
-//         if (variant.stock < item.quantity) {
-//           throw new Error(
-//             `Sản phẩm ${item.productId.name} không đủ số lượng trong kho`
-//           );
-//         }
-//       }
-//     }
-
-//     // 4. Tính toán giá trị đơn hàng
-//     const orderItems = [];
-//     let originalTotal = 0;
-
-//     cart.items.forEach((item) => {
-//       const product = item.productId;
-//       // Sử dụng finalPrice nếu có, nếu không thì dùng price
-//       const itemPrice = (product.finalPrice ?? product.price) * item.quantity;
-//       originalTotal += itemPrice;
-
-//       orderItems.push({
-//         productId: product._id,
-//         variantId: item.variantId?._id,
-//         quantity: item.quantity,
-//         price: product.finalPrice ?? product.price,
-//         name: product.name,
-//         image: product.avatar,
-//         variant: item.variantId
-//           ? {
-//               color: item.variantId.color,
-//               size: item.variantId.size,
-//             }
-//           : null,
-//       });
-//     });
-
-//     // 5. Xử lý voucher
-//     let voucherDiscount = 0;
-//     let voucherInfo = null;
-//     let totalAmount = originalTotal;
-
-//     if (cart.appliedVoucher?.voucherId) {
-//       const voucher = cart.appliedVoucher.voucherId;
-//       voucherDiscount = (originalTotal * voucher.discountValue) / 100;
-//       totalAmount = originalTotal - voucherDiscount;
-//       voucherInfo = {
-//         id: voucher._id,
-//         code: voucher.code,
-//         discountValue: voucher.discountValue,
-//         discountAmount: voucherDiscount,
-//       };
-//     }
-
-//     // 6. Tạo mã đơn hàng
-//     const orderCode = generateOrderCode();
-
-//     // 7. Tạo đơn hàng mới
-//     const order = new Order({
-//       userId,
-//       items: orderItems,
-//       originalTotal,
-//       totalAmount,
-//       voucherDiscount,
-//       voucherInfo,
-//       shippingAddress: {
-//         address: address.address,
-//       },
-//       orderCode,
-//       status: "pending",
-//       paymentMethod: "COD",
-//     });
-
-//     // 8. Lưu đơn hàng
-//     const savedOrder = await order.save();
-
-//     // 9. Cập nhật số lượng sản phẩm trong kho
-//     for (const item of cart.items) {
-//       if (item.variantId) {
-//         await Variants.findByIdAndUpdate(item.variantId._id, {
-//           $inc: { stock: -item.quantity },
-//         });
-//       }
-//     }
-
-//     // 10. Cập nhật thông tin người dùng
-//     await User.findByIdAndUpdate(
-//       userId,
-//       { $push: { orders: savedOrder._id } },
-//       { new: true }
-//     );
-
-//     // 11. Xóa giỏ hàng
-//     await Cart.findOneAndDelete({ userId });
-
-//     return {
-//       order: savedOrder,
-//       totalAmount,
-//       voucherDiscount,
-//       originalTotal,
-//     };
-//   } catch (error) {
-//     console.log("Lỗi tạo đơn hàng:", error);
-//     throw error;
-//   }
-// };
 export const UpdateOrderService = async (orderId, status) => {
   const order = await Order.findByIdAndUpdate(
     orderId,
@@ -180,48 +45,6 @@ export const removeOrderService = async (orderId) => {
     success: true,
     message: "Hủy đơn hàng thành công ",
   };
-};
-export const getOrdersByUserServiceDetail = async (userId) => {
-  try {
-    const orders = await Order.find({ userId })
-      .sort({ createdAt: -1 })
-      .populate({
-        path: "items.productId",
-        select: "name images ",
-      });
-
-    if (!orders) {
-      return {
-        status: 400,
-        message: "Không có đơn hàng nào",
-        data: [],
-      };
-    }
-
-    // Format lại dữ liệu trả về
-    const formattedOrders = orders.map((order) => ({
-      address: order.shippingAddress.address,
-      status: order.status,
-      paymentMethod: order.paymentMethod,
-      originalTotal: order.originalTotal,
-      totalAmount: order.totalAmount,
-      discount: order.voucherDiscount,
-      orderCode: order.orderCode,
-      createdAt: order.createdAt,
-      items: order.items.map((item) => ({
-        productName: item.name,
-        quantity: item.quantity,
-      })),
-    }));
-
-    return {
-      status: 200,
-      message: "Lấy danh sách đơn hàng thành công",
-      data: formattedOrders,
-    };
-  } catch (error) {
-    throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
-  }
 };
 export const getOrdersByUserService = async (userId) => {
   try {
@@ -273,7 +96,6 @@ export const getOrdersByUserService = async (userId) => {
     throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
   }
 };
-
 export const getDetailOrderService = async (orderId) => {
   try {
     // Thêm populate cho variantId
@@ -388,6 +210,11 @@ export const createOrderService = async (userId, addressId) => {
     if (!address) {
       throw new Error("Địa chỉ không tồn tại");
     }
+    // 2. Lấy thông tin người dùng
+    const user = await User.findById(userId);
+    if (!user || !user.email) {
+      throw new Error("Không tìm thấy thông tin người dùng hoặc email");
+    }
 
     // 2. Lấy thông tin giỏ hàng
     const cart = await Cart.findOne({ userId }).populate([
@@ -499,6 +326,67 @@ export const createOrderService = async (userId, addressId) => {
     } else {
       await cart.save();
     }
+    const emailHtml = `
+  <h2>Xác nhận đơn hàng #${orderCode}</h2>
+  <p>Xin chào ${user.name},</p>
+  <p>Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi. Dưới đây là chi tiết đơn hàng của bạn:</p>
+  
+  <h3>Thông tin đơn hàng:</h3>
+  <ul>
+    <li>Mã đơn hàng: ${orderCode}</li>
+    <li>Ngày đặt: ${new Date().toLocaleString("vi-VN")}</li>
+    <li>Địa chỉ giao hàng: ${address.address}</li>
+    <li>Phương thức thanh toán: ${order.paymentMethod}</li>
+  </ul>
+
+  <h3>Chi tiết sản phẩm:</h3>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <th style="border: 1px solid #ddd; padding: 8px;">Sản phẩm</th>
+      <th style="border: 1px solid #ddd; padding: 8px;">Số lượng</th>
+      <th style="border: 1px solid #ddd; padding: 8px;">Giá</th>
+    </tr>
+    ${orderItems
+      .map(
+        (item) => `
+      <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;">
+          ${item.name}
+          ${
+            item.variant
+              ? `<br/>(${item.variant.color} - ${item.variant.size})`
+              : ""
+          }
+        </td>
+        <td style="border: 1px solid #ddd; padding: 8px;">${item.quantity}</td>
+        <td style="border: 1px solid #ddd; padding: 8px;">${item.price.toLocaleString(
+          "vi-VN"
+        )}đ</td>
+      </tr>
+    `
+      )
+      .join("")}
+  </table>
+
+  <h3>Tổng thanh toán:</h3>
+  <ul>
+    <li>Tổng tiền hàng: ${totals.totalPrice.toLocaleString("vi-VN")}đ</li>
+    ${
+      totals.discountAmount > 0
+        ? `<li>Giảm giá: ${totals.discountAmount.toLocaleString("vi-VN")}đ</li>`
+        : ""
+    }
+    <li>Thành tiền: ${totals.finalAmount.toLocaleString("vi-VN")}đ</li>
+  </ul>
+
+  <p>Chúng tôi sẽ sớm xử lý đơn hàng của bạn. Bạn có thể theo dõi trạng thái đơn hàng trong tài khoản của mình.</p>
+  <p>Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi.</p>
+  
+  <p>Trân trọng,<br/>Đội ngũ cửa hàng</p>
+`;
+
+    // Gửi email
+    await sendEmail(user.email, `Xác nhận đơn hàng #${orderCode}`, emailHtml);
 
     return savedOrder;
   } catch (error) {

@@ -4,6 +4,7 @@ import Variants from "../models/variantsModel.schema.js";
 import mongoose from "mongoose";
 import Favorites from "../models/favoritesModel.schema.js";
 import Category from "../models/categoriesModel.schema.js";
+import Order from "../models/orderModel.Schema.js";
 
 export const CreateProductService = async (productData) => {
   try {
@@ -17,25 +18,23 @@ export const CreateProductService = async (productData) => {
       sizeGuide,
       price,
       discount,
-      TYPE,
+      type,
       color,
       size,
       stock,
       categories,
       featured,
-      UNISEXTYPE,
     } = productData;
 
-
     const slug = name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Xóa dấu
-    .replace(/[đĐ]/g, 'd') // Chuyển đ/Đ thành d
-    .replace(/([^0-9a-z-\s])/g, '') // Xóa ký tự đặc biệt
-    .replace(/(\s+)/g, '-') // Thay khoảng trắng bằng dấu -
-    .replace(/-+/g, '-') // Xóa dấu - liên tiếp
-    .replace(/^-+|-+$/g, ''); // Xóa dấu - ở đầu và cuối
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Xóa dấu
+      .replace(/[đĐ]/g, "d") // Chuyển đ/Đ thành d
+      .replace(/([^0-9a-z-\s])/g, "") // Xóa ký tự đặc biệt
+      .replace(/(\s+)/g, "-") // Thay khoảng trắng bằng dấu -
+      .replace(/-+/g, "-") // Xóa dấu - liên tiếp
+      .replace(/^-+|-+$/g, ""); // Xóa dấu - ở đầu và cuối
 
     if (!name || !price) {
       return {
@@ -56,7 +55,7 @@ export const CreateProductService = async (productData) => {
       images,
       price,
       discount,
-      TYPE,
+      type,
       color,
       size,
       stock,
@@ -64,7 +63,6 @@ export const CreateProductService = async (productData) => {
       slug,
       sizeGuide,
       featured,
-      UNISEXTYPE,
       finalPrice: Math.round(finalPrice),
     });
 
@@ -80,23 +78,6 @@ export const CreateProductService = async (productData) => {
 
 export const UpdateProductsService = async (ProductId, updateData) => {
   try {
-    const {
-      name,
-      description_short,
-      description,
-      additional_info,
-      avatar,
-      images,
-      sizeGuide,
-      price,
-      discount,
-      TYPE,
-      color,
-      slug,
-      size,
-      stock,
-      categories,
-    } = updateData;
     const existingProduct = await Product.findById(ProductId);
     if (!existingProduct) {
       return {
@@ -105,9 +86,9 @@ export const UpdateProductsService = async (ProductId, updateData) => {
       };
     }
 
-    if (updateData.price || updateData.discount) {
-      const price = updateData.price || existingProduct.price;
-      const discount = updateData.discount || existingProduct.discount;
+    if (updateData.price !== undefined || updateData.discount !== undefined) {
+      const price = updateData.price ?? existingProduct.price;
+      const discount = updateData.discount ?? existingProduct.discount;
 
       let finalPrice = price;
       if (discount) {
@@ -116,35 +97,14 @@ export const UpdateProductsService = async (ProductId, updateData) => {
       updateData.finalPrice = Math.round(finalPrice);
     }
 
+    // Sử dụng $set để chỉ cập nhật các trường được chỉ định
     const updatedProduct = await Product.findByIdAndUpdate(
       ProductId,
-      {
-        $set: {
-          name,
-          description_short,
-          description,
-          additional_info,
-          avatar,
-          images,
-          sizeGuide,
-          slug,
-          price,
-          discount,
-          TYPE,
-          color,
-          size,
-          stock,
-          categories,
-        },
-      },
+      { $set: updateData },
       { new: true }
     );
 
-    return {
-      EC: 0,
-      EM: "Cập nhật sản phẩm thành công",
-      data: updatedProduct,
-    };
+    return updatedProduct;
   } catch (error) {
     console.error("Error in UpdateProductsService:", error);
     return {
@@ -366,16 +326,17 @@ export const RestoreProductService = async (ProductId) => {
 
 export const FilterProductsService = async (queryParams) => {
   try {
-    const { minPrice, maxPrice, category, type,currentPage,pageSize } = queryParams;
+    const { minPrice, maxPrice, category, type, currentPage, pageSize } =
+      queryParams;
 
     const filter = { isDeleted: false };
-
+    console.log(type);
     if (type) {
       const validTypes = ["MEN", "WOMEN", "KIDS", "UNISEX"];
       if (!validTypes.includes(type)) {
         return { EC: 400, EM: "Type không hợp lệ", data: null };
       }
-      filter.TYPE = type;
+      filter.type = type;
     }
 
     if (minPrice || maxPrice) {
@@ -441,8 +402,6 @@ export const FilterProductsService = async (queryParams) => {
     const products = await query.lean();
 
     return {
-      EC: 0,
-      EM: "Lọc sản phẩm thành công",
       data: {
         meta: {
           currentPage: pageNum,
@@ -536,184 +495,67 @@ export const GetRelatedProductsService = async (slug, limit) => {
   }
 };
 
-// export const GetProductsByTypeService = async (type, page = 1, limit = 10) => {
-//   try {
-//     const validTypes = ["MEN", "WOMEN", "KIDS", "UNISEX"];
-//     if (!validTypes.includes(type)) {
-//       return {
-//         EC: 400,
-//         EM: "Loại sản phẩm không hợp lệ",
-//         data: null,
-//       };
-//     }
+export const getTrendingProductsService = async (type) => {
+  try {
+    // Bước 1: Xây dựng query cơ bản
+    let query = {
+      isDeleted: false,
+    };
 
-//     const skip = (page - 1) * limit;
+    if (type && type !== "ALL") {
+      query.TYPE = type;
+    }
 
-//     const [products, total] = await Promise.all([
-//       Product.find({
-//         TYPE: type,
-//         isDeleted: false,
-//       })
-//         .select(
-//           "name price finalPrice discount avatar images slug TYPE categories"
-//         )
-//         .populate("categories", "name slug")
-//         .skip(skip)
-//         .limit(limit)
-//         .lean(),
-//       Product.countDocuments({
-//         TYPE: type,
-//         isDeleted: false,
-//       }),
-//     ]);
+    // Bước 2: Lấy đơn hàng thành công
+    const successOrders = await Order.find({
+      status: "pending",
+    });
 
-//     const processedResult = products.map((product) => {
-//       const { variants, ...productWithoutVariants } = product;
-//       return {
-//         ...productWithoutVariants,
-//         COLOR: product.variants?.map((v) => v.color).filter(Boolean) || [],
-//         SIZE: product.variants?.map((v) => v.size).filter(Boolean) || [],
-//       };
-//     });
+    // Bước 3: Tính số lượng bán của từng sản phẩm
+    const productSales = {};
+    successOrders.forEach((order) => {
+      order.items.forEach((item) => {
+        const productId = item.productId.toString();
+        productSales[productId] =
+          (productSales[productId] || 0) + item.quantity;
+      });
+    });
 
-//     return {
-//       EC: 0,
-//       EM: "Lấy sản phẩm theo loại thành công",
-//       data: {
-//         meta: {
-//           currentPage: page,
-//           pageSize: limit,
-//           totalItems: total,
-//           totalPages: Math.ceil(total / limit),
-//         },
-//         result: processedResult,
-//       },
-//     };
-//   } catch (error) {
-//     console.error("GetProductsByTypeService error:", error);
-//     return {
-//       EC: 500,
-//       EM: "Lỗi server, vui lòng thử lại sau",
-//       data: null,
-//     };
-//   }
-// };
+    // Bước 4: Lấy thông tin sản phẩm
+    const products = await Product.find(query)
+      .select("name price discount finalPrice avatar TYPE slug")
+      .populate("categories", "name")
+      .lean();
 
-// export const GetProductsByCategoryService = async (
-//   categoryId,
-//   page = 1,
-//   limit = 10
-// ) => {
-//   try {
-//     const skip = (page - 1) * limit;
+    // Bước 5: Thêm số lượng bán và sắp xếp
+    const trendingProducts = products
+      .map((product) => ({
+        ...product,
+        totalSold: productSales[product._id.toString()] || 0,
+      }))
+      .sort((a, b) => b.totalSold - a.totalSold)
+      .slice(0, 8);
 
-//     const [products, total] = await Promise.all([
-//       Product.find({
-//         categories: categoryId,
-//         isDeleted: false,
-//       })
-//         .select(
-//           "name price finalPrice discount avatar images slug TYPE categories"
-//         )
-//         .populate("categories", "name slug")
-//         .skip(skip)
-//         .limit(limit)
-//         .lean(),
-//       Product.countDocuments({
-//         categories: categoryId,
-//         isDeleted: false,
-//       }),
-//     ]);
-
-//     const processedResult = products.map((product) => {
-//       const { variants, ...productWithoutVariants } = product;
-//       return {
-//         ...productWithoutVariants,
-//         COLOR: product.variants?.map((v) => v.color).filter(Boolean) || [],
-//         SIZE: product.variants?.map((v) => v.size).filter(Boolean) || [],
-//       };
-//     });
-
-//     return {
-//       EC: 0,
-//       EM: "Lấy sản phẩm theo danh mục thành công",
-//       data: {
-//         meta: {
-//           currentPage: page,
-//           pageSize: limit,
-//           totalItems: total,
-//           totalPages: Math.ceil(total / limit),
-//         },
-//         result: processedResult,
-//       },
-//     };
-//   } catch (error) {
-//     console.error("GetProductsByCategoryService error:", error);
-//     return {
-//       EC: 500,
-//       EM: "Lỗi server, vui lòng thử lại sau",
-//       data: null,
-//     };
-//   }
-// };
-
-// export const GetTopSellingProductsService = async (limit = 10) => {
-//   try {
-//     // Giả sử bạn có một collection OrderItems để theo dõi số lượng sản phẩm đã bán
-//     const topSellingProducts = await OrderItem.aggregate([
-//       {
-//         $match: {
-//           isDeleted: false,
-//         },
-//       },
-//       {
-//         $group: {
-//           _id: "$productId",
-//           totalSold: { $sum: "$quantity" },
-//         },
-//       },
-//       {
-//         $sort: { totalSold: -1 },
-//       },
-//       {
-//         $limit: limit,
-//       },
-//       {
-//         $lookup: {
-//           from: "products",
-//           localField: "_id",
-//           foreignField: "_id",
-//           as: "product",
-//         },
-//       },
-//       {
-//         $unwind: "$product",
-//       },
-//       {
-//         $replaceRoot: { newRoot: "$product" },
-//       },
-//     ]);
-
-//     const processedResult = topSellingProducts.map((product) => {
-//       const { variants, ...productWithoutVariants } = product;
-//       return {
-//         ...productWithoutVariants,
-//         COLOR: product.variants?.map((v) => v.color).filter(Boolean) || [],
-//         SIZE: product.variants?.map((v) => v.size).filter(Boolean) || [],
-//       };
-//     });
-
-//     return {
-//       EC: 0,
-//       EM: "Lấy sản phẩm bán chạy thành công",
-//       data: processedResult,
-//     };
-//   } catch (error) {
-//     console.error("GetTopSellingProductsService error:", error);
-//     return {
-//       EC: 500,
-//       EM: "Lỗi server, vui lòng thử lại sau",
-//       data: null,
-//     };
-//   }
-// };
+    // Bước 6: Format dữ liệu trả về
+    return {
+      data: trendingProducts.map((product) => ({
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        finalPrice: product.finalPrice,
+        discount: product.discount,
+        avatar: product.avatar,
+        type: product.type,
+        slug: product.slug,
+        categories: product.categories,
+      })),
+    };
+  } catch (error) {
+    console.log("Error in getTrendingProductsService:", error);
+    return {
+      success: false, // Thay status bằng success
+      message: "Lỗi server",
+      data: null,
+    };
+  }
+};

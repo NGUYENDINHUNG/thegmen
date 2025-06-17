@@ -44,7 +44,7 @@ const ProductSchema = new Schema(
       min: 0,
       max: 100,
     },
-    TYPE: {
+    type: {
       type: String,
       enum: ["MEN", "WOMEN", "KIDS", "UNISEX"],
     },

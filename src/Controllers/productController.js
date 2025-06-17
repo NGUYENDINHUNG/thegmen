@@ -12,6 +12,7 @@ import {
   RestoreProductService,
   FilterProductsService,
   GetRelatedProductsService,
+  getTrendingProductsService,
 } from "../services/productsService.js";
 
 export const CreateProduct = async (req, res) => {
@@ -26,7 +27,7 @@ export const CreateProduct = async (req, res) => {
       categories,
       content,
       color,
-      TYPE,
+      type,
     } = req.body;
 
     let avatarUrl = "";
@@ -77,7 +78,7 @@ export const CreateProduct = async (req, res) => {
       avatar: avatarUrl,
       images: imageUrls,
       sizeGuide: sizeGuideUrl,
-      TYPE,
+      type,
     });
 
     return res.status(201).json({
@@ -97,35 +98,28 @@ export const CreateProduct = async (req, res) => {
 export const UpdateProduct = async (req, res) => {
   try {
     const { ProductId } = req.params;
-    const {
-      name,
-      price,
-      discount,
-      description_short,
-      additional_info,
-      description,
-      categories,
-      content,
-      slug,
-      color,
-      TYPE,
-    } = req.body || {};
-    let avatarUrl = "";
-    let imageUrls = [];
-    let sizeGuideUrl = "";
+    const updateData = {};
 
+    Object.keys(req.body).forEach(key => {
+      if (req.body[key] !== undefined && req.body[key] !== '') {
+        updateData[key] = req.body[key];
+      }
+    });
+
+    // Xử lý files nếu có
     if (req.files?.avatar) {
       try {
         const result = await uploadSingleFile(req.files.avatar);
-        avatarUrl = result.path;
+        updateData.avatar = result.path;
       } catch (error) {
         console.log("Error uploading avatar:", error);
       }
     }
+
     if (req.files?.sizeGuide) {
       try {
         const result = await uploadSingleFile(req.files.sizeGuide);
-        sizeGuideUrl = result.path;
+        updateData.sizeGuide = result.path;
       } catch (error) {
         console.log("Error uploading sizeGuide:", error);
       }
@@ -135,45 +129,31 @@ export const UpdateProduct = async (req, res) => {
       try {
         if (Array.isArray(req.files.images)) {
           const result = await uploadMultipleFiles(req.files.images);
-          imageUrls = result.detail.map((item) => item.path);
+          updateData.images = result.detail.map((item) => item.path);
         } else {
           const result = await uploadSingleFile(req.files.images);
-          imageUrls = [result.path];
+          updateData.images = [result.path];
         }
       } catch (error) {
         console.log("Error uploading images:", error);
       }
     }
 
-    const updateData = await UpdateProductsService(ProductId, {
-      name,
-      price,
-      discount,
-      description_short,
-      additional_info,
-      description,
-      categories,
-      content,
-      color,
-      slug,
-      avatar: avatarUrl,
-      images: imageUrls,
-      sizeGuide: sizeGuideUrl,
-      TYPE,
-    });
-    if (updateData.EC !== 0) {
-      return res.status(200).json({
-        statusCode: 200,
-        message: updateData.EM,
-        data: updateData.data,
-      });
-    } else {
-      return res.status(200).json({
-        statusCode: 200,
-        message: "Cập nhật sản phẩm thành công",
-        data: updateData,
+    const result = await UpdateProductsService(ProductId, updateData);
+    
+    if (result.EC === 404 || result.EC === 500) {
+      return res.status(result.EC).json({
+        statusCode: result.EC,
+        message: result.EM,
       });
     }
+
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Cập nhật sản phẩm thành công",
+      data: result,
+    });
+
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
@@ -327,6 +307,26 @@ export const GetRelatedProducts = async (req, res) => {
       statusCode: 500,
       message: error.message || "Lỗi server, vui lòng thử lại sau",
       data: null,
+    });
+  }
+};
+
+export const getTrendingProducts = async (req, res) => {
+  try {
+    const { type = 'ALL' } = req.query; 
+    const result = await getTrendingProductsService(type);
+
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Lấy sản phẩm trending thành công",
+      data: result.data
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: error.message || "Lỗi server",
+      data: null
     });
   }
 };

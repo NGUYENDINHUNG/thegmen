@@ -118,9 +118,12 @@ export const addToCartService = async (
     }
 
     if (itemIndex > -1) {
-      cart.items[itemIndex].quantity = currentQuantity + quantity;
+      const item = cart.items[itemIndex];
+      cart.items.splice(itemIndex, 1);
+      item.quantity = currentQuantity + quantity;
+      cart.items.unshift(item);
     } else {
-      cart.items.push({ productId, variantId, quantity });
+      cart.items.unshift({ productId, variantId, quantity });
     }
 
     cart.updatedAt = new Date();

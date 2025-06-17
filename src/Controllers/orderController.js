@@ -3,7 +3,6 @@ import {
   createOrderService,
   getDetailOrderService,
   getOrdersByUserService,
-  getOrdersByUserServiceDetail,
   removeOrderService,
   UpdateOrderService,
 } from "../services/ordersService.js";
@@ -24,19 +23,6 @@ export const createOrder = async (req, res) => {
     return res.status(400).json({
       success: false,
       message: error.message || "Không thể tạo đơn hàng",
-    });
-  }
-};
-export const getUserOrders = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const result = await getOrdersByUserServiceDetail(userId);
-
-    return res.status(200).json(result);
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
     });
   }
 };
