@@ -230,6 +230,10 @@ export const getOrdersByUserService = async (userId) => {
       .populate({
         path: "items.productId",
         select: "name images ",
+      })
+      .populate({
+        path: "items.variantId",
+        select: "color size images",
       });
 
     if (!orders) {
@@ -243,11 +247,24 @@ export const getOrdersByUserService = async (userId) => {
     // Format lại dữ liệu trả về
     const formattedOrders = orders.map((order) => ({
       _id: order._id,
+      address: order.shippingAddress.address,
       status: order.status,
-      totalAmount: order.totalAmount,
-      totalItems: order.items.length,
+      paymentMethod: order.paymentMethod,
+      finalAmount: order.totalAmount,
+      discountAmount: order.voucherDiscount,
+      originalTotal: order.originalTotal,
       orderCode: order.orderCode,
       createdAt: order.createdAt,
+      items: order.items.map((item) => ({
+        productName: item.name,
+        quantity: item.quantity,
+        variant: item.variantId
+          ? {
+              color: item.variantId.color,
+              size: item.variantId.size,
+            }
+          : null,
+      })),
     }));
 
     return formattedOrders;
@@ -255,6 +272,7 @@ export const getOrdersByUserService = async (userId) => {
     throw new Error(`Lỗi khi lấy đơn hàng: ${error.message}`);
   }
 };
+
 export const getDetailOrderService = async (orderId) => {
   try {
     // Thêm populate cho variantId
