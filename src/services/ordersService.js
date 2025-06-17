@@ -255,6 +255,7 @@ export const getOrdersByUserService = async (userId) => {
       originalTotal: order.originalTotal,
       orderCode: order.orderCode,
       createdAt: order.createdAt,
+      totalItems: order.items.reduce((total, item) => total + item.quantity, 0),
       items: order.items.map((item) => ({
         productName: item.name,
         quantity: item.quantity,
