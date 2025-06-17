@@ -261,11 +261,11 @@ export const getDetailOrderService = async (orderId) => {
     const order = await Order.findById(orderId).populate([
       {
         path: "items.productId",
-        select: "name images",
+        select: "name images slug",
       },
       {
         path: "items.variantId",
-        select: "color size",
+        select: "color size images",
       },
     ]);
 
@@ -481,7 +481,7 @@ export const createOrderService = async (userId, addressId) => {
       await cart.save();
     }
 
-    return "Tạo đơn hàng thành công";
+    return savedOrder;
   } catch (error) {
     console.log("Lỗi tạo đơn hàng:", error);
     throw error;

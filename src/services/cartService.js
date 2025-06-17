@@ -263,35 +263,20 @@ export const removeItemFromCartService = async (
       // 3. Xóa item khỏi giỏ hàng
       cart.items.splice(itemIndex, 1);
 
-      // 4. Tính lại tổng tiền
-      let totalPrice = 0;
-      cart.items.forEach((item) => {
-        const product = item.productId;
-        const price = product.finalPrice ?? product.price ?? 0;
-        totalPrice += price * item.quantity;
-      });
+      // 4. Tính toán lại các giá trị sử dụng calculateCartTotals
+      const totals = calculateCartTotals(cart);
 
-      // 5. Tính lại giá sau khi áp dụng voucher (nếu có)
-      let discountAmount = 0;
-      let finalAmount = totalPrice;
-
-      if (cart.appliedVoucher?.voucherId) {
-        const voucher = cart.appliedVoucher.voucherId;
-        discountAmount = (totalPrice * voucher.discountValue) / 100;
-        finalAmount = totalPrice - discountAmount;
-      }
-
-      // 6. Cập nhật giỏ hàng
-      cart.finalAmount = finalAmount;
+      // 5. Cập nhật giỏ hàng
+      cart.finalAmount = totals.finalAmount;
       cart.updatedAt = new Date();
       await cart.save();
 
-      // 7. Trả về thông tin giỏ hàng đã cập nhật
+      // 6. Trả về thông tin giỏ hàng đã cập nhật
       return {
         cart,
-        totalPrice,
-        discountAmount,
-        finalAmount,
+        totalPrice: totals.totalPrice,
+        discountAmount: totals.discountAmount,
+        finalAmount: totals.finalAmount,
       };
     }
 
@@ -315,7 +300,7 @@ export const getCartByUserService = async (userId) => {
       },
       {
         path: "items.variantId",
-        select: "_id color size",
+        select: "_id color  size images",
       },
       {
         path: "appliedVoucher.voucherId",
