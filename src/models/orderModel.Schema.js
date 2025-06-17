@@ -36,7 +36,10 @@ const OrderSchema = new Schema(
       enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
-    paymentMethod: { type: String, default: "COD" },
+    paymentMethod: {
+      type: String,
+      enum: ["COD", "Momo", "ZaloPay", "VNPay"],
+    },
   },
   { timestamps: true }
 );

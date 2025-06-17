@@ -136,9 +136,7 @@ export const loginFaceBookSuccess = async (req, res) => {
 };
 export const RefreshTokenUser = async (req, res) => {
   const refreshToken = req.cookies["refresh_token"];
-  console.log(refreshToken);
   const result = await processNewToken(refreshToken, res);
-  console.log(result);
   return res.status(200).json(result);
 };
 export const getAccount = async (req, res) => {

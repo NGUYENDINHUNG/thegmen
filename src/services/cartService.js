@@ -3,6 +3,60 @@ import Variants from "../models/variantsModel.schema.js";
 import Product from "../models/productModel.schema.js";
 import { validateAndApplyVoucherForCartService } from "./vouchersSevice.js";
 
+export const calculateCartTotals = (cart) => {
+  let totalPrice = 0;
+  let totalQuantity = 0;
+  let selectedItemsCount = 0;
+  let selectedItems = [];
+  let allItemsTotal = 0; // Thêm biến tính tổng tất cả sản phẩm
+
+  // Tính tổng giá và số lượng cho tất cả sản phẩm
+  cart.items.forEach((item) => {
+    const price =
+      item.productId?.finalPrice && item.productId.finalPrice > 0
+        ? item.productId.finalPrice
+        : item.productId?.price ?? 0;
+    const quantity = item.quantity ?? 0;
+
+    // Tính tổng cho tất cả sản phẩm
+    allItemsTotal += price * quantity;
+
+    // Tính tổng cho các sản phẩm được chọn
+    if (item.selected) {
+      totalPrice += price * quantity;
+      totalQuantity += quantity;
+      selectedItemsCount++;
+      selectedItems.push(item);
+    }
+  });
+
+  // Tính toán giá sau khi áp dụng voucher
+  let discountAmount = 0;
+  let finalAmount = totalPrice;
+
+  if (cart.appliedVoucher?.voucherId) {
+    const voucher = cart.appliedVoucher.voucherId;
+    discountAmount = (totalPrice * voucher.discountValue) / 100;
+    finalAmount = totalPrice - discountAmount;
+  }
+
+  return {
+    totalPrice, // Tổng giá các sản phẩm được chọn
+    totalQuantity, // Tổng số lượng các sản phẩm được chọn
+    selectedItemsCount, // Số lượng sản phẩm được chọn
+    selectedItems, // Danh sách sản phẩm được chọn
+    allItemsTotal, // Tổng giá tất cả sản phẩm
+    discountAmount, // Số tiền được giảm
+    finalAmount, // Tổng tiền sau khi giảm
+    voucherInfo: cart.appliedVoucher?.voucherId
+      ? {
+          voucherId: cart.appliedVoucher.voucherId._id,
+          code: cart.appliedVoucher.code,
+          discountValue: cart.appliedVoucher.discountValue,
+        }
+      : null,
+  };
+};
 export const addToCartService = async (
   userId,
   productId,
@@ -76,93 +130,6 @@ export const addToCartService = async (
     throw new Error(`Thêm sản phẩm vào giỏ hàng thất bại: ${error.message}`);
   }
 };
-export const getCartByUserService = async (userId) => {
-  const cart = await Cart.findOne({ userId }).populate([
-    {
-      path: "items.productId",
-      select: "_id name finalPrice price avatar discount slug",
-    },
-    {
-      path: "items.variantId",
-      select: "_id color size sku images",
-    },
-    {
-      path: "appliedVoucher.voucherId",
-      select: "_id code name discountValue",
-    },
-  ]);
-
-  if (!cart) return null;
-
-  let totalQuantity = 0;
-  let totalPrice = 0;
-
-  cart.items.forEach((item) => {
-    const product = item.productId;
-    if (product) {
-      const price = product.finalPrice ?? product.price ?? 0;
-      totalQuantity += item.quantity;
-      totalPrice += price * item.quantity;
-    }
-  });
-
-  let discountAmount = 0;
-  let voucherInfo = null;
-
-  if (cart.appliedVoucher?.voucherId) {
-    const finalAmount = cart.finalAmount ?? totalPrice;
-    discountAmount = totalPrice - finalAmount;
-    voucherInfo = {
-      voucherId: cart.appliedVoucher.voucherId._id,
-      code: cart.appliedVoucher.code,
-      discountValue: cart.appliedVoucher.discountValue,
-    };
-  }
-
-  return {
-    cart,
-    totalQuantity,
-    item: cart.items.length,
-    totalPrice,
-    discountAmount,
-    finalAmount: cart.finalAmount || totalPrice,
-    voucherInfo,
-  };
-};
-
-// export const removeItemFromCartService = async (
-//   userId,
-//   productId,
-//   variantId
-// ) => {
-//   const cart = await Cart.findOne({ userId });
-//   if (!cart) return null;
-
-//   // Tìm index của item cần xóa
-//   const itemIndex = cart.items.findIndex((item) => {
-//     if (variantId) {
-//       return (
-//         item.productId.toString() === productId &&
-//         item.variantId &&
-//         item.variantId.toString() === variantId
-//       );
-//     } else {
-//       return (
-//         item.productId.toString() === productId &&
-//         (!item.variantId || item.variantId === null)
-//       );
-//     }
-//   });
-
-//   if (itemIndex > -1) {
-//     cart.items.splice(itemIndex, 1);
-//     cart.updatedAt = new Date();
-//     await cart.save();
-//   }
-
-//   return cart;
-// };
-
 export const updateCartItemService = async (
   userId,
   productId,
@@ -216,13 +183,14 @@ export const updateCartItemService = async (
 
     let totalPrice = 0;
     cart.items.forEach((item) => {
-      const price =
-        item.productId.finalPrice && item.productId.finalPrice > 0
-          ? item.productId.finalPrice
-          : item.productId.price ?? 0;
-      totalPrice += price * item.quantity;
+      if (item.selected) {
+        const price =
+          item.productId.finalPrice && item.productId.finalPrice > 0
+            ? item.productId.finalPrice
+            : item.productId.price ?? 0;
+        totalPrice += price * item.quantity;
+      }
     });
-
     let discountAmount = 0;
     let finalAmount = totalPrice;
 
@@ -251,7 +219,6 @@ export const updateCartItemService = async (
     throw new Error(`Cập nhật giỏ hàng thất bại: ${error.message}`);
   }
 };
-
 export const removeItemFromCartService = async (
   userId,
   productId,
@@ -337,5 +304,154 @@ export const removeItemFromCartService = async (
   } catch (error) {
     console.log("Lỗi xóa sản phẩm khỏi giỏ hàng:", error);
     throw error;
+  }
+};
+export const getCartByUserService = async (userId) => {
+  try {
+    const cart = await Cart.findOne({ userId }).populate([
+      {
+        path: "items.productId",
+        select: "_id name finalPrice price avatar discount slug",
+      },
+      {
+        path: "items.variantId",
+        select: "_id color size",
+      },
+      {
+        path: "appliedVoucher.voucherId",
+        select: "_id code name discountValue",
+      },
+    ]);
+
+    if (!cart) return null;
+
+    // Sử dụng hàm calculateCartTotals để tính toán các giá trị
+    const totals = calculateCartTotals(cart);
+
+    return {
+      cart: {
+        _id: cart._id,
+        items: cart.items.map((item) => {
+          const price = item.productId.finalPrice ?? item.productId.price ?? 0;
+          const itemTotal = price * item.quantity;
+
+          return {
+            _id: item._id,
+            selected: item.selected,
+            quantity: item.quantity,
+            product: {
+              _id: item.productId._id,
+              name: item.productId.name,
+              price: price,
+              avatar: item.productId.avatar,
+            },
+            variant: {
+              _id: item.variantId._id,
+              color: item.variantId.color,
+              size: item.variantId.size,
+            },
+            finalPrice: itemTotal,
+          };
+        }),
+      },
+      item: cart.items.length,
+      totalPrice: totals.totalPrice,
+      selectedItemsCount: totals.selectedItemsCount,
+      discountAmount: totals.discountAmount,
+      finalAmount: totals.finalAmount,
+
+      voucherInfo: totals.voucherInfo,
+    };
+  } catch (error) {
+    throw new Error(`Lấy giỏ hàng thất bại: ${error.message}`);
+  }
+};
+export const updateItemSelectionService = async (userId, itemId, selected) => {
+  try {
+    const cart = await Cart.findOne({ userId }).populate([
+      {
+        path: "items.productId",
+        select: "_id name finalPrice price avatar discount slug",
+      },
+      {
+        path: "items.variantId",
+        select: "_id color size sku",
+      },
+      {
+        path: "appliedVoucher.voucherId",
+        select: "_id code name discountValue",
+      },
+    ]);
+
+    if (!cart) {
+      throw new Error("Không tìm thấy giỏ hàng");
+    }
+
+    // Tìm item cần cập nhật bằng itemId
+    const itemIndex = cart.items.findIndex(
+      (item) => item._id.toString() === itemId
+    );
+
+    if (itemIndex === -1) {
+      throw new Error("Không tìm thấy sản phẩm trong giỏ hàng");
+    }
+
+    // Cập nhật trạng thái chọn
+    cart.items[itemIndex].selected = selected;
+
+    // Tính lại tổng tiền cho các sản phẩm được chọn
+    let totalPrice = 0;
+    let selectedItemsCount = 0;
+    let selectedItemIds = [];
+
+    cart.items.forEach((item) => {
+      if (item.selected) {
+        const price = item.productId.finalPrice ?? item.productId.price ?? 0;
+        totalPrice += price * item.quantity;
+        selectedItemsCount++;
+        selectedItemIds.push(item._id);
+      }
+    });
+
+    // Xử lý voucher nếu có
+    let discountAmount = 0;
+    let finalAmount = totalPrice;
+
+    if (cart.appliedVoucher?.voucherId) {
+      const voucher = cart.appliedVoucher.voucherId;
+      discountAmount = (totalPrice * voucher.discountValue) / 100;
+      finalAmount = totalPrice - discountAmount;
+    }
+
+    // Cập nhật giỏ hàng
+    cart.finalAmount = finalAmount;
+    cart.updatedAt = new Date();
+    await cart.save();
+
+    return {
+      cart: {
+        _id: cart._id,
+        items: cart.items.map((item) => ({
+          _id: item._id,
+          selected: item.selected,
+        })),
+      },
+      selectedItemIds,
+      selectedItemsCount,
+      totalPrice,
+      discountAmount,
+      finalAmount,
+      voucherInfo: cart.appliedVoucher?.voucherId
+        ? {
+            voucherId: cart.appliedVoucher.voucherId._id,
+            code: cart.appliedVoucher.code,
+            discountValue: cart.appliedVoucher.discountValue,
+          }
+        : null,
+    };
+  } catch (error) {
+    throw new Error(
+      `Cập nhật trạng thái chọn sản phẩm thất bại: ${error.message}`
+    );
   }
 };

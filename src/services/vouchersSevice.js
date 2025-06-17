@@ -48,99 +48,99 @@ export const getVoucherByCodeService = async (code) => {
     throw error;
   }
 };
-export const validateAndApplyVoucherForCartService = async (
-  code,
-  orderValue,
-  userId,
-  ignoreCurrentCartCheck = false
-) => {
-  try {
-    console.log(code, orderValue, userId);
-    // Kiểm tra code có tồn tại không
-    if (!code) {
-      throw new Error("Vui lòng nhập mã voucher");
-    }
+// export const validateAndApplyVoucherForCartService = async (
+//   code,
+//   orderValue,
+//   userId,
+//   ignoreCurrentCartCheck = false
+// ) => {
+//   try {
+//     console.log(code, orderValue, userId);
+//     // Kiểm tra code có tồn tại không
+//     if (!code) {
+//       throw new Error("Vui lòng nhập mã voucher");
+//     }
 
-    const voucher = await Voucher.findOne({ code: code });
-    if (!voucher) {
-      throw new Error("Mã voucher không tồn tại");
-    }
+//     const voucher = await Voucher.findOne({ code: code });
+//     if (!voucher) {
+//       throw new Error("Mã voucher không tồn tại");
+//     }
 
-    // Validate voucher
-    const now = new Date();
-    if (now < voucher.startDate || now > voucher.endDate) {
-      throw new Error("Voucher đã hết hạn hoặc chưa đến thời gian sử dụng");
-    }
-    if (voucher.status !== "active") {
-      throw new Error("Voucher không còn hiệu lực");
-    }
-    if (voucher.quantity <= 0) {
-      throw new Error("Voucher đã hết số lượng");
-    }
+//     // Validate voucher
+//     const now = new Date();
+//     if (now < voucher.startDate || now > voucher.endDate) {
+//       throw new Error("Voucher đã hết hạn hoặc chưa đến thời gian sử dụng");
+//     }
+//     if (voucher.status !== "active") {
+//       throw new Error("Voucher không còn hiệu lực");
+//     }
+//     if (voucher.quantity <= 0) {
+//       throw new Error("Voucher đã hết số lượng");
+//     }
 
-    // Kiểm tra user
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new Error("Người dùng không tồn tại");
-    }
+//     // Kiểm tra user
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       throw new Error("Người dùng không tồn tại");
+//     }
 
-    // Kiểm tra số lần sử dụng
-    const usedVoucher = user.usedVouchers?.find(
-      (item) => item?.voucherId?.toString() === voucher._id.toString()
-    );
-    if (usedVoucher && usedVoucher.usageCount >= voucher.maxUsagePerUser) {
-      throw new Error("Bạn đã sử dụng hết số lần cho phép với voucher này.");
-    }
+//     // Kiểm tra số lần sử dụng
+//     const usedVoucher = user.usedVouchers?.find(
+//       (item) => item?.voucherId?.toString() === voucher._id.toString()
+//     );
+//     if (usedVoucher && usedVoucher.usageCount >= voucher.maxUsagePerUser) {
+//       throw new Error("Bạn đã sử dụng hết số lần cho phép với voucher này.");
+//     }
 
-    // Kiểm tra voucher đã được sử dụng trong cart
-    const currentCart = await Cart.findOne({ userId });
-    if (!ignoreCurrentCartCheck && currentCart?.appliedVoucher?.voucherId) {
-      if (
-        currentCart.appliedVoucher.voucherId.toString() ===
-        voucher._id.toString()
-      ) {
-        throw new Error("Voucher này đã được áp dụng trong giỏ hàng của bạn");
-      }
+//     // Kiểm tra voucher đã được sử dụng trong cart
+//     const currentCart = await Cart.findOne({ userId });
+//     if (!ignoreCurrentCartCheck && currentCart?.appliedVoucher?.voucherId) {
+//       if (
+//         currentCart.appliedVoucher.voucherId.toString() ===
+//         voucher._id.toString()
+//       ) {
+//         throw new Error("Voucher này đã được áp dụng trong giỏ hàng của bạn");
+//       }
 
-      // Hoàn trả voucher cũ
-      const oldVoucher = await Voucher.findById(
-        currentCart.appliedVoucher.voucherId
-      );
-      if (oldVoucher) {
-        oldVoucher.quantity += 1;
-        await oldVoucher.save();
-      }
+//       // Hoàn trả voucher cũ
+//       const oldVoucher = await Voucher.findById(
+//         currentCart.appliedVoucher.voucherId
+//       );
+//       if (oldVoucher) {
+//         oldVoucher.quantity += 1;
+//         await oldVoucher.save();
+//       }
 
-      const oldUsedVoucher = user.usedVouchers?.find(
-        (item) =>
-          item?.voucherId?.toString() ===
-          currentCart.appliedVoucher.voucherId.toString()
-      );
-      if (oldUsedVoucher) {
-        oldUsedVoucher.usageCount -= 1;
-        if (oldUsedVoucher.usageCount === 0) {
-          user.usedVouchers = user.usedVouchers.filter(
-            (item) =>
-              item?.voucherId?.toString() !==
-              currentCart.appliedVoucher.voucherId.toString()
-          );
-        }
-      }
-    }
+//       const oldUsedVoucher = user.usedVouchers?.find(
+//         (item) =>
+//           item?.voucherId?.toString() ===
+//           currentCart.appliedVoucher.voucherId.toString()
+//       );
+//       if (oldUsedVoucher) {
+//         oldUsedVoucher.usageCount -= 1;
+//         if (oldUsedVoucher.usageCount === 0) {
+//           user.usedVouchers = user.usedVouchers.filter(
+//             (item) =>
+//               item?.voucherId?.toString() !==
+//               currentCart.appliedVoucher.voucherId.toString()
+//           );
+//         }
+//       }
+//     }
 
-    const discountAmount = (orderValue * voucher.discountValue) / 100;
-    const finalAmount = orderValue - discountAmount;
+//     const discountAmount = (orderValue * voucher.discountValue) / 100;
+//     const finalAmount = orderValue - discountAmount;
 
-    return {
-      voucher,
-      discountAmount,
-      finalAmount,
-    };
-  } catch (error) {
-    console.log("Lỗi validate voucher:", error);
-    throw error;
-  }
-};
+//     return {
+//       voucher,
+//       discountAmount,
+//       finalAmount,
+//     };
+//   } catch (error) {
+//     console.log("Lỗi validate voucher:", error);
+//     throw error;
+//   }
+// };
 export const removeVoucherFromCartService = async (userId) => {
   try {
     // 1. Tìm giỏ hàng của user
@@ -203,6 +203,102 @@ export const removeVoucherFromCartService = async (userId) => {
     };
   } catch (error) {
     console.log("Lỗi xóa voucher:", error);
+    throw error;
+  }
+};
+export const validateAndApplyVoucherForCartService = async (
+  code,
+  orderValue,
+  userId,
+  ignoreCurrentCartCheck = false
+) => {
+  try {
+    if (!code) throw new Error("Vui lòng nhập mã voucher");
+
+    const voucher = await Voucher.findOne({ code });
+    if (!voucher) throw new Error("Mã voucher không tồn tại");
+
+    const now = new Date();
+    if (now < voucher.startDate || now > voucher.endDate)
+      throw new Error("Voucher đã hết hạn hoặc chưa đến thời gian sử dụng");
+
+    if (voucher.status !== "active")
+      throw new Error("Voucher không còn hiệu lực");
+    if (voucher.quantity <= 0) throw new Error("Voucher đã hết số lượng");
+
+    // Nếu có điều kiện tối thiểu:
+    if (voucher.minimumOrderAmount && orderValue < voucher.minimumOrderAmount) {
+      throw new Error(
+        `Đơn hàng phải tối thiểu ${voucher.minimumOrderAmount}đ để áp dụng voucher`
+      );
+    }
+
+    const user = await User.findById(userId);
+    if (!user) throw new Error("Người dùng không tồn tại");
+
+    const usedVoucher = user.usedVouchers?.find(
+      (item) => item.voucherId?.toString() === voucher._id.toString()
+    );
+    if (usedVoucher && usedVoucher.usageCount >= voucher.maxUsagePerUser) {
+      throw new Error("Bạn đã sử dụng hết số lần cho phép với voucher này.");
+    }
+
+    const currentCart = await Cart.findOne({ userId });
+    if (!ignoreCurrentCartCheck && currentCart?.appliedVoucher?.voucherId) {
+      if (
+        currentCart.appliedVoucher.voucherId.toString() ===
+        voucher._id.toString()
+      ) {
+        throw new Error("Voucher này đã được áp dụng trong giỏ hàng của bạn");
+      }
+
+      // Trả lại voucher cũ
+      const oldVoucher = await Voucher.findById(
+        currentCart.appliedVoucher.voucherId
+      );
+      if (oldVoucher) {
+        oldVoucher.quantity += 1;
+        await oldVoucher.save();
+      }
+
+      const oldUsedVoucher = user.usedVouchers?.find(
+        (item) =>
+          item.voucherId?.toString() ===
+          currentCart.appliedVoucher.voucherId.toString()
+      );
+      if (oldUsedVoucher) {
+        oldUsedVoucher.usageCount -= 1;
+        if (oldUsedVoucher.usageCount <= 0) {
+          user.usedVouchers = user.usedVouchers.filter(
+            (item) =>
+              item.voucherId?.toString() !==
+              currentCart.appliedVoucher.voucherId.toString()
+          );
+        }
+      }
+
+      // Cập nhật cart
+      currentCart.appliedVoucher = undefined;
+      await currentCart.save();
+    }
+
+    let discountAmount = (orderValue * voucher.discountValue) / 100;
+    if (voucher.maxDiscountAmount) {
+      discountAmount = Math.min(discountAmount, voucher.maxDiscountAmount);
+    }
+
+    const finalAmount = orderValue - discountAmount;
+
+    // Lưu user sau khi cập nhật usedVouchers
+    await user.save();
+
+    return {
+      voucher,
+      discountAmount,
+      finalAmount,
+    };
+  } catch (error) {
+    console.error("Lỗi validate voucher:", error.message);
     throw error;
   }
 };

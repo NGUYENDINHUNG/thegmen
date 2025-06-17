@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  buyNow,
   // byNowOrder,
   createOrder,
   getDetailOrder,
@@ -14,7 +15,7 @@ const OrderRouter = Router();
 OrderRouter.use(verifyToken);
 
 OrderRouter.post("/createOrder", createOrder);
-// OrderRouter.post("/byNow", byNowOrder);
+OrderRouter.post("/buyNow", buyNow);
 OrderRouter.get("/userOrders", getUserOrders);
 OrderRouter.delete("/:orderId", removeOrder);
 OrderRouter.get("/listOrder", getListOrder);
