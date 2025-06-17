@@ -1,3 +1,4 @@
+import Order from "../models/orderModel.Schema.js";
 import {
   buyNowService,
   createOrderService,
@@ -29,17 +30,35 @@ export const createOrder = async (req, res) => {
 export const removeOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const result = await removeOrderService(orderId);
+    const userId = req.user._id;
+
+    const order = await Order.findOne({ _id: orderId, userId });
+    console.log(order);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy đơn hàng",
+      });
+    }
+
+    // Kiểm tra trạng thái đơn hàng
+    if (order.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: "Chỉ có thể hủy đơn hàng ở trạng thái chờ xử lý",
+      });
+    }
+    const result = await removeOrderService(orderId, userId);
+
     return res.status(200).json({
-      status: 200,
       success: true,
-      message: "Đơn hàng đã được hủy bỏ thành công",
-      data: result,
+      message: result.message,
     });
   } catch (error) {
+    console.log("Error in cancelOrder:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Hủy đơn hàng thất bại",
     });
   }
 };

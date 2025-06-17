@@ -14,7 +14,7 @@ OrderRouter.use(verifyToken);
 
 OrderRouter.post("/createOrder", createOrder);
 OrderRouter.post("/buyNow", buyNow);
-OrderRouter.delete("/:orderId", removeOrder);
 OrderRouter.get("/listOrder", getListOrder);
 OrderRouter.get("/detailOrder/:orderId", getDetailOrder);
+OrderRouter.put("/cancel/:orderId", removeOrder);
 export default OrderRouter;

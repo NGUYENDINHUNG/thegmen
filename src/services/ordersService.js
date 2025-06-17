@@ -4,7 +4,10 @@ import Address from "../models/addressModel.schema.js";
 import User from "../models/userModel.schema.js";
 import Variants from "../models/variantsModel.schema.js";
 import { addToCartService, calculateCartTotals } from "./cartService.js";
-import sendEmail from "../util/email.util.js";
+import {
+  sendOrderCancellationEmail,
+  sendOrderConfirmationEmail,
+} from "../constants/emailConstants.js";
 
 const generateOrderCode = () => {
   const random = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -27,24 +30,40 @@ export const UpdateOrderService = async (orderId, status) => {
     data: order,
   };
 };
-export const removeOrderService = async (orderId) => {
-  const order = await Order.findById(orderId);
-  if (!order) {
-    throw new Error("Đơn hàng không tồn tại");
-  }
-  for (const item of order.items) {
-    if (item.variantId) {
-      await Variants.findByIdAndUpdate(item.variantId, {
-        $inc: { stock: item.quantity },
-      });
+export const removeOrderService = async (orderId, userId) => {
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      throw new Error("Đơn hàng không tồn tại");
     }
-  }
-  await Order.findByIdAndDelete(orderId);
+   
+    if (order.status !== "pending") {
+      throw new Error("Chỉ có thể hủy đơn hàng ở trạng thái chờ xử lý");
+    }
+        // 2. Lấy thông tin người dùng
+        const user = await User.findById(userId);
+        if (!user || !user.email) {
+          throw new Error("Không tìm thấy thông tin người dùng hoặc email");
+        }
+    
+    for (const item of order.items) {
+      if (item.variantId) {
+        await Variants.findByIdAndUpdate(item.variantId, {
+          $inc: { stock: item.quantity },
+        });
+      }
+    }
 
-  return {
-    success: true,
-    message: "Hủy đơn hàng thành công ",
-  };
+    order.status = "cancelled";
+    await order.save();
+    await sendOrderCancellationEmail(order);
+    return {
+      success: true,
+      message: "Hủy đơn hàng thành công",
+    };
+  } catch (error) {
+    throw new Error(error.message || "Hủy đơn hàng thất bại");
+  }
 };
 export const getOrdersByUserService = async (userId) => {
   try {
@@ -326,68 +345,7 @@ export const createOrderService = async (userId, addressId) => {
     } else {
       await cart.save();
     }
-    const emailHtml = `
-  <h2>Xác nhận đơn hàng #${orderCode}</h2>
-  <p>Xin chào ${user.name},</p>
-  <p>Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi. Dưới đây là chi tiết đơn hàng của bạn:</p>
-  
-  <h3>Thông tin đơn hàng:</h3>
-  <ul>
-    <li>Mã đơn hàng: ${orderCode}</li>
-    <li>Ngày đặt: ${new Date().toLocaleString("vi-VN")}</li>
-    <li>Địa chỉ giao hàng: ${address.address}</li>
-    <li>Phương thức thanh toán: ${order.paymentMethod}</li>
-  </ul>
-
-  <h3>Chi tiết sản phẩm:</h3>
-  <table style="width: 100%; border-collapse: collapse;">
-    <tr>
-      <th style="border: 1px solid #ddd; padding: 8px;">Sản phẩm</th>
-      <th style="border: 1px solid #ddd; padding: 8px;">Số lượng</th>
-      <th style="border: 1px solid #ddd; padding: 8px;">Giá</th>
-    </tr>
-    ${orderItems
-      .map(
-        (item) => `
-      <tr>
-        <td style="border: 1px solid #ddd; padding: 8px;">
-          ${item.name}
-          ${
-            item.variant
-              ? `<br/>(${item.variant.color} - ${item.variant.size})`
-              : ""
-          }
-        </td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${item.quantity}</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${item.price.toLocaleString(
-          "vi-VN"
-        )}đ</td>
-      </tr>
-    `
-      )
-      .join("")}
-  </table>
-
-  <h3>Tổng thanh toán:</h3>
-  <ul>
-    <li>Tổng tiền hàng: ${totals.totalPrice.toLocaleString("vi-VN")}đ</li>
-    ${
-      totals.discountAmount > 0
-        ? `<li>Giảm giá: ${totals.discountAmount.toLocaleString("vi-VN")}đ</li>`
-        : ""
-    }
-    <li>Thành tiền: ${totals.finalAmount.toLocaleString("vi-VN")}đ</li>
-  </ul>
-
-  <p>Chúng tôi sẽ sớm xử lý đơn hàng của bạn. Bạn có thể theo dõi trạng thái đơn hàng trong tài khoản của mình.</p>
-  <p>Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi.</p>
-  
-  <p>Trân trọng,<br/>Đội ngũ cửa hàng</p>
-`;
-
-    // Gửi email
-    await sendEmail(user.email, `Xác nhận đơn hàng #${orderCode}`, emailHtml);
-
+    await sendOrderConfirmationEmail(savedOrder);
     return savedOrder;
   } catch (error) {
     console.log("Lỗi tạo đơn hàng:", error);
