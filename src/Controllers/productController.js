@@ -285,9 +285,9 @@ export const FilterProducts = async (req, res) => {
 export const GetRelatedProducts = async (req, res) => {
   try {
     const { slug } = req.params;
-    const { limit } = req.query;
+    const { pageSize, currentPage } = req.query;
 
-    const result = await GetRelatedProductsService(slug, limit);
+    const result = await GetRelatedProductsService(slug, pageSize, currentPage);
     if (result.EC !== 0) {
       return res.status(404).json({
         statusCode: 404,
@@ -312,8 +312,8 @@ export const GetRelatedProducts = async (req, res) => {
 
 export const getTrendingProducts = async (req, res) => {
   try {
-    const { type = "ALL" } = req.query;
-    const result = await getTrendingProductsService(type);
+    const { type = "ALL", pageSize, currentPage } = req.query;
+    const result = await getTrendingProductsService(type, pageSize, currentPage);
 
     return res.status(200).json({
       statusCode: 200,

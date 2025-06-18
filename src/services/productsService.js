@@ -421,8 +421,20 @@ export const FilterProductsService = async (queryParams) => {
   }
 };
 
-export const GetRelatedProductsService = async (slug, limit) => {
+export const GetRelatedProductsService = async (
+  slug,
+  limit,
+  currentPage,
+  pageSize
+) => {
   try {
+    const DEFAULT_PAGE_SIZE = 8;
+    const DEFAULT_CURRENT_PAGE = 1;
+
+    const limitPerPage = +pageSize || DEFAULT_PAGE_SIZE;
+    const page = +currentPage || DEFAULT_CURRENT_PAGE;
+    const offset = (page - 1) * limitPerPage;
+
     const currentProduct = await Product.findOne({ slug: slug })
       .select("categories type")
       .populate("categories", "_id");
@@ -438,6 +450,17 @@ export const GetRelatedProductsService = async (slug, limit) => {
     const categoryIds = currentProduct.categories.map(
       (category) => category._id
     );
+
+    // Lấy tổng số sản phẩm liên quan
+    const totalItems = await Product.countDocuments({
+      _id: { $ne: currentProduct._id },
+      isDeleted: false,
+      categories: { $in: categoryIds },
+      type: currentProduct.type,
+    });
+
+    const totalPages = Math.ceil(totalItems / limitPerPage);
+
     const relatedProducts = await Product.find({
       _id: { $ne: currentProduct._id },
       isDeleted: false,
@@ -449,7 +472,8 @@ export const GetRelatedProductsService = async (slug, limit) => {
       )
       .populate("categories", "name slug")
       .populate("variants", "color size")
-      .limit(limit)
+      .skip(offset)
+      .limit(limit || limitPerPage)
       .lean();
 
     const processedResult = relatedProducts.map((product) => {
@@ -482,7 +506,15 @@ export const GetRelatedProductsService = async (slug, limit) => {
       return {
         EC: 0,
         EM: "Lấy sản phẩm liên quan thành công",
-        data: processedResult,
+        data: {
+          meta: {
+            currentPage: page,
+            pageSize: limitPerPage,
+            totalItems,
+            totalPages,
+          },
+          result: processedResult,
+        },
       };
     }
   } catch (error) {
@@ -494,8 +526,11 @@ export const GetRelatedProductsService = async (slug, limit) => {
     };
   }
 };
-
-export const getTrendingProductsService = async (type) => {
+export const getTrendingProductsService = async (
+  type,
+  pageSize,
+  currentPage
+) => {
   try {
     // Bước 1: Xây dựng query cơ bản
     let query = {
@@ -506,6 +541,12 @@ export const getTrendingProductsService = async (type) => {
       query.type = type;
     }
 
+    const DEFAULT_PAGE_SIZE = 8;
+    const DEFAULT_CURRENT_PAGE = 1;
+
+    const limit = +pageSize || DEFAULT_PAGE_SIZE;
+    const page = +currentPage || DEFAULT_CURRENT_PAGE;
+    const offset = (page - 1) * limit;
     // Bước 2: Lấy đơn hàng thành công
     const successOrders = await Order.find({
       status: "pending",
@@ -528,32 +569,45 @@ export const getTrendingProductsService = async (type) => {
       .lean();
 
     // Bước 5: Thêm số lượng bán và sắp xếp
-    const trendingProducts = products
+    const allTrendingProducts = products
       .map((product) => ({
         ...product,
         totalSold: productSales[product._id.toString()] || 0,
       }))
-      .sort((a, b) => b.totalSold - a.totalSold)
-      .slice(0, 8);
+      .sort((a, b) => b.totalSold - a.totalSold);
 
+    const totalItems = allTrendingProducts.length;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // Áp dụng phân trang
+    const paginatedProducts = allTrendingProducts.slice(offset, offset + limit);
     // Bước 6: Format dữ liệu trả về
     return {
-      data: trendingProducts.map((product) => ({
-        _id: product._id,
-        name: product.name,
-        price: product.price,
-        finalPrice: product.finalPrice,
-        discount: product.discount,
-        avatar: product.avatar,
-        type: product.type,
-        slug: product.slug,
-        categories: product.categories,
-      })),
+      data: {
+        meta: {
+          currentPage: page,
+          pageSize: limit,
+          totalItems,
+          totalPages,
+        },
+        result: paginatedProducts.map((product) => ({
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          finalPrice: product.finalPrice,
+          discount: product.discount,
+          avatar: product.avatar,
+          type: product.type,
+          slug: product.slug,
+          categories: product.categories,
+          totalSold: product.totalSold,
+        })),
+      },
     };
   } catch (error) {
     console.log("Error in getTrendingProductsService:", error);
     return {
-      success: false, // Thay status bằng success
+      success: false,
       message: "Lỗi server",
       data: null,
     };
