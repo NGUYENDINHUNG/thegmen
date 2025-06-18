@@ -312,8 +312,8 @@ export const GetRelatedProducts = async (req, res) => {
 
 export const getTrendingProducts = async (req, res) => {
   try {
-    const { type = "ALL", pageSize, currentPage } = req.query;
-    const result = await getTrendingProductsService(type, pageSize, currentPage);
+    const { type = "ALL" } = req.query;
+    const result = await getTrendingProductsService(type);
 
     return res.status(200).json({
       statusCode: 200,

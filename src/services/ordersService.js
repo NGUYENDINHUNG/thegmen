@@ -32,20 +32,33 @@ export const UpdateOrderService = async (orderId, status) => {
 };
 export const removeOrderService = async (orderId, userId) => {
   try {
-    const order = await Order.findById(orderId);
+    // Tìm và populate thông tin user ngay từ đầu
+    const order = await Order.findById(orderId)
+      .populate("userId", "email name")
+      .populate({
+        path: "items.productId",
+        select: "name price finalPrice avatar",
+      })
+      .populate({
+        path: "items.variantId",
+        select: "color size",
+      });
+
     if (!order) {
       throw new Error("Đơn hàng không tồn tại");
     }
-   
+
     if (order.status !== "pending") {
       throw new Error("Chỉ có thể hủy đơn hàng ở trạng thái chờ xử lý");
     }
-        // 2. Lấy thông tin người dùng
-        const user = await User.findById(userId);
-        if (!user || !user.email) {
-          throw new Error("Không tìm thấy thông tin người dùng hoặc email");
-        }
-    
+
+    // Kiểm tra user
+    const user = await User.findById(userId);
+    if (!user || !user.email) {
+      throw new Error("Không tìm thấy thông tin người dùng hoặc email");
+    }
+
+    // Xử lý hoàn trả số lượng sản phẩm
     for (const item of order.items) {
       if (item.variantId) {
         await Variants.findByIdAndUpdate(item.variantId, {
@@ -54,14 +67,27 @@ export const removeOrderService = async (orderId, userId) => {
       }
     }
 
+    // Cập nhật trạng thái đơn hàng
     order.status = "cancelled";
     await order.save();
-    await sendOrderCancellationEmail(order);
+
+    // Gửi email với xử lý lỗi
+    try {
+      const emailSent = await sendOrderCancellationEmail(order);
+      if (!emailSent) {
+        console.log(`Failed to send cancellation email for order ${orderId}`);
+      }
+    } catch (emailError) {
+      console.error("Error sending cancellation email:", emailError);
+      // Không throw error ở đây để không ảnh hưởng đến việc hủy đơn hàng
+    }
+
     return {
       success: true,
       message: "Hủy đơn hàng thành công",
     };
   } catch (error) {
+    console.error("Error in removeOrderService:", error);
     throw new Error(error.message || "Hủy đơn hàng thất bại");
   }
 };
@@ -321,7 +347,16 @@ export const createOrderService = async (userId, addressId) => {
 
     // 8. Lưu đơn hàng
     const savedOrder = await order.save();
-
+    const populatedOrder = await Order.findById(savedOrder._id)
+      .populate("userId", "email name")
+      .populate({
+        path: "items.productId",
+        select: "name price finalPrice avatar",
+      })
+      .populate({
+        path: "items.variantId",
+        select: "color size",
+      });
     // 9. Cập nhật số lượng sản phẩm trong kho
     for (const item of selectedItems) {
       if (item.variantId) {
@@ -345,7 +380,7 @@ export const createOrderService = async (userId, addressId) => {
     } else {
       await cart.save();
     }
-    await sendOrderConfirmationEmail(savedOrder);
+    await sendOrderConfirmationEmail(populatedOrder);
     return savedOrder;
   } catch (error) {
     console.log("Lỗi tạo đơn hàng:", error);

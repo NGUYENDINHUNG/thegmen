@@ -421,20 +421,8 @@ export const FilterProductsService = async (queryParams) => {
   }
 };
 
-export const GetRelatedProductsService = async (
-  slug,
-  limit,
-  currentPage,
-  pageSize
-) => {
+export const GetRelatedProductsService = async (slug) => {
   try {
-    const DEFAULT_PAGE_SIZE = 8;
-    const DEFAULT_CURRENT_PAGE = 1;
-
-    const limitPerPage = +pageSize || DEFAULT_PAGE_SIZE;
-    const page = +currentPage || DEFAULT_CURRENT_PAGE;
-    const offset = (page - 1) * limitPerPage;
-
     const currentProduct = await Product.findOne({ slug: slug })
       .select("categories type")
       .populate("categories", "_id");
@@ -451,16 +439,6 @@ export const GetRelatedProductsService = async (
       (category) => category._id
     );
 
-    // Lấy tổng số sản phẩm liên quan
-    const totalItems = await Product.countDocuments({
-      _id: { $ne: currentProduct._id },
-      isDeleted: false,
-      categories: { $in: categoryIds },
-      type: currentProduct.type,
-    });
-
-    const totalPages = Math.ceil(totalItems / limitPerPage);
-
     const relatedProducts = await Product.find({
       _id: { $ne: currentProduct._id },
       isDeleted: false,
@@ -472,8 +450,7 @@ export const GetRelatedProductsService = async (
       )
       .populate("categories", "name slug")
       .populate("variants", "color size")
-      .skip(offset)
-      .limit(limit || limitPerPage)
+      .limit(5) // Giới hạn 5 sản phẩm
       .lean();
 
     const processedResult = relatedProducts.map((product) => {
@@ -506,15 +483,7 @@ export const GetRelatedProductsService = async (
       return {
         EC: 0,
         EM: "Lấy sản phẩm liên quan thành công",
-        data: {
-          meta: {
-            currentPage: page,
-            pageSize: limitPerPage,
-            totalItems,
-            totalPages,
-          },
-          result: processedResult,
-        },
+        data: processedResult, // Trả về trực tiếp mảng kết quả
       };
     }
   } catch (error) {
@@ -526,13 +495,8 @@ export const GetRelatedProductsService = async (
     };
   }
 };
-export const getTrendingProductsService = async (
-  type,
-  pageSize,
-  currentPage
-) => {
+export const getTrendingProductsService = async (type) => {
   try {
-    // Bước 1: Xây dựng query cơ bản
     let query = {
       isDeleted: false,
     };
@@ -541,18 +505,12 @@ export const getTrendingProductsService = async (
       query.type = type;
     }
 
-    const DEFAULT_PAGE_SIZE = 8;
-    const DEFAULT_CURRENT_PAGE = 1;
-
-    const limit = +pageSize || DEFAULT_PAGE_SIZE;
-    const page = +currentPage || DEFAULT_CURRENT_PAGE;
-    const offset = (page - 1) * limit;
-    // Bước 2: Lấy đơn hàng thành công
+    // Lấy đơn hàng thành công
     const successOrders = await Order.find({
       status: "pending",
     });
 
-    // Bước 3: Tính số lượng bán của từng sản phẩm
+    // Tính số lượng bán của từng sản phẩm
     const productSales = {};
     successOrders.forEach((order) => {
       order.items.forEach((item) => {
@@ -562,52 +520,49 @@ export const getTrendingProductsService = async (
       });
     });
 
-    // Bước 4: Lấy thông tin sản phẩm
+    // Lấy thông tin sản phẩm
     const products = await Product.find(query)
-      .select("name price discount finalPrice avatar type slug")
+      .select("name price discount finalPrice avatar type slug categories")
       .populate("categories", "name")
       .lean();
 
-    // Bước 5: Thêm số lượng bán và sắp xếp
-    const allTrendingProducts = products
+    // Thêm số lượng bán, lọc sản phẩm đã bán và sắp xếp
+    const trendingProducts = products
       .map((product) => ({
         ...product,
         totalSold: productSales[product._id.toString()] || 0,
       }))
-      .sort((a, b) => b.totalSold - a.totalSold);
+      .filter((product) => product.totalSold > 0) // Chỉ lấy sản phẩm đã bán
+      .sort((a, b) => b.totalSold - a.totalSold)
+      .slice(0, 8); // Lấy top 8
 
-    const totalItems = allTrendingProducts.length;
-    const totalPages = Math.ceil(totalItems / limit);
+    // Kiểm tra nếu không có sản phẩm nào được bán
+    if (trendingProducts.length === 0) {
+      return {
+        statusCode: 404,
+        message: "Không có sản phẩm bán chạy nào",
+        data: [],
+      };
+    }
 
-    // Áp dụng phân trang
-    const paginatedProducts = allTrendingProducts.slice(offset, offset + limit);
-    // Bước 6: Format dữ liệu trả về
     return {
-      data: {
-        meta: {
-          currentPage: page,
-          pageSize: limit,
-          totalItems,
-          totalPages,
-        },
-        result: paginatedProducts.map((product) => ({
-          _id: product._id,
-          name: product.name,
-          price: product.price,
-          finalPrice: product.finalPrice,
-          discount: product.discount,
-          avatar: product.avatar,
-          type: product.type,
-          slug: product.slug,
-          categories: product.categories,
-          totalSold: product.totalSold,
-        })),
-      },
+      data: trendingProducts.map((product) => ({
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        finalPrice: product.finalPrice,
+        discount: product.discount,
+        avatar: product.avatar,
+        type: product.type,
+        slug: product.slug,
+        categories: product.categories,
+        totalSold: product.totalSold,
+      })),
     };
   } catch (error) {
     console.log("Error in getTrendingProductsService:", error);
     return {
-      success: false,
+      statusCode: 500,
       message: "Lỗi server",
       data: null,
     };
