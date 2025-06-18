@@ -61,6 +61,13 @@ export const addToCart = async (req, res) => {
     const { productId, variantId, quantity } = req.body;
     const cart = await addToCartService(userId, productId, variantId, quantity);
 
+    if (cart.EC !== 0) {
+      return res.status(cart.EC).json({
+        statusCode: cart.EC,
+        message: cart.EM,
+      });
+    }
+
     return res.status(200).json({
       statusCode: 200,
       message: "Thêm sản phẩm vào giỏ hàng thành công",
@@ -138,20 +145,24 @@ export const updateCartItem = async (req, res) => {
       quantity
     );
 
+    if (result.EC !== 0) {
+      return res.status(result.EC).json({
+        statusCode: result.EC,
+        message: result.EM,
+      });
+    }
+
     return res.status(200).json({
-      status: 200,
-      message: "Cập nhật giỏ hàng thành công",
-      data: {
-        cart: result.cart,
-        totalPrice: result.totalPrice,
-        discountAmount: result.discountAmount,
-        finalAmount: result.finalAmount,
-      },
+      statusCode: 200,
+      message: "Cập nhật sản phẩm thành công",
+      data: result.DT,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
-      status: 500,
-      message: error.message || "Cập nhật giỏ hàng thất bại",
+      statusCode: 500,
+      message: "Lỗi server khi cập nhật sản phẩm",
+      error: error.message,
     });
   }
 };
@@ -163,15 +174,15 @@ export const updateItemSelection = async (req, res) => {
     const result = await updateItemSelectionService(userId, itemId, selected);
 
     return res.status(200).json({
-      success: true,
+      statusCode: 200,
       message: "Cập nhật trạng thái chọn sản phẩm thành công",
-      data: result
+      data: result,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Cập nhật trạng thái chọn sản phẩm thất bại",
-      error: error.message,
+    console.log("Error in updateItemSelection:", error);
+    return res.status(200).json({
+      statusCode: 500,
+      message: "Lỗi server khi cập nhật trạng thái sản phẩm",
     });
   }
 };

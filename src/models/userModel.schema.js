@@ -9,7 +9,16 @@ const UserSchema = new Schema(
     },
     name: String,
     password: String,
-    phoneNumber: { type: Number },
+    phoneNumber: { 
+      type: String, // Đổi type thành String vì số điện thoại nên lưu dạng string
+      validate: {
+        validator: function(v) {
+        
+          return /^(0)(3|5|7|8|9)[0-9]{8}$/.test(v);
+        },
+        message: props => `${props.value} không phải là số điện thoại hợp lệ! Số điện thoại phải có 10 số và bắt đầu bằng 03, 05, 07, 08, 09`
+      }
+    },
     role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "role",

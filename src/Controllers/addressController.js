@@ -17,7 +17,7 @@ export const createAddress = async (req, res) => {
       data: newAddress,
     });
   } catch (error) {
-    ``;
+    console.log(error);
     return res.status(500).json({
       statusCode: 500,
       message: "Lỗi khi tạo địa chỉ",
@@ -31,21 +31,25 @@ export const updateAddress = async (req, res) => {
     const userId = req.user._id;
     const { addressId } = req.params;
     const addressData = req.body;
-    const updatedAddress = await updateAddressService(
-      userId,
-      addressId,
-      addressData
-    );
+    const result = await updateAddressService(userId, addressId, addressData);
+
+    if (result.EC !== 0) {
+      return res.status(result.EC).json({
+        statusCode: result.EC,
+        message: result.EM,
+      });
+    }
 
     return res.status(200).json({
       statusCode: 200,
-      message: "Địa chỉ đã được cập nhật thành công",
-      data: updatedAddress,
+      message: result.EM,
+      data: result.DT,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       statusCode: 500,
-      message: "Lỗi khi cập nhật địa chỉ",
+      message: "Lỗi server khi cập nhật địa chỉ.",
       error: error.message,
     });
   }
@@ -63,6 +67,7 @@ export const getAllAddress = async (req, res) => {
       data: addresses,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       statusCode: 500,
       message: "Lỗi khi lấy tất cả địa chỉ",
@@ -76,6 +81,12 @@ export const deleteAddress = async (req, res) => {
     const userId = req.user._id;
     const { addressId } = req.params;
     const deleted = await deleteAddressService(userId, addressId);
+    if (deleted.EC !== 0) {
+      return res.status(deleted.EC).json({
+        statusCode: deleted.EC,
+        message: deleted.EM,
+      });
+    }
 
     return res.status(200).json({
       statusCode: 200,
@@ -83,6 +94,7 @@ export const deleteAddress = async (req, res) => {
       data: deleted,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       statusCode: 500,
       message: "Lỗi server khi xóa địa chỉ.",

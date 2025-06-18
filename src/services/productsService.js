@@ -330,8 +330,9 @@ export const FilterProductsService = async (queryParams) => {
       queryParams;
 
     const filter = { isDeleted: false };
-    console.log(type);
-    if (type) {
+
+    if (type && type !== "all") {
+      // Thêm điều kiện kiểm tra type !== "ALL"
       const validTypes = ["MEN", "WOMEN", "KIDS", "UNISEX"];
       if (!validTypes.includes(type)) {
         return { EC: 400, EM: "Type không hợp lệ", data: null };
@@ -392,7 +393,7 @@ export const FilterProductsService = async (queryParams) => {
     // Query sản phẩm theo filter và phân trang nếu có
     let query = Product.find(filter)
       .select(
-        "_id name description slug avatar images price finalPrice discount TYPE categories"
+        "_id name description slug avatar images price finalPrice discount type categories"
       )
       .populate("categories", "name slug");
 

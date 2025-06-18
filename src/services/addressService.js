@@ -3,7 +3,6 @@ import User from "../models/userModel.schema.js";
 
 export const createAddressService = async (userId, addressData) => {
   try {
-  
     const user = await User.findById(userId);
     if (!user) {
       return {
@@ -17,6 +16,14 @@ export const createAddressService = async (userId, addressData) => {
         EC: 400,
         EM: "Dữ liệu địa chỉ không hợp lệ",
       };
+    }
+
+    // Kiểm tra xem có địa chỉ nào không
+    const addressCount = await Address.countDocuments({ userId });
+
+    // Nếu là địa chỉ đầu tiên, bắt buộc phải là mặc định
+    if (addressCount === 0) {
+      addressData.isDefault = true;
     }
 
     if (addressData.isDefault) {
@@ -50,25 +57,53 @@ export const updateAddressService = async (userId, addressId, addressData) => {
   try {
     const address = await Address.findOne({ _id: addressId, userId });
     if (!address) {
-      throw new Error("Bạn không có quyền sửa địa chỉ này.");
+      return {
+        EC: 403,
+        EM: "Bạn không có quyền sửa địa chỉ này",
+      };
     }
 
+    const addressCount = await Address.countDocuments({ userId });
+
+    const isDefaultValue =
+      addressData?.isDefault === true || addressData?.isDefault === "true";
+
+    // Trường hợp duy nhất & bỏ mặc định → không cho phép
+    if (addressCount === 1 && address.isDefault && isDefaultValue === false) {
+      return {
+        EC: 403,
+        EM: "Không thể bỏ mặc định vì đây là địa chỉ duy nhất của bạn",
+        DT: null,
+      };
+    }
+
+    // Nếu không phải trường hợp đặc biệt, tiến hành cập nhật
     const updatedAddress = await Address.findByIdAndUpdate(
       addressId,
       { $set: addressData },
       { new: true }
     );
 
+    // Nếu đặt làm mặc định, cập nhật các địa chỉ khác
     if (addressData.isDefault) {
       await Address.updateMany(
         { userId, _id: { $ne: addressId } },
         { $set: { isDefault: false } }
       );
     }
-    return updatedAddress;
+
+    return {
+      EC: 0,
+      EM: "Cập nhật địa chỉ thành công",
+      DT: updatedAddress,
+    };
   } catch (error) {
     console.error("Error updating address:", error);
-    throw error;
+    return {
+      EC: 500,
+      EM: "Lỗi server, vui lòng thử lại sau",
+      DT: null,
+    };
   }
 };
 
@@ -86,40 +121,40 @@ export const deleteAddressService = async (userId, addressId) => {
   try {
     const address = await Address.findOne({ _id: addressId, userId });
     if (!address) {
-      throw new Error("Bạn không có quyền xóa địa chỉ này.");
+      return {
+        EC: 403,
+        EM: "Bạn không có quyền xóa địa chỉ này.",
+      };
     }
 
-    const wasDefault = address.isDefault;
+    if (address.isDefault) {
+      return {
+        EC: 403,
+        EM: "Không thể xóa địa chỉ mặc định vì đó là địa chỉ mặc định của bạn",
+      };
+    }
 
     const deletedAddress = await Address.findByIdAndDelete(addressId);
     if (!deletedAddress) {
-      throw new Error("Địa chỉ không tồn tại hoặc đã bị xóa");
+      return {
+        EC: 404,
+        EM: "Địa chỉ không tồn tại hoặc đã bị xóa",
+      };
     }
- // Xóa khỏi mảng addresses của user
+
+    // Xóa khỏi mảng addresses của user
     await User.updateOne({ _id: userId }, { $pull: { addresses: addressId } });
 
-    if (wasDefault) {
-      const latestAddress = await Address.findOne({ userId }).sort({ createdAt: -1 });
-      if (latestAddress) {
-        latestAddress.isDefault = true;
-        await latestAddress.save();
-      }
-    } else {
-      // Kiểm tra lại: user còn địa chỉ nào là mặc định không?
-      const stillHasDefault = await Address.exists({ userId, isDefault: true });
-      if (!stillHasDefault) {
-        // Nếu không còn, lấy địa chỉ mới nhất còn lại làm mặc định
-        const latestAddress = await Address.findOne({ userId }).sort({ createdAt: -1 });
-        if (latestAddress) {
-          latestAddress.isDefault = true;
-          await latestAddress.save();
-        }
-      }
-    }
-
-    return deletedAddress;
+    return {
+      EC: 0,
+      EM: "Xóa địa chỉ thành công",
+      data: deletedAddress,
+    };
   } catch (error) {
     console.error("Error in deleteAddressService:", error);
-    throw error;
+    return {
+      EC: 500,
+      EM: "Lỗi server, vui lòng thử lại sau",
+    };
   }
 };
