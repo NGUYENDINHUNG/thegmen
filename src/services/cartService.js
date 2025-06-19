@@ -247,7 +247,7 @@ export const getCartByUserService = async (userId) => {
       },
       {
         path: "items.variantId",
-        select: "_id color  size images",
+        select: "_id color  size images stock",
       },
       {
         path: "appliedVoucher.voucherId",
@@ -282,6 +282,7 @@ export const getCartByUserService = async (userId) => {
               _id: item.variantId._id,
               color: item.variantId.color,
               size: item.variantId.size,
+              stock: item.variantId.stock,
             },
             finalPrice: itemTotal,
           };
