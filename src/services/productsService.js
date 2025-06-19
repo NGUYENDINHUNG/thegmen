@@ -138,7 +138,6 @@ export const GetProductsBySlugService = async (slug, userId) => {
       });
       isFavorite = Boolean(favorite);
     }
-    console.log(isFavorite);
     const hasColorVariants = product.variants.some((variant) => variant.color);
 
     if (hasColorVariants) {
@@ -327,7 +326,6 @@ export const RestoreProductService = async (ProductId) => {
   }
 };
 export const FilterProductsService = async (queryParams, userId) => {
-  console.log(queryParams);
   try {
     const { minPrice, maxPrice, category, type, currentPage, pageSize } =
       queryParams;

@@ -33,7 +33,6 @@ export const removeOrder = async (req, res) => {
     const userId = req.user._id;
 
     const order = await Order.findOne({ _id: orderId, userId });
-    console.log(order);
     if (!order) {
       return res.status(404).json({
         success: false,

@@ -18,7 +18,7 @@ export const CreateCategory = async (req, res) => {
       imageUrl = results.path;
     }
 
-    console.log(imageUrl);
+
     const data = await CreateCategoryService(name, imageUrl);
     return res.status(200).json({
       statusCode: 200,

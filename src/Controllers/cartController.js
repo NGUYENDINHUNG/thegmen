@@ -137,7 +137,6 @@ export const updateCartItem = async (req, res) => {
   try {
     const userId = req.user._id;
     const { productId, variantId, quantity } = req.body;
-    console.log(req.body);
     const result = await updateCartItemService(
       userId,
       productId,

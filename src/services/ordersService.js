@@ -351,10 +351,6 @@ export const buyNowService = async (userId, productId, variantId, quantity) => {
     );
 
     if (addToCartResult.EC !== 0) {
-      console.log(
-        "Error in buyNowService - addToCart failed:",
-        addToCartResult.EM
-      );
       return {
         EC: addToCartResult.EC,
         EM: addToCartResult.EM,
