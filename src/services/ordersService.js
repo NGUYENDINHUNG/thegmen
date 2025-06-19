@@ -201,53 +201,6 @@ export const getDetailOrderService = async (orderId) => {
     throw new Error(`Lỗi khi lấy thông tin đơn hàng: ${error.message}`);
   }
 };
-export const buyNowService = async (userId, productId, variantId, quantity) => {
-  try {
-    // 1. Thêm sản phẩm vào giỏ hàng
-    const cart = await addToCartService(userId, productId, variantId, quantity);
-
-    // 2. Bỏ chọn tất cả các sản phẩm trong giỏ hàng
-    cart.items.forEach((item) => {
-      item.selected = false;
-    });
-
-    // 3. Chỉ chọn sản phẩm vừa thêm vào
-    const newItemIndex = cart.items.findIndex((item) => {
-      if (variantId) {
-        return (
-          item.productId.toString() === productId &&
-          item.variantId &&
-          item.variantId.toString() === variantId
-        );
-      } else {
-        return (
-          item.productId.toString() === productId &&
-          (!item.variantId || item.variantId === null)
-        );
-      }
-    });
-
-    if (newItemIndex > -1) {
-      cart.items[newItemIndex].selected = true;
-    }
-
-    // 4. Tính lại tổng tiền chỉ cho sản phẩm được chọn
-    let totalPrice = 0;
-    cart.items.forEach((item) => {
-      if (item.selected) {
-        const price = item.productId.finalPrice ?? item.productId.price ?? 0;
-        totalPrice += price * item.quantity;
-      }
-    });
-
-    cart.finalAmount = totalPrice;
-    await cart.save();
-
-    return cart;
-  } catch (error) {
-    throw new Error(`Mua ngay thất bại: ${error.message}`);
-  }
-};
 export const createOrderService = async (userId, addressId) => {
   try {
     // 1. Kiểm tra địa chỉ
@@ -385,5 +338,78 @@ export const createOrderService = async (userId, addressId) => {
   } catch (error) {
     console.log("Lỗi tạo đơn hàng:", error);
     throw error;
+  }
+};
+export const buyNowService = async (userId, productId, variantId, quantity) => {
+  try {
+    // 1. Thêm sản phẩm vào giỏ hàng
+    const addToCartResult = await addToCartService(
+      userId,
+      productId,
+      variantId,
+      quantity
+    );
+
+    if (addToCartResult.EC !== 0) {
+      console.log(
+        "Error in buyNowService - addToCart failed:",
+        addToCartResult.EM
+      );
+      return {
+        EC: addToCartResult.EC,
+        EM: addToCartResult.EM,
+      };
+    }
+
+    const cart = addToCartResult.DT;
+
+    // 2. Bỏ chọn tất cả các sản phẩm trong giỏ hàng
+    cart.items.forEach((item) => {
+      item.selected = false;
+    });
+
+    // 3. Chỉ chọn sản phẩm vừa thêm vào
+    const newItemIndex = cart.items.findIndex((item) => {
+      if (variantId) {
+        return (
+          item.productId.toString() === productId &&
+          item.variantId &&
+          item.variantId.toString() === variantId
+        );
+      } else {
+        return (
+          item.productId.toString() === productId &&
+          (!item.variantId || item.variantId === null)
+        );
+      }
+    });
+
+    if (newItemIndex > -1) {
+      cart.items[newItemIndex].selected = true;
+    }
+
+    // 4. Tính lại tổng tiền chỉ cho sản phẩm được chọn
+    let totalPrice = 0;
+    cart.items.forEach((item) => {
+      if (item.selected) {
+        const price = item.productId.finalPrice ?? item.productId.price ?? 0;
+        totalPrice += price * item.quantity;
+      }
+    });
+
+    cart.finalAmount = totalPrice;
+    await cart.save();
+
+    return {
+      EC: 0,
+      EM: "Mua ngay thành công",
+      DT: cart,
+    };
+  } catch (error) {
+    console.log("Error in buyNowService:", error);
+    return {
+      EC: 500,
+      EM: error.message || "Lỗi server khi thực hiện mua ngay",
+    };
   }
 };

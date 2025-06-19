@@ -192,11 +192,17 @@ export const GetOnProduct = async (req, res) => {
 export const GetAllProducts = async (req, res) => {
   try {
     const { pageSize, currentPage } = req.query;
-
+    const token = req.headers.authorization?.split(" ")[1];
+    let userId = null;
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded._id;
+    }
     const products = await GetAllProductsService(
       pageSize,
       currentPage,
-      req.query
+      req.query,
+      userId
     );
 
     return res.status(200).json({
@@ -212,7 +218,6 @@ export const GetAllProducts = async (req, res) => {
     });
   }
 };
-
 export const SoftDeleteProduct = async (req, res) => {
   try {
     const { ProductId } = req.params;
@@ -259,7 +264,13 @@ export const RestoreProduct = async (req, res) => {
 
 export const FilterProducts = async (req, res) => {
   try {
-    const data = await FilterProductsService(req.query);
+    let userId = null;
+    const token = req.headers.authorization?.split(" ")[1];
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded._id;
+    }
+    const data = await FilterProductsService(req.query, userId);
 
     if (data.EC !== 0) {
       return res.status(200).json({

@@ -75,7 +75,6 @@ export const CreateProductService = async (productData) => {
     };
   }
 };
-
 export const UpdateProductsService = async (ProductId, updateData) => {
   try {
     const existingProduct = await Product.findById(ProductId);
@@ -113,7 +112,6 @@ export const UpdateProductsService = async (ProductId, updateData) => {
     };
   }
 };
-
 export const GetProductsBySlugService = async (slug, userId) => {
   try {
     if (!slug) {
@@ -192,11 +190,11 @@ export const GetProductsBySlugService = async (slug, userId) => {
     throw error;
   }
 };
-
 export const GetAllProductsService = async (
   pageSize,
   currentPage,
-  queryString
+  queryString,
+  userId
 ) => {
   try {
     const { filter } = aqp(queryString);
@@ -212,7 +210,7 @@ export const GetAllProductsService = async (
 
     const result = await Product.find(filter)
       .select(
-        "name price discount finalPrice slug avatar images description categories isDeleted variants"
+        "name price discount finalPrice slug avatar categories isDeleted variants "
       )
       .populate("categories", "name slug")
       .populate({
@@ -223,7 +221,13 @@ export const GetAllProductsService = async (
       .skip(offset)
       .limit(limit)
       .lean();
-
+    let favoriteProductIds = [];
+    if (userId) {
+      const favorites = await Favorites.find({ userId })
+        .select("productId")
+        .lean();
+      favoriteProductIds = favorites.map((f) => f.productId.toString());
+    }
     const processedResult = result.map((product) => {
       const colors = [
         ...new Set(product.variants.map((index) => index.color)),
@@ -231,7 +235,7 @@ export const GetAllProductsService = async (
       const sizes = [
         ...new Set(product.variants.map((index) => index.size)),
       ].filter(Boolean);
-
+      const isFavorite = favoriteProductIds.includes(product._id.toString());
       return {
         _id: product._id,
         name: product.name,
@@ -240,6 +244,7 @@ export const GetAllProductsService = async (
         finalPrice: product.finalPrice,
         slug: product.slug,
         avatar: product.avatar,
+        isFavorite: isFavorite,
         images: product.images,
         description: product.description,
         categories: product.categories,
@@ -266,7 +271,6 @@ export const GetAllProductsService = async (
     throw new Error(`Lỗi khi lấy danh sách sản phẩm: ${error.message}`);
   }
 };
-
 export const SoftDeleteProductService = async (ProductId) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(ProductId)) {
@@ -302,7 +306,6 @@ export const SoftDeleteProductService = async (ProductId) => {
     throw new Error(error.message);
   }
 };
-
 export const RestoreProductService = async (ProductId) => {
   try {
     const restoredProduct = await Product.findByIdAndUpdate(
@@ -323,8 +326,8 @@ export const RestoreProductService = async (ProductId) => {
     throw error;
   }
 };
-
-export const FilterProductsService = async (queryParams) => {
+export const FilterProductsService = async (queryParams, userId) => {
+  console.log(queryParams);
   try {
     const { minPrice, maxPrice, category, type, currentPage, pageSize } =
       queryParams;
@@ -393,7 +396,7 @@ export const FilterProductsService = async (queryParams) => {
     // Query sản phẩm theo filter và phân trang nếu có
     let query = Product.find(filter)
       .select(
-        "_id name description slug avatar images price finalPrice discount type categories"
+        "_id name  slug avatar  price finalPrice discount type categories "
       )
       .populate("categories", "name slug");
 
@@ -401,6 +404,22 @@ export const FilterProductsService = async (queryParams) => {
       query = query.skip(skip).limit(limitNum);
     }
     const products = await query.lean();
+    let favoriteProductIds = [];
+    if (userId) {
+      const favorites = await Favorites.find({ userId })
+        .select("productId")
+        .lean();
+      favoriteProductIds = favorites.map((f) => f.productId.toString());
+    }
+
+    const processedProducts = products.map(product => {
+      const isFavorite = favoriteProductIds.includes(product._id.toString());
+      
+      return {
+        ...product,
+        isFavorite: isFavorite
+      };
+    });
 
     return {
       data: {
@@ -410,18 +429,17 @@ export const FilterProductsService = async (queryParams) => {
           totalItems,
           totalPages,
         },
-        result: products,
+        result: processedProducts,
       },
     };
   } catch (error) {
     return {
       EC: 1,
       EM: "Lỗi khi lọc sản phẩm",
-      debugMessage: error.message,
+      data: error.message,
     };
   }
 };
-
 export const GetRelatedProductsService = async (slug) => {
   try {
     const currentProduct = await Product.findOne({ slug: slug })

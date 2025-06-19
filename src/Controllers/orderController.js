@@ -118,7 +118,12 @@ export const buyNow = async (req, res) => {
     const { productId, variantId, quantity } = req.body;
 
     const cart = await buyNowService(userId, productId, variantId, quantity);
-
+    if (cart.EC !== 0) {
+      return res.status(403).json({
+        statusCode: cart.EC,
+        message: cart.EM,
+      });
+    }
     return res.status(200).json({
       statusCode: 200,
       cart,
