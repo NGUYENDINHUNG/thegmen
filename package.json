@@ -8,7 +8,9 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "start:debug": "node --inspect-brk=9229 src/server.js"
+  
   },
+  
   "author": "",
   "license": "ISC",
   "dependencies": {

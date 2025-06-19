@@ -243,7 +243,7 @@ export const getCartByUserService = async (userId) => {
     const cart = await Cart.findOne({ userId }).populate([
       {
         path: "items.productId",
-        select: "_id name finalPrice price avatar discount slug",
+        select: "_id name finalPrice price avatar discount slug ",
       },
       {
         path: "items.variantId",
@@ -276,6 +276,7 @@ export const getCartByUserService = async (userId) => {
               name: item.productId.name,
               price: price,
               avatar: item.productId.avatar,
+              slug: item.productId.slug,
             },
             variant: {
               _id: item.variantId._id,
