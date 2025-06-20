@@ -8,8 +8,6 @@ import SlidersRouter from "#routes/v1/Admin/SliderRoutes.js";
 import VariantRouter from "#routes/v1/Admin/VariantRoutes.js";
 import VoucherRouter from "#routes/v1/Admin/VoucherRoutes.js";
 import FileRouter from "#routes/v1/Admin/fileRoutes.js";
-
-import AuthRouter from "#routes/v1/Public/Auth.js";
 import BannerRouter from "#routes/v1/Admin/BannerRoutes.js";
 
 const AdminRouter = express.Router();
@@ -17,7 +15,6 @@ const AdminRouter = express.Router();
 AdminRouter.use(verifyToken);
 
 AdminRouter.use("/collections", CollectionRouter);
-AdminRouter.use("/auth", AuthRouter);
 AdminRouter.use("/categories", CategoryRouter);
 AdminRouter.use("/products", ProductRouter);
 AdminRouter.use("/sliders", SlidersRouter);
