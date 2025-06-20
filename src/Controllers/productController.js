@@ -99,12 +99,14 @@ export const UpdateProduct = async (req, res) => {
   try {
     const { ProductId } = req.params;
     const updateData = {};
-
-    Object.keys(req.body).forEach((key) => {
-      if (req.body[key] !== undefined && req.body[key] !== "") {
-        updateData[key] = req.body[key];
-      }
-    });
+     
+    if (req.body && typeof req.body === 'object') {
+      Object.keys(req.body).forEach((key) => {
+        if (req.body[key] !== undefined && req.body[key] !== "") {
+          updateData[key] = req.body[key];
+        }
+      });
+    }
 
     // Xử lý files nếu có
     if (req.files?.avatar) {

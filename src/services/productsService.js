@@ -410,12 +410,12 @@ export const FilterProductsService = async (queryParams, userId) => {
       favoriteProductIds = favorites.map((f) => f.productId.toString());
     }
 
-    const processedProducts = products.map(product => {
+    const processedProducts = products.map((product) => {
       const isFavorite = favoriteProductIds.includes(product._id.toString());
-      
+
       return {
         ...product,
-        isFavorite: isFavorite
+        isFavorite: isFavorite,
       };
     });
 
