@@ -1,6 +1,6 @@
 import path from "path";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import s3Client from "../config/s3.js";
+import s3Client from "#config/s3.js";
 
 export const uploadSingleFile = async (file) => {
   if (!file) {

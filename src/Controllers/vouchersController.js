@@ -1,11 +1,11 @@
-import Cart from "../models/cartModel.schema.js";
+import Cart from "#models/cartModel.schema.js";
 import {
   createVoucherService,
   getAllVouchersService,
   removeVoucherFromCartService,
   updateVoucherService,
   validateAndApplyVoucherForCartService,
-} from "../services/vouchersSevice.js";
+} from "#services/vouchersSevice.js";
 
 export const createVoucher = async (req, res) => {
   try {

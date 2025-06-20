@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import User from "../models/userModel.schema.js";
-import { UpdateUserRefreshToken, FindUserByToken } from "./userService.js";
-import sendEmail from "../util/email.util.js";
+import User from "#models/userModel.schema.js";
+import { UpdateUserRefreshToken, FindUserByToken } from "#services/userService.js";
+import sendEmail from "#util/email.util.js";
 import ms from "ms";
-import Role from "../models/roleModel.schema.js";
+import Role from "#models/roleModel.schema.js";
 const saltRounds = 10;
 
 export const RegisterSevice = async (

@@ -3,8 +3,8 @@ import {
   applyVoucherToCart,
   getAllVouchers,
   removeVoucherFromCart,
-} from "../../../controllers/vouchersController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+} from "#controllers/vouchersController.js";
+import { verifyToken } from "#middleware/auth.js";
 const VoucherRouter = express.Router();
 
 VoucherRouter.get("/", getAllVouchers);

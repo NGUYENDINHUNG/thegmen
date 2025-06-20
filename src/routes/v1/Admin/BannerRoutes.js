@@ -3,7 +3,7 @@ import {
   CreateBanner,
   DeleteBanner,
   UpdateBanner,
-} from "../../../controllers/bannerController.js";
+} from "#controllers/bannerController.js";
 //import checkPermission from "../../../middleware/checkPermission.js";
 
 const BannerRouter = express.Router();

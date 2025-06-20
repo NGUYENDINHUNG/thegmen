@@ -5,7 +5,7 @@ import {
   FilterProducts,
   GetRelatedProducts,
   getTrendingProducts,
-} from "../../../controllers/productController.js";
+} from "#controllers/productController.js";
 
 const ProductRouter = express.Router();
 

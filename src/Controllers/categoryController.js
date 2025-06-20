@@ -3,8 +3,8 @@ import {
   UpdateCategoryService,
   GetOneCategoryService,
   GetAllCategoriesService,
-} from "../services/categoryService.js";
-import { uploadSingleFile } from "../services/fileService.js";
+} from "#services/categoryService.js";
+import { uploadSingleFile } from "#services/fileService.js";
 
 export const CreateCategory = async (req, res) => {
   try {

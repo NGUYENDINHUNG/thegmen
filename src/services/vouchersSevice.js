@@ -1,6 +1,6 @@
-import Voucher from "../models/vouchersModel.schema.js";
-import User from "../models/userModel.schema.js";
-import Cart from "../models/cartModel.schema.js";
+import Voucher from "#models/vouchersModel.schema.js";
+import User from "#models/userModel.schema.js";
+import Cart from "#models/cartModel.schema.js";
 export const createVoucherService = async (voucherData) => {
   try {
     const exist = await Voucher.findOne({ code: voucherData.code });

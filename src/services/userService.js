@@ -1,4 +1,4 @@
-import User from "../models/userModel.schema.js";
+import User from "#models/userModel.schema.js";
 
 export const UpdateUserRefreshToken = async (userId, refreshToken) => {
   try {

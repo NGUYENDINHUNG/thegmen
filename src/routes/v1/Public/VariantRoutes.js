@@ -3,7 +3,7 @@ import {
   getVariantById,
   getVariantsByProductId,
   getAllVariants,
-} from "../../../Controllers/variantController.js";
+} from "#controllers/variantController.js";
 
 const VariantRouter = express.Router();
 

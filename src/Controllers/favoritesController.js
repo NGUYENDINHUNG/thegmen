@@ -2,7 +2,7 @@ import {
   addFavoriteService,
   removeFavoriteService,
   getFavoritesService,
-} from "../services/favoritesService.js";
+} from "#services/favoritesService.js";
 
 export const getFavorites = async (req, res) => {
   try {

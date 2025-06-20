@@ -5,8 +5,8 @@ import {
   getDetailOrder,
   getListOrder,
   removeOrder,
-} from "../../../controllers/orderController.js";
-import { verifyToken } from "../../../middleware/auth.js";
+} from "#controllers/orderController.js";
+import { verifyToken } from "#middleware/auth.js";
 
 const OrderRouter = Router();
 

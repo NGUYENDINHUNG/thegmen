@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-import User from "../models/userModel.schema.js";
-import Role from "../models/roleModel.schema.js";
+import User from "#models/userModel.schema.js";
+import Role from "#models/roleModel.schema.js";
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer")) {

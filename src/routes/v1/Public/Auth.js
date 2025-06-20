@@ -6,8 +6,8 @@ import {
   loginGoogleSuccess,
   requestPasswordReset,
   resetPassword,
-} from "../../../controllers/authController.js";  
-import passport from "../../../config/passport.js";
+} from "#controllers/authController.js";  
+import passport from "#config/passport.js";
 
 const AuthRouter = express.Router();
 

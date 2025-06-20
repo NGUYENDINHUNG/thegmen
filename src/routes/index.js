@@ -1,5 +1,5 @@
 import express from "express";
-import router from "./v1/index.js";
+import router from "#routes/v1/index.js";
 
 const Apirouter = express.Router();
 

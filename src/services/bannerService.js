@@ -1,4 +1,4 @@
-import Banner from "../models/BannerModel.schema.js";
+import Banner from "#models/BannerModel.schema.js";
 
 export const CreateBannerService = async (
   images,

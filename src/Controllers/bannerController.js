@@ -3,8 +3,8 @@ import {
   DeleteBannerService,
   GetAllBannerService,
   UpdateBannerService,
-} from "../services/bannerService.js";
-import { uploadSingleFile } from "../services/fileService.js";
+} from "#services/bannerService.js";
+import { uploadSingleFile } from "#services/fileService.js";
 
 export const CreateBanner = async (req, res) => {
   try {

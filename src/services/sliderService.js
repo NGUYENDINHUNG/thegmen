@@ -1,4 +1,4 @@
-import Sliders from "../models/sliderModel.schema.js";
+import Sliders from "#models/sliderModel.schema.js";
 
 export const CreateSlidersService = async (
   imageUrl,

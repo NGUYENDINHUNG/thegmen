@@ -4,13 +4,21 @@
   "description": "",
   "main": "src/server.js",
   "type": "module",
+  "imports": {
+    "#controllers/*": "./src/controllers/*",
+    "#models/*": "./src/models/*",
+    "#services/*": "./src/services/*",
+    "#middleware/*": "./src/middleware/*",
+    "#routes/*": "./src/routes/*",
+    "#config/*": "./src/config/*",
+    "#constants/*": "./src/constants/*",
+    "#util/*": "./src/util/*"
+  },
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "start:debug": "node --inspect-brk=9229 src/server.js"
-  
   },
-  
   "author": "",
   "license": "ISC",
   "dependencies": {

@@ -4,7 +4,7 @@ import {
   updatePermissionService,
   deletePermissionService,
   GetAllPermissionsService,
-} from "../services/permisition.js";
+} from "#services/permisition.js";
 
 export const createPermission = async (req, res) => {
   try {

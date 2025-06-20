@@ -1,7 +1,4 @@
-import User from "../models/userModel.schema.js";
-
-
-
+import User from "#models/userModel.schema.js";
 
 // Get all users (for superAdmin)
 export const getAllUsers = async (req, res) => {

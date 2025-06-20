@@ -3,7 +3,7 @@ import {
   DeleteSliderService,
   GetAllSlidersService,
   UpdateSlidersService,
-} from "../services/sliderService.js";
+} from "#services/sliderService.js";
 
 export const CreateSliders = async (req, res) => {
   try {

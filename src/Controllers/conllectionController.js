@@ -8,8 +8,8 @@ import {
   RemoveProductFromCollectionService,
   GetAllCollectionsService,
   GetProductsByCollectionSlugService,
-} from "../services/conllectionService.js";
-import { uploadSingleFile } from "../services/fileService.js";
+} from "#services/conllectionService.js";
+import { uploadSingleFile } from "#services/fileService.js";
 
 export const CreateCollection = async (req, res) => {
   try {

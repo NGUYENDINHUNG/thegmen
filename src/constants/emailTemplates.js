@@ -23,7 +23,7 @@ export const orderConfirmationEmail = (order) => {
           .map(
             (item) => `
           <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;">
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
               ${item.name}
               ${
                 item.variant
@@ -31,10 +31,10 @@ export const orderConfirmationEmail = (order) => {
                   : ""
               }
             </td>
-            <td style="border: 1px solid #ddd; padding: 8px;">${
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${
               item.quantity
             }</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">${item.price.toLocaleString(
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.price.toLocaleString(
               "vi-VN"
             )}đ</td>
           </tr>

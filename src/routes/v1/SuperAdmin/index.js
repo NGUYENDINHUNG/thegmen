@@ -1,7 +1,7 @@
 import express from "express";
-import PermistionRouter from "./PermisitonRoutes.js";
-import RoleRouter from "./RoleRoutes.js";
-import userRouter from "./userRoutes.js";
+import PermistionRouter from "#routes/v1/SuperAdmin/PermisitonRoutes.js";
+import RoleRouter from "#routes/v1/SuperAdmin/RoleRoutes.js";
+import userRouter from "#routes/v1/SuperAdmin/userRoutes.js";
 
 const SuperAdminRoutes = express.Router();
 
