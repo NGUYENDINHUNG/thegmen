@@ -62,9 +62,16 @@ export const updateAddressService = async (userId, addressId, addressData) => {
         EM: "Bạn không có quyền sửa địa chỉ này",
       };
     }
-
+    if (addressData.phoneNumber) {
+      if (!/^(0)(3|5|7|8|9)[0-9]{8}$/.test(addressData.phoneNumber)) {
+        return {
+          EC: 403,
+          EM: "Số điện thoại không hợp lệ",
+        };
+      }
+    }
     const addressCount = await Address.countDocuments({ userId });
-
+    
     const isDefaultValue =
       addressData?.isDefault === true || addressData?.isDefault === "true";
 

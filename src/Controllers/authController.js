@@ -151,6 +151,7 @@ export const getAccount = async (req, res) => {
     const user = await User.findById(userId).select(
       "name email phoneNumber address avatar"
     );
+    
     if (!user) {
       return res.status(404).json({
         message: "Không tìm thấy người dùng",

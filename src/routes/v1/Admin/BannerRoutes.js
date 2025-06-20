@@ -3,18 +3,18 @@ import {
   CreateBanner,
   DeleteBanner,
   UpdateBanner,
-} from "../../../controllers/sliderController.js";
+} from "../../../controllers/bannerController.js";
 //import checkPermission from "../../../middleware/checkPermission.js";
 
-const SlidersRouter = express.Router();
+const BannerRouter = express.Router();
 
-SlidersRouter.post(
-  "/createSliders",
+BannerRouter.post(
+  "/createBanners",
   //checkPermission("Create_Slider"),
   CreateBanner
 );
 
-SlidersRouter.put("/:id", UpdateBanner);
+BannerRouter.put("/:id", UpdateBanner);
 
-SlidersRouter.delete("/:id", DeleteBanner);
-export default SlidersRouter;
+BannerRouter.delete("/:id", DeleteBanner);
+export default BannerRouter;

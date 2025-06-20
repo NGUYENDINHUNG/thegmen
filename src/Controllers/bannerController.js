@@ -4,10 +4,21 @@ import {
   GetAllBannerService,
   UpdateBannerService,
 } from "../services/bannerService.js";
+import { uploadSingleFile } from "../services/fileService.js";
 
 export const CreateBanner = async (req, res) => {
   try {
-    const { imageUrl, linkUrl, position, title, description } = req.body;
+    const { linkUrl, position, title, description } = req.body;
+    let imageUrl = "";
+    if (req.files?.images) {
+      try {
+        const result = await uploadSingleFile(req.files.images);
+        imageUrl = result.path;
+      } catch (error) {
+        console.log("Error uploading images:", error);
+      }
+    }
+
     const result = await CreateBannerService(
       imageUrl,
       linkUrl,
@@ -73,7 +84,7 @@ export const GetAllBanner = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
-        message: "Lỗi lấy banner",
+      message: "Lỗi lấy banner",
       error: error.message,
     });
   }

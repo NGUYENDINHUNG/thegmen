@@ -10,6 +10,20 @@ export const calculateCartTotals = (cart) => {
   let selectedItems = [];
   let allItemsTotal = 0; // Thêm biến tính tổng tất cả sản phẩm
 
+  // ✅ Kiểm tra cart và cart.items trước khi sử dụng
+  if (!cart || !cart.items || !Array.isArray(cart.items)) {
+    return {
+      totalPrice: 0,
+      totalQuantity: 0,
+      selectedItemsCount: 0,
+      selectedItems: [],
+      allItemsTotal: 0,
+      discountAmount: 0,
+      finalAmount: 0,
+      voucherInfo: null,
+    };
+  }
+
   // Tính tổng giá và số lượng cho tất cả sản phẩm
   cart.items.forEach((item) => {
     const price =
@@ -41,13 +55,13 @@ export const calculateCartTotals = (cart) => {
   }
 
   return {
-    totalPrice, // Tổng giá các sản phẩm được chọn
-    totalQuantity, // Tổng số lượng các sản phẩm được chọn
-    selectedItemsCount, // Số lượng sản phẩm được chọn
-    selectedItems, // Danh sách sản phẩm được chọn
-    allItemsTotal, // Tổng giá tất cả sản phẩm
-    discountAmount, // Số tiền được giảm
-    finalAmount, // Tổng tiền sau khi giảm
+    totalPrice,
+    totalQuantity,
+    selectedItemsCount,
+    selectedItems,
+    allItemsTotal,
+    discountAmount,
+    finalAmount,
     voucherInfo: cart.appliedVoucher?.voucherId
       ? {
           voucherId: cart.appliedVoucher.voucherId._id,
@@ -389,7 +403,6 @@ export const updateItemSelectionService = async (userId, itemId, selected) => {
     );
   }
 };
-
 export const updateCartItemService = async (
   userId,
   productId,

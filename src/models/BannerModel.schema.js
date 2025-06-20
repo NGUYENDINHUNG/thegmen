@@ -10,13 +10,12 @@ const bannerSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    image: {
+    images: {
       type: String,
       required: true,
     },
     link: {
       type: String,
-      required: true,
     },
     position: {
       type: Number,

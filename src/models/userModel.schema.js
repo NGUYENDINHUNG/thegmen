@@ -5,19 +5,21 @@ const { Schema } = mongoose;
 const UserSchema = new Schema(
   {
     email: {
-      type: String
+      type: String,
     },
     name: String,
     password: String,
-    phoneNumber: { 
-      type: String, // Đổi type thành String vì số điện thoại nên lưu dạng string
+    phoneNumber: {
+      type: String,
       validate: {
-        validator: function(v) {
-        
+        validator: function (v) {
+          // Cho phép phoneNumber rỗng, null, undefined
+          if (!v || v === "" || v === null || v === undefined) return true;
           return /^(0)(3|5|7|8|9)[0-9]{8}$/.test(v);
         },
-        message: props => `${props.value} không phải là số điện thoại hợp lệ! Số điện thoại phải có 10 số và bắt đầu bằng 03, 05, 07, 08, 09`
-      }
+        message: (props) =>
+          `${props.value} không phải là số điện thoại hợp lệ! `,
+      },
     },
     role: {
       type: mongoose.Schema.Types.ObjectId,

@@ -116,13 +116,24 @@ export const buyNow = async (req, res) => {
     const userId = req.user._id;
     const { productId, variantId, quantity } = req.body;
 
-    const cart = await buyNowService(userId, productId, variantId, quantity);
-    if (cart.EC !== 0) {
+    const result = await buyNowService(userId, productId, variantId, quantity);
+    
+    if (result.EC !== 0) {
       return res.status(403).json({
-        statusCode: cart.EC,
-        message: cart.EM,
+        statusCode: result.EC,
+        message: result.EM,
       });
     }
+
+    // ✅ Kiểm tra result.DT và result.DT.items trước khi sử dụng
+    const cart = result.DT;
+    if (!cart || !cart.items) {
+      return res.status(500).json({
+        statusCode: 500,
+        message: "Dữ liệu giỏ hàng không hợp lệ",
+      });
+    }
+
     return res.status(200).json({
       statusCode: 200,
       cart,

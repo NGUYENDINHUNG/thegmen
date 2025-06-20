@@ -197,7 +197,7 @@ export const validateAndApplyVoucherForCartService = async (
     const finalAmount = orderValue - discountAmount;
 
     // Lưu user sau khi cập nhật usedVouchers
-    await user.save();
+   await user.save();
 
     return {
       voucher,

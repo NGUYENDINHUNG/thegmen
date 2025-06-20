@@ -1,7 +1,7 @@
 import Banner from "../models/BannerModel.schema.js";
 
 export const CreateBannerService = async (
-  imageUrl,
+  images,
   linkUrl,
   position,
   title,
@@ -9,7 +9,7 @@ export const CreateBannerService = async (
 ) => {
   try {
     let result = await Banner.create({
-      imageUrl: imageUrl,
+      images: images,
       linkUrl: linkUrl,
       position: position,
       title: title,

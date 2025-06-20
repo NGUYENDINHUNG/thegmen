@@ -10,6 +10,7 @@ import VoucherRouter from "./VoucherRoutes.js";
 import FileRouter from "./fileRoutes.js";
 
 import AuthRouter from "../Public/Auth.js";
+import BannerRouter from "./BannerRoutes.js";
 
 const AdminRouter = express.Router();
 
@@ -24,5 +25,6 @@ AdminRouter.use("/variants", VariantRouter);
 AdminRouter.use("/vouchers", VoucherRouter);
 AdminRouter.use("/orders", OrderRouter);
 AdminRouter.use("/files", FileRouter);
+AdminRouter.use("/banners", BannerRouter);
 
 export default AdminRouter;

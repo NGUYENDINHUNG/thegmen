@@ -9,7 +9,16 @@ const AddressSchema = new Schema(
       ref: "user",
     },
     fullname: String,
-    phoneNumber: String,
+    phoneNumber: {
+      type: String,
+      validate: {
+        validator: function (v) {
+          return /^(0)(3|5|7|8|9)[0-9]{8}$/.test(v);
+        },
+        message: (props) =>
+          `${props.value} không phải là số điện thoại hợp lệ!`,
+      },
+    },  
     address: String,
     provinceName: String,
     districtName: String,
