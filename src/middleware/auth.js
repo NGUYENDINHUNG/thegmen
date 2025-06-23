@@ -10,7 +10,7 @@ const verifyToken = async (req, res, next) => {
       message: "Vui lòng đăng nhập để truy cập",
     });
   }
-   
+
   let token = authHeader.split(" ")[1];
   if (token.includes("#")) {
     token = token.split("#")[0];
@@ -41,13 +41,11 @@ const verifyToken = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error("Lỗi verify token:", error.message);
-
     if (error.name === "TokenExpiredError") {
       return res.status(400).json({
         message: "Token đã hết hạn, vui lòng đăng nhập lại",
         errorCode: "TOKEN_EXPIRED",
-      }); 
+      });
     } else if (error.name === "JsonWebTokenError") {
       return res.status(401).json({
         message: "Token không hợp lệ",
