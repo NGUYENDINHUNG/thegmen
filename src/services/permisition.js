@@ -8,13 +8,13 @@ export const createPermissionService = async (permissionData) => {
       method: permissionData.method,
     });
     if (exitPermission) {
-      throw new apiError(400, "Permission already exists");
+      return exitPermission;
     }
     const permission = await Permission.create(permissionData);
 
     return permission;
   } catch (error) {
-  //  throw new apiError(400, error);
+    return error;
   }
 };
 
@@ -26,7 +26,7 @@ export const getPermissionService = async (permissionId) => {
     }
     return permission;
   } catch (error) {
-   // throw new apiError(400, error);
+    return error;
   }
 };
 
@@ -42,7 +42,7 @@ export const updatePermissionService = async (permissionId, permissionData) => {
     );
     return permission;
   } catch (error) {
-   // throw new apiError(400, error);
+    return error;
   }
 };
 
@@ -55,7 +55,7 @@ export const deletePermissionService = async (permissionId) => {
 
     return permission;
   } catch (error) {
-  //  throw new apiError(400, error);
+    return error;
   }
 };
 export const GetAllPermissionsService = async (pageSize, currentPage, qs) => {
