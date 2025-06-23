@@ -13,16 +13,6 @@
     "check-syntax": "node -c server.js",
     "test": "echo 'No tests specified' && exit 0"
   },
-  "_moduleAliases": {
-    "#controllers": "./src/controllers",
-    "#models": "./src/models",
-    "#services": "./src/services",
-    "#middleware": "./src/middleware",
-    "#routes": "./src/routes",
-    "#config": "./src/config",
-    "#constants": "./src/constants",
-    "#util": "./src/util"
-  },
   "author": "",
   "license": "ISC",
   "dependencies": {
