@@ -3,7 +3,7 @@ import {
   getRoleService,
   updateRoleService,
   deleteRoleService,
-} from "#services/roleService.js";
+} from "../services/roleService.js";
 
 export const createRole = async (req, res) => {
   try {

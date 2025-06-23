@@ -1,7 +1,7 @@
-import Cart from "#models/cartModel.schema.js";
-import Variants from "#models/variantsModel.schema.js";
-import Product from "#models/productModel.schema.js";
-import { validateAndApplyVoucherForCartService } from "#services/vouchersSevice.js";
+import Cart from "../models/cartModel.schema.js";
+import Variants from "../models/variantsModel.schema.js";
+import Product from "../models/productModel.schema.js";
+import { validateAndApplyVoucherForCartService } from "../services/vouchersSevice.js";
 
 export const calculateCartTotals = (cart) => {
   let totalPrice = 0;

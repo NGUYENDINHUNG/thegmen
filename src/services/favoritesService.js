@@ -1,7 +1,7 @@
 // favoritesService.js
 import mongoose from "mongoose";
-import Favorites from "#models/favoritesModel.schema.js";
-import Product from "#models/productModel.schema.js";
+import Favorites from "../models/favoritesModel.schema.js";
+import Product from "../models/productModel.schema.js";
 
 export const getFavoritesService = async (userId) => {
   const favorites = await Favorites.find({ userId }).populate({

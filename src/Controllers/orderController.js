@@ -1,4 +1,4 @@
-import Order from "#models/orderModel.Schema.js";
+import Order from "../models/orderModel.Schema.js";
 import {
   buyNowService,
   createOrderService,
@@ -6,7 +6,7 @@ import {
   getOrdersByUserService,
   removeOrderService,
   UpdateOrderService,
-} from "#services/ordersService.js";
+} from "../services/ordersService.js";
 
 export const createOrder = async (req, res) => {
   try {

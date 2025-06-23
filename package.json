@@ -4,20 +4,21 @@
   "description": "",
   "main": "server.js",
   "type": "module",
-  "imports": {
-    "#controllers/*": "./src/controllers/*",
-    "#models/*": "./src/models/*",
-    "#services/*": "./src/services/*",
-    "#middleware/*": "./src/middleware/*",
-    "#routes/*": "./src/routes/*",
-    "#config/*": "./src/config/*",
-    "#constants/*": "./src/constants/*",
-    "#util/*": "./src/util/*"
-  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "start:debug": "node --inspect-brk=9229 server.js"
+    "start:debug": "node --inspect-brk=9229 server.js",
+    "build": "tsc"
+  },
+  "_moduleAliases": {
+    "#controllers": "./src/controllers",
+    "#models": "./src/models",
+    "#services": "./src/services",
+    "#middleware": "./src/middleware",
+    "#routes": "./src/routes",
+    "#config": "./src/config",
+    "#constants": "./src/constants",
+    "#util": "./src/util"
   },
   "author": "",
   "license": "ISC",
@@ -39,6 +40,7 @@
     "hbs": "^4.2.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "module-alias": "^2.2.3",
     "mongodb": "^6.16.0",
     "mongoose": "^8.13.2",
     "mongoose-delete": "^1.0.2",

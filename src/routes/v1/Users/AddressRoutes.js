@@ -4,8 +4,8 @@ import {
   updateAddress,
   getAllAddress,
   deleteAddress,
-} from "#controllers/addressController.js";
-import { verifyToken } from "#middleware/auth.js";
+} from "../../../controllers/addressController.js";
+import { verifyToken } from "../../../middleware/auth.js";
 const Addressrouter = express.Router();
 
 Addressrouter.use(verifyToken);

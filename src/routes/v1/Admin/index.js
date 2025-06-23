@@ -1,14 +1,14 @@
 import express from "express";
-import { verifyToken } from "#middleware/auth.js";
-import CategoryRouter from "#routes/v1/Admin/CategoryRoutes.js";
-import CollectionRouter from "#routes/v1/Admin/ConllectionRoutes.js";
-import OrderRouter from "#routes/v1/Admin/orderRoutes.js";
-import ProductRouter from "#routes/v1/Admin/ProductRoutes.js";
-import SlidersRouter from "#routes/v1/Admin/SliderRoutes.js";
-import VariantRouter from "#routes/v1/Admin/VariantRoutes.js";
-import VoucherRouter from "#routes/v1/Admin/VoucherRoutes.js";
-import FileRouter from "#routes/v1/Admin/fileRoutes.js";
-import BannerRouter from "#routes/v1/Admin/BannerRoutes.js";
+import { verifyToken } from "../../../middleware/auth.js";
+import CategoryRouter from "./CategoryRoutes.js";
+import CollectionRouter from "./ConllectionRoutes.js";
+import OrderRouter from "./orderRoutes.js";
+import ProductRouter from "./ProductRoutes.js";
+import SlidersRouter from "./SliderRoutes.js";
+import VariantRouter from "./VariantRoutes.js";
+import VoucherRouter from "./VoucherRoutes.js";
+import FileRouter from "./fileRoutes.js";
+import BannerRouter from "./BannerRoutes.js";
 
 const AdminRouter = express.Router();
 

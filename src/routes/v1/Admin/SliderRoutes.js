@@ -3,8 +3,8 @@ import {
   CreateSliders,
   DeleteSlider,
   UpdateSliders,
-} from "#controllers/sliderController.js";
-import checkPermission from "#middleware/checkPermission.js";
+} from "../../../controllers/sliderController.js";
+import checkPermission from "../../../middleware/checkPermission.js";
 
 const SlidersRouter = express.Router();
 

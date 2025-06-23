@@ -1,5 +1,5 @@
 import express from "express";
-import { GetAllSliders } from "#controllers/sliderController.js";
+import { GetAllSliders } from "../../../controllers/sliderController.js";
 
 const SlidersRouter = express.Router();
 

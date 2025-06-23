@@ -8,8 +8,8 @@ import {
   updateAccount,
   updateAvatar,
   updatePassword,
-} from "#controllers/authController.js";
-import { verifyToken } from "#middleware/auth.js";
+} from "../../../controllers/authController.js";
+import { verifyToken } from "../../../middleware/auth.js";
 const AuthRouter = express.Router();
 
 AuthRouter.post("/refresh-token", RefreshTokenUser);

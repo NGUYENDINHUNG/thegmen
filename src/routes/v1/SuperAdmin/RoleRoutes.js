@@ -4,7 +4,7 @@ import {
   deleteRole,
   getRole,
   updateRole,
-} from "#controllers/roleController.js";
+} from "../../../controllers/roleController.js";
 const RoleRouter = express.Router();
 
 RoleRouter.post("/create", createRole);

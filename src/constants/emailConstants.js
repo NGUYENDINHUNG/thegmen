@@ -1,8 +1,8 @@
-import sendEmail from "#util/email.util.js";
+import sendEmail from "../util/email.util.js";
 import {
   orderConfirmationEmail,
   orderCancellationEmail,
-} from "#constants/emailTemplates.js";
+} from "../constants/emailTemplates.js";
 
 export const sendOrderConfirmationEmail = async (order) => {
   try {

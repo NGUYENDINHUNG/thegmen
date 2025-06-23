@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import {
   uploadMultipleFiles,
   uploadSingleFile,
-} from "#services/fileService.js";
+} from "../services/fileService.js";
 import {
   CreateProductService,
   UpdateProductsService,
@@ -13,7 +13,7 @@ import {
   FilterProductsService,
   GetRelatedProductsService,
   getTrendingProductsService,
-} from "#services/productsService.js";
+} from "../services/productsService.js";
 
 export const CreateProduct = async (req, res) => {
   try {

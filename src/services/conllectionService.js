@@ -1,6 +1,6 @@
 import slugify from "slugify";
-import Collection from "#models/collectionModel.schema.js";
-import Product from "#models/productModel.schema.js";
+import Collection from "../models/collectionModel.schema.js";
+import Product from "../models/productModel.schema.js";
 
 export const CreateCollectionService = async (
   name,

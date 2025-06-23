@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { updateOrder } from "#controllers/orderController.js";
-import checkPermission from "#middleware/checkPermission.js";
+import { updateOrder } from "../../../controllers/orderController.js";
+import checkPermission from "../../../middleware/checkPermission.js";
 const OrderRouter = Router();
 
 OrderRouter.put(

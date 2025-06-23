@@ -5,7 +5,7 @@ import {
   getAllPermissions,
   getPermission,
   updatePermission,
-} from "#controllers/permisitionController.js";
+} from "../../../controllers/permisitionController.js";
 
 const PermistionRouter = express.Router();
 

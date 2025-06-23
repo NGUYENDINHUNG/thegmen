@@ -1,8 +1,8 @@
 import express from "express";
 import "dotenv/config";
-import connection from "#config/database.js";
-import configExpress from "#config/express.js";
-import Apirouter from "#routes/index.js";
+import connection from "./src/config/database.js";
+import configExpress from "./src/config/express.js";
+import Apirouter from "./src/routes/index.js";
 
 const app = express();
 const port = process.env.PORT || 4000;

@@ -6,9 +6,9 @@ import {
   RestoreCollection,
   AddProductToCollection,
   RemoveProductFromCollection,
-} from "#controllers/conllectionController.js";
+} from "../../../controllers/conllectionController.js";
 
-import checkPermission from "#middleware/checkPermission.js";
+import checkPermission from "../../../middleware/checkPermission.js";
 
 const CollectionRouter = express.Router();
 

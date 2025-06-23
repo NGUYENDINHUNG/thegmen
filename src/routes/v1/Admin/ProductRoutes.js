@@ -4,8 +4,8 @@ import {
   UpdateProduct,
   SoftDeleteProduct,
   RestoreProduct,
-} from "#controllers/productController.js";
-import checkPermission from "#middleware/checkPermission.js";
+} from "../../../controllers/productController.js";
+import checkPermission from "../../../middleware/checkPermission.js";
 
 const ProductRouter = express.Router();
 

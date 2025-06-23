@@ -4,8 +4,8 @@ import {
   updateVariant,
   softDeleteVariant,
   restoreVariant,
-} from "#controllers/variantController.js";
-import checkPermission from "#middleware/checkPermission.js";
+} from "../../../controllers/variantController.js";
+import checkPermission from "../../../middleware/checkPermission.js";
 
 const VariantRouter = express.Router();
 

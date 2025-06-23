@@ -11,9 +11,9 @@ import {
   updateAccountService,
   updateAvatarService,
   updatePasswordService,
-} from "#services/authService.js";
-import { uploadSingleFile } from "#services/fileService.js";
-import User from "#models/userModel.schema.js";
+} from "../services/authService.js";
+import { uploadSingleFile } from "../services/fileService.js";
+import User from "../models/userModel.schema.js";
 
 export const Register = async (req, res) => {
   try {

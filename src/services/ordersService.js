@@ -1,13 +1,13 @@
-import Order from "#models/orderModel.Schema.js";
-import Cart from "#models/cartModel.schema.js";
-import Address from "#models/addressModel.schema.js";
-import User from "#models/userModel.schema.js";
-import Variants from "#models/variantsModel.schema.js";
-import { addToCartService, calculateCartTotals } from "#services/cartService.js";
+import Order from "../models/orderModel.Schema.js";
+import Cart from "../models/cartModel.schema.js";
+import Address from "../models/addressModel.schema.js";
+import User from "../models/userModel.schema.js";
+import Variants from "../models/variantsModel.schema.js";
+import { addToCartService, calculateCartTotals } from "../services/cartService.js";
 import {
   sendOrderCancellationEmail,
   sendOrderConfirmationEmail,
-} from "#constants/emailConstants.js";
+} from "../constants/emailConstants.js";
 
 const generateOrderCode = () => {
   const random = Math.random().toString(36).substring(2, 7).toUpperCase();

@@ -1,10 +1,10 @@
-import Product from "#models/productModel.schema.js";
+import Product from "../models/productModel.schema.js";
 import aqp from "api-query-params";
-import Variants from "#models/variantsModel.schema.js";
+import Variants from "../models/variantsModel.schema.js";
 import mongoose from "mongoose";
-import Favorites from "#models/favoritesModel.schema.js";
-import Category from "#models/categoriesModel.schema.js";
-import Order from "#models/orderModel.Schema.js";
+import Favorites from "../models/favoritesModel.schema.js";
+import Category from "../models/categoriesModel.schema.js";
+import Order from "../models/orderModel.Schema.js";
 
 export const CreateProductService = async (productData) => {
   try {

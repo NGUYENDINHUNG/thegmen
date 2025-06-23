@@ -1,7 +1,7 @@
 import {
   uploadSingleFile,
   uploadMultipleFiles,
-} from "#services/fileService.js";
+} from "../services/fileService.js";
 import {
   createVariantService,
   updateVariantService,
@@ -10,7 +10,7 @@ import {
   getAllVariantsService,
   softDeleteVariantService,
   restoreVariantService,
-} from "#services/variantsService.js";
+} from "../services/variantsService.js";
 
 export const createVariant = async (req, res) => {
   try {

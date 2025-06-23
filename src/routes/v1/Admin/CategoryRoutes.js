@@ -2,8 +2,8 @@ import express from "express";
 import {
   CreateCategory,
   UpdateCategory,
-} from "#controllers/categoryController.js";
-import checkPermission from "#middleware/checkPermission.js";
+} from "../../../controllers/categoryController.js";
+import checkPermission from "../../../middleware/checkPermission.js";
 const CategoryRouter = express.Router();
 
 CategoryRouter.post(

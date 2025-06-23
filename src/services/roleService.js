@@ -1,5 +1,5 @@
-import apiError from "#constants/apiError.js";
-import Role from "#models/roleModel.schema.js";
+import apiError from "../constants/apiError.js";
+import Role from "../models/roleModel.schema.js";
 
 export const createRoleService = async (roleData) => {
   try {

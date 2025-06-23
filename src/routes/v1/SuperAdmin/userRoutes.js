@@ -4,9 +4,9 @@ import {
   getAllUsers, 
   getUserById, 
   deleteUser 
-} from "#controllers/userController.js";
-import { verifyToken } from "#middleware/auth.js";
-import checkPermission from "#middleware/checkPermission.js";
+} from "../../../controllers/userController.js";
+import { verifyToken } from "../../../middleware/auth.js";
+import checkPermission from "../../../middleware/checkPermission.js";
 
 const userRouter = express.Router();
 

@@ -4,8 +4,8 @@ import {
   addFavorite,
   removeFavorite,
   getFavorites,
-} from "#controllers/favoritesController.js";
-import { verifyToken } from "#middleware/auth.js";
+} from "../../../controllers/favoritesController.js";
+import { verifyToken } from "../../../middleware/auth.js";
 
 const router = express.Router();
 

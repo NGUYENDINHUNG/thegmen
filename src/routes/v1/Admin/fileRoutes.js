@@ -2,7 +2,7 @@ import express from "express";
 import {
   postUploadSingleFileApi,
   postUploadMultipleFilesAPI,
-} from "#controllers/fileController.js";
+} from "../../../controllers/fileController.js";
 const FileRouter = express.Router();
 
 FileRouter.post("/upload-single", postUploadSingleFileApi);

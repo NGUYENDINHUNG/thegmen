@@ -5,8 +5,8 @@ import {
   removeItemFromCart,
   updateCartItem,
   updateItemSelection,
-} from "#controllers/cartController.js";
-import { verifyToken } from "#middleware/auth.js";
+} from "../../../controllers/cartController.js";
+import { verifyToken } from "../../../middleware/auth.js";
 const Cartrouter = Router();
 
 Cartrouter.use(verifyToken);

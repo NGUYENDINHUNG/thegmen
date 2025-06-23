@@ -4,7 +4,7 @@ import {
   removeItemFromCartService,
   updateCartItemService,
   updateItemSelectionService,
-} from "#services/cartService.js";
+} from "../services/cartService.js";
 
 export const calculateCartTotals = (cart) => {
   let totalPrice = 0;

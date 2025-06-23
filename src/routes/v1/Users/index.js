@@ -1,10 +1,10 @@
 import express from "express";
-import Addressrouter from "#routes/v1/Users/AddressRoutes.js";
-import AuthRouter from "#routes/v1/Users/AuthRoutes.js";
-import Cartrouter from "#routes/v1/Users/CartRoutes.js";
-import OrderRouter from "#routes/v1/Users/orderRoutes.js";
-import VoucherRouter from "#routes/v1/Users/VoucherRoutes.js";
-import FavoritesRouter from "#routes/v1/Users/favoritesRoutes.js";
+import Addressrouter from "./AddressRoutes.js";
+import AuthRouter from "./AuthRoutes.js";
+import Cartrouter from "./CartRoutes.js";
+import OrderRouter from "./orderRoutes.js";
+import VoucherRouter from "./VoucherRoutes.js";
+import FavoritesRouter from "./favoritesRoutes.js";
 
 const UserRouter = express.Router();
 
