@@ -8,15 +8,12 @@ const configExpress = (app) => {
   app.use(cookieParser());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  // Auto config CORS based on NODE_ENV
+
   let corsOrigin;
 
   switch (process.env.NODE_ENV) {
     case "production":
-      corsOrigin = [
-        process.env.CORS_ORIGIN,
-        process.env.SERVER_URL || "https://api.htn.io.vn",
-      ];
+      corsOrigin = [process.env.CORS_ORIGIN, "http://localhost:5173"];
       break;
     case "development":
     default:
