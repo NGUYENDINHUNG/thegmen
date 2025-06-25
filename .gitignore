@@ -1,7 +1,7 @@
 .qodo
 # Ignore environment variables
 .env
-
+.env.production
 # Ignore node_modules
 node_modules/
 

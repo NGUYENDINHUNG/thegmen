@@ -2,7 +2,6 @@ import express from "express";
 import {
   LoginUsers,
   Register,
-  loginFaceBookSuccess,
   loginGoogleSuccess,
   requestPasswordReset,
   resetPassword,
@@ -24,19 +23,6 @@ AuthRouter.get(
     failureRedirect: "/login",
   }),
   loginGoogleSuccess
-);
-AuthRouter.get(
-  "/facebook",
-  passport.authenticate("facebook", { scope: ["public_profile"] })
-);
-
-AuthRouter.get(
-  "/facebook/callback",
-  passport.authenticate("facebook", {
-    session: false,
-    failureRedirect: "/login",
-  }),
-  loginFaceBookSuccess
 );
 AuthRouter.post("/request-reset-password", requestPasswordReset);
 AuthRouter.post("/reset-password", resetPassword);

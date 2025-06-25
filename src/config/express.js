@@ -8,10 +8,39 @@ const configExpress = (app) => {
   app.use(cookieParser());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use(cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true
-  }));
+  // Auto config CORS based on NODE_ENV
+  let corsOrigin;
+
+  switch (process.env.NODE_ENV) {
+    case "production":
+      corsOrigin = [
+        process.env.CORS_ORIGIN,
+        process.env.SERVER_URL || "https://api.htn.io.vn",
+      ];
+      break;
+    case "development":
+    default:
+      corsOrigin = [
+        "http://localhost:3000",
+        "http://localhost:4000",
+        "http://localhost:5173",
+      ];
+  }
+
+  const corsOptions = {
+    origin: corsOrigin,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+    ],
+    optionsSuccessStatus: 200,
+  };
+
+  app.use(cors(corsOptions));
 
   return app;
 };
