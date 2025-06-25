@@ -33,9 +33,19 @@ const startServer = async () => {
   try {
     await connection();
     app.listen(port, () => {
-      console.log(`Server running on http://localhost:${port}`);
-      console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-      console.log(`Health check: http://localhost:${port}/health`);
+      const environment = process.env.NODE_ENV || "development";
+      
+      if (environment === 'production') {
+        console.log(`Server running in PRODUCTION mode`);
+        console.log(`Frontend: ${process.env.CORS_ORIGIN || 'https://htn.io.vn'}`);
+        console.log(`API: ${process.env.SERVER_URL || 'https://api.htn.io.vn'}`);
+        console.log(`Health check: ${process.env.SERVER_URL || 'https://api.htn.io.vn'}/health`);
+      } else {
+        console.log(`Server running on http://localhost:${port}`);
+        console.log(`Health check: http://localhost:${port}/health`);
+      }
+      
+      console.log(`Environment: ${environment}`);
     });
   } catch (error) {
     console.log("Error connecting to DB:", error);
