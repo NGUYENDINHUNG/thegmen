@@ -5,7 +5,7 @@ import { Strategy as FacebookStrategy } from "passport-facebook";
 const getCallbackURL = (provider) => {
   const baseURL =
     process.env.NODE_ENV === "production"
-      ? process.env.SERVER_URL || "https://api.htn.io.vn"
+      ? process.env.SERVER_URL || "https://htn.io.vn" 
       : "http://localhost:8000";
 
   return `${baseURL}/v1/api/auth/${provider}/callback`;
