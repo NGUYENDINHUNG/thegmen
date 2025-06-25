@@ -1,12 +1,21 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as FacebookStrategy } from "passport-facebook";
+
+const getCallbackURL = (provider) => {
+  const baseURL =
+    process.env.NODE_ENV === "production"
+      ? process.env.SERVER_URL || "https://api.htn.io.vn"
+      : "http://localhost:8000";
+
+  return `${baseURL}/v1/api/auth/${provider}/callback`;
+};
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://htn.io.vn/v1/api/auth/google/callback",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || getCallbackURL("google"),
       scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -21,7 +30,7 @@ passport.use(
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
       callbackURL: "http://localhost:8000/v1/api/auth/facebook/callback",
-      profileFields: ["displayName", "photos", "name"], 
+      profileFields: ["displayName", "photos", "name"],
     },
     async (accessToken, refreshToken, profile, cb) => {
       try {
