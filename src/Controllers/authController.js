@@ -92,7 +92,8 @@ export const loginGoogleSuccess = async (req, res) => {
         maxAge: ms(process.env.JWT_REFRESH_EXPIRE),
       });
 
-      const redirectUrl = `${process.env.CORS_ORIGIN}?accessToken=${data.accessToken}`;
+      const redirectUrl = `${process.env.CORS_ORIGIN}/oauth?accessToken=${data.accessToken}`;
+      console.log("««««« redirectUrl »»»»»", redirectUrl);
       return res.redirect(redirectUrl);
     } else {
       return res.redirect(
@@ -151,7 +152,7 @@ export const getAccount = async (req, res) => {
     const user = await User.findById(userId).select(
       "name email phoneNumber address avatar"
     );
-    
+
     if (!user) {
       return res.status(404).json({
         message: "Không tìm thấy người dùng",
@@ -282,11 +283,7 @@ export const updatePassword = async (req, res) => {
   try {
     const userId = req.user._id;
     const { oldPassword, newPassword } = req.body;
-   await updatePasswordService(
-      userId,
-      oldPassword,
-      newPassword
-    );
+    await updatePasswordService(userId, oldPassword, newPassword);
     return res.status(200).json({
       status: 200,
       message: "Cập nhật mật khẩu thành công",
