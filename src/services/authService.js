@@ -310,7 +310,7 @@ export const ForgetPasswordService = async (email) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE_PASSWORD,
     });
-    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    const resetLink = `${process.env.CORS_ORIGIN}/reset-password?token=${token}`;
     const html = `
     <h2>Hello ${Users.name || "User"},</h2>
     <p>nhấn vào link sau để đặt lại mật khẩu:</p>
