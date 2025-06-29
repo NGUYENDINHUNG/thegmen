@@ -289,10 +289,15 @@ export const updatePassword = async (req, res) => {
   try {
     const userId = req.user._id;
     const { oldPassword, newPassword } = req.body;
-    const result = await updatePasswordService(userId, oldPassword, newPassword);
+    const result = await updatePasswordService(
+      userId,
+      oldPassword,
+      newPassword
+    );
+
     if (result.EC !== 0) {
       return res.status(result.EC).json({
-        status: result.EC,
+        statusCode: result.EC,
         message: result.EM,
       });
     }
@@ -301,6 +306,10 @@ export const updatePassword = async (req, res) => {
       message: "Cập nhật mật khẩu thành công",
     });
   } catch (error) {
-    res.status(500).json({ status: 500, message: error.message });
+    return res.status(500).json({
+      status: 500,
+      message: "Cập nhật mật khẩu thất bại",
+      error: error.message,
+    });
   }
 };
