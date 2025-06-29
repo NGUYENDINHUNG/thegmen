@@ -567,7 +567,6 @@ export const getTrendingProductsService = async (type, userId) => {
        // Xử lý isFavorite giống FilterProductsService
        const processedProducts = trendingProducts.map((product) => {
         const isFavorite = favoriteProductIds.includes(product._id.toString());
-      console.log(isFavorite);
         return {
           _id: product._id,
           name: product.name,
