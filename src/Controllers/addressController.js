@@ -92,11 +92,9 @@ export const deleteAddress = async (req, res) => {
         message: deleted.EM,
       });
     }
-
     return res.status(200).json({
-      statusCode: 200,
-      message: "Xóa địa chỉ thành công.",
-      data: deleted,
+      statusCode:deleted.EC,
+      message: deleted.EM,
     });
   } catch (error) {
     console.log(error);

@@ -439,6 +439,7 @@ export const updatePasswordService = async (
       EM: "Mật khẩu cũ và mới không được giống nhau",
     };
   }
+
   const user = await User.findById(userId).select("+password");
   if (!user) {
     return {
@@ -446,24 +447,21 @@ export const updatePasswordService = async (
       EM: "Tài khoản không tồn tại",
     };
   }
-  if (!user.password) {
+  if (user.googleId || user.facebookId) {
     return {
       EC: 422,
       EM: "Tài khoản của bạn đăng nhập bằng bên thứ 3, không thể đổi mật khẩu.",
     };
   }
 
-  const isMatch = await bcrypt.compare(oldPassword, user.password);
+  const isMatch = bcrypt.compareSync(oldPassword, user.password);
   if (!isMatch) {
     return {
       EC: 422,
       EM: "Mật khẩu cũ không đúng",
     };
   }
-
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(newPassword, salt);
-
+  const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
   user.password = hashedPassword;
   await user.save();
 

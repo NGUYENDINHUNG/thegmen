@@ -161,9 +161,8 @@ export const deleteAddressService = async (userId, addressId) => {
     await User.updateOne({ _id: userId }, { $pull: { addresses: addressId } });
 
     return {
-      EC: 0,
+      EC: 200,
       EM: "Xóa địa chỉ thành công",
-      data: deletedAddress,
     };
   } catch (error) {
     console.error("Error in deleteAddressService:", error);
