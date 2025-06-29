@@ -38,7 +38,7 @@ export const CreateProductService = async (productData) => {
 
     if (!name || !price) {
       return {
-        EC: 400,
+        EC: 422,
         EM: "Tên và giá sản phẩm là bắt buộc",
       };
     }
@@ -336,7 +336,7 @@ export const FilterProductsService = async (queryParams, userId) => {
       // Thêm điều kiện kiểm tra type !== "ALL"
       const validTypes = ["MEN", "WOMEN", "KIDS", "UNISEX"];
       if (!validTypes.includes(type)) {
-        return { EC: 400, EM: "Type không hợp lệ", data: null };
+        return { EC: 422, EM: "Type không hợp lệ", data: null };
       }
       filter.type = type;
     }
@@ -512,7 +512,7 @@ export const GetRelatedProductsService = async (slug) => {
     };
   }
 };
-export const getTrendingProductsService = async (type) => {
+export const getTrendingProductsService = async (type, userId) => {
   try {
     let query = {
       isDeleted: false,
@@ -543,6 +543,17 @@ export const getTrendingProductsService = async (type) => {
       .populate("categories", "name")
       .lean();
 
+
+       // Lấy danh sách sản phẩm yêu thích của user (giống FilterProductsService)
+    let favoriteProductIds = [];
+    if (userId) {
+      const favorites = await Favorites.find({ userId })
+        .select("productId")
+        .lean();
+      favoriteProductIds = favorites.map((f) => f.productId.toString());
+    }
+
+
     // Thêm số lượng bán, lọc sản phẩm đã bán và sắp xếp
     const trendingProducts = products
       .map((product) => ({
@@ -553,28 +564,38 @@ export const getTrendingProductsService = async (type) => {
       .sort((a, b) => b.totalSold - a.totalSold)
       .slice(0, 8); // Lấy top 8
 
+       // Xử lý isFavorite giống FilterProductsService
+       const processedProducts = trendingProducts.map((product) => {
+        const isFavorite = favoriteProductIds.includes(product._id.toString());
+      console.log(isFavorite);
+        return {
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          finalPrice: product.finalPrice,
+          discount: product.discount,
+          avatar: product.avatar,
+          type: product.type,
+          slug: product.slug,
+          categories: product.categories,
+          totalSold: product.totalSold,
+          isFavorite: isFavorite,
+        };
+      });
+  
+
     // Kiểm tra nếu không có sản phẩm nào được bán
-    if (trendingProducts.length === 0) {
+    if (processedProducts.length === 0) {
       return {
         statusCode: 404,
         message: "Không có sản phẩm bán chạy nào",
         data: [],
       };
     }
-
     return {
-      data: trendingProducts.map((product) => ({
-        _id: product._id,
-        name: product.name,
-        price: product.price,
-        finalPrice: product.finalPrice,
-        discount: product.discount,
-        avatar: product.avatar,
-        type: product.type,
-        slug: product.slug,
-        categories: product.categories,
-        totalSold: product.totalSold,
-      })),
+      EC: 0,
+      EM: "Lấy sản phẩm bán chạy thành công",
+      data: processedProducts,
     };
   } catch (error) {
     console.log("Error in getTrendingProductsService:", error);

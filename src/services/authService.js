@@ -1,7 +1,10 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import User from "../models/userModel.schema.js";
-import { UpdateUserRefreshToken, FindUserByToken } from "../services/userService.js";
+import {
+  UpdateUserRefreshToken,
+  FindUserByToken,
+} from "../services/userService.js";
 import sendEmail from "../util/email.util.js";
 import ms from "ms";
 import Role from "../models/roleModel.schema.js";
@@ -36,7 +39,18 @@ export const RegisterSevice = async (
       roleId = userRole._id;
     }
     const hashPassword = await bcrypt.hash(password, saltRounds);
-
+    if (!/^[A-Za-zÀ-ỹà-ỹ\s]+$/.test(name)) {
+      return {
+        EC: 422,
+        EM: "Tên người nhận không chứa ký tự đặc biệt",
+      };
+    }
+    if (!/^(0)(3|5|7|8|9)[0-9]{8}$/.test(phoneNumber)) {
+      return {
+        EC: 422,
+        EM: "Số điện thoại không hợp lệ",
+      };
+    }
     let result = await User.create({
       email: email,
       name: name,
@@ -407,22 +421,45 @@ export const updatePasswordService = async (
   oldPassword,
   newPassword
 ) => {
-  if (!userId) throw new Error("Không tìm thấy user");
-  if (!oldPassword) throw new Error("Thiếu mật khẩu cũ");
-  if (!newPassword) throw new Error("Thiếu mật khẩu mới");
-  if (oldPassword === newPassword)
-    throw new Error("Mật khẩu cũ và mới không được giống nhau");
+  if (!userId) {
+    return {
+      EC: 422,
+      EM: "Không tìm thấy user",
+    };
+  }
+  if (!oldPassword) {
+    return {
+      EC: 422,
+      EM: "Thiếu mật khẩu cũ",
+    };
+  }
+  if (oldPassword === newPassword) {
+    return {
+      EC: 422,
+      EM: "Mật khẩu cũ và mới không được giống nhau",
+    };
+  }
   const user = await User.findById(userId).select("+password");
-  if (!user) throw new Error("User không tồn tại");
-
+  if (!user) {
+    return {
+      EC: 422,
+      EM: "Tài khoản không tồn tại",
+    };
+  }
   if (!user.password) {
-    throw new Error(
-      "Tài khoản của bạn đăng nhập bằng bên thứ 3, không thể đổi mật khẩu."
-    );
+    return {
+      EC: 422,
+      EM: "Tài khoản của bạn đăng nhập bằng bên thứ 3, không thể đổi mật khẩu.",
+    };
   }
 
   const isMatch = await bcrypt.compare(oldPassword, user.password);
-  if (!isMatch) throw new Error("Mật khẩu cũ không đúng");
+  if (!isMatch) {
+    return {
+      EC: 422,
+      EM: "Mật khẩu cũ không đúng",
+    };
+  }
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(newPassword, salt);
@@ -430,5 +467,8 @@ export const updatePasswordService = async (
   user.password = hashedPassword;
   await user.save();
 
-  return { message: "Cập nhật mật khẩu thành công" };
+  return {
+    EC: 0,
+    EM: "Cập nhật mật khẩu thành công",
+  };
 };

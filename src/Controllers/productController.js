@@ -99,8 +99,8 @@ export const UpdateProduct = async (req, res) => {
   try {
     const { ProductId } = req.params;
     const updateData = {};
-     
-    if (req.body && typeof req.body === 'object') {
+
+    if (req.body && typeof req.body === "object") {
       Object.keys(req.body).forEach((key) => {
         if (req.body[key] !== undefined && req.body[key] !== "") {
           updateData[key] = req.body[key];
@@ -325,8 +325,14 @@ export const GetRelatedProducts = async (req, res) => {
 
 export const getTrendingProducts = async (req, res) => {
   try {
+    let userId = null;
+    const token = req.headers.authorization?.split(" ")[1];
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded._id;
+    }
     const { type = "ALL" } = req.query;
-    const result = await getTrendingProductsService(type);
+    const result = await getTrendingProductsService(type, userId);
 
     return res.status(200).json({
       statusCode: 200,

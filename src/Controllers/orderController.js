@@ -21,7 +21,7 @@ export const createOrder = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(404).json({
       success: false,
       message: error.message || "Không thể tạo đơn hàng",
     });
@@ -42,8 +42,8 @@ export const removeOrder = async (req, res) => {
 
     // Kiểm tra trạng thái đơn hàng
     if (order.status !== "pending") {
-      return res.status(400).json({
-        success: false,
+      return res.status(422).json({
+        statusCode: 422,
         message: "Chỉ có thể hủy đơn hàng ở trạng thái chờ xử lý",
       });
     }

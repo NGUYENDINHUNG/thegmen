@@ -14,7 +14,7 @@ export const createVoucher = async (req, res) => {
       .status(200)
       .json({ status: 200, message: "Tạo voucher thành công", data: voucher });
   } catch (error) {
-    res.status(400).json({ message: error.message || "Lỗi tạo voucher" });
+    res.status(500).json({ message: error.message || "Lỗi tạo voucher" });
   }
 };
 
@@ -26,7 +26,7 @@ export const getAllVouchers = async (req, res) => {
       .json({ message: "Lấy danh sách voucher thành công", data: vouchers });
   } catch (error) {
     res
-      .status(400)
+      .status(500)
       .json({ message: error.message || "Lỗi lấy danh sách voucher" });
   }
 };
@@ -40,7 +40,7 @@ export const updateVoucher = async (req, res) => {
       .status(200)
       .json({ message: "Cập nhật voucher thành công", data: voucher });
   } catch (error) {
-    res.status(400).json({ message: error.message || "Lỗi cập nhật voucher" });
+    res.status(500).json({ message: error.message || "Lỗi cập nhật voucher" });
   }
 };
 
@@ -88,7 +88,7 @@ export const applyVoucherToCart = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Không thể áp dụng voucher",
     });
@@ -105,7 +105,7 @@ export const removeVoucherFromCart = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Không thể xóa voucher",
     });

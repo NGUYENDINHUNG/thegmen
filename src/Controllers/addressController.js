@@ -10,11 +10,16 @@ export const createAddress = async (req, res) => {
     const userId = req.user._id;
     const addressData = req.body;
     const newAddress = await createAddressService(userId, addressData);
-
+    if (newAddress.EC !== 0) {
+      return res.status(newAddress.EC).json({
+        statusCode: newAddress.EC,
+        message: newAddress.EM,
+      });
+    }
     return res.status(200).json({
       statusCode: 200,
-      message: "Tạo địa chỉ thành công",
-      data: newAddress,
+      message: newAddress.EM,
+      data: newAddress.DT,
     });
   } catch (error) {
     console.log(error);

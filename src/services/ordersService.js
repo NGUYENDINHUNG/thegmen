@@ -106,7 +106,7 @@ export const getOrdersByUserService = async (userId) => {
 
     if (!orders) {
       return {
-        status: 400,
+        status: 404,
         message: "Không có đơn hàng nào",
         data: [],
       };

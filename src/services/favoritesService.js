@@ -31,7 +31,10 @@ export const addFavoriteService = async (userId, productIdentifier) => {
   }
 
   if (!product) {
-    throw new Error("Sản phẩm không tồn tại");
+    return {
+      EC: 422,
+      EM: "Sản phẩm không tồn tại",
+    };
   }
 
   const existingFavorite = await Favorites.findOne({
@@ -40,7 +43,10 @@ export const addFavoriteService = async (userId, productIdentifier) => {
   });
 
   if (existingFavorite) {
-    throw new Error("Sản phẩm đã có trong danh sách yêu thích");
+    return {
+      EC: 422,
+      EM: "Sản phẩm đã có trong danh sách yêu thích",
+    };
   }
 
   const favorite = await Favorites.create({
@@ -60,7 +66,10 @@ export const removeFavoriteService = async (userId, productIdentifier) => {
   }
 
   if (!product) {
-    throw new Error("Sản phẩm không tồn tại");
+    return {
+      EC: 422,
+      EM: "Sản phẩm không tồn tại",
+    };
   }
 
   const favorite = await Favorites.findOne({
@@ -69,7 +78,10 @@ export const removeFavoriteService = async (userId, productIdentifier) => {
   });
 
   if (!favorite) {
-    throw new Error("Sản phẩm không có trong danh sách yêu thích");
+    return {
+      EC: 422,
+      EM: "Sản phẩm không có trong danh sách yêu thích",
+    };
   }
 
   await Favorites.deleteOne({

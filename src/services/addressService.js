@@ -10,18 +10,26 @@ export const createAddressService = async (userId, addressData) => {
         EM: "Không tìm thấy người dùng",
       };
     }
-
     if (!addressData) {
       return {
-        EC: 400,
+        EC: 422,
         EM: "Dữ liệu địa chỉ không hợp lệ",
       };
     }
-
-    // Kiểm tra xem có địa chỉ nào không
+    if (!/^(0)(3|5|7|8|9)[0-9]{8}$/.test(addressData.phoneNumber)) {
+      return {
+        EC: 422,
+        EM: "Số điện thoại không hợp lệ",
+      };
+    }
+    if (!/^[A-Za-zÀ-ỹà-ỹ\s]+$/.test(addressData.fullname)) {
+      return {
+        EC: 422,
+        EM: "Tên người nhận không chứa ký tự đặc biệt",
+      };
+    }
     const addressCount = await Address.countDocuments({ userId });
 
-    // Nếu là địa chỉ đầu tiên, bắt buộc phải là mặc định
     if (addressCount === 0) {
       addressData.isDefault = true;
     }
@@ -42,7 +50,7 @@ export const createAddressService = async (userId, addressData) => {
     return {
       EC: 0,
       EM: "Thêm địa chỉ thành công",
-      data: newAddress,
+      DT: newAddress,
     };
   } catch (error) {
     console.error("Error in createAddressService:", error);
@@ -71,7 +79,7 @@ export const updateAddressService = async (userId, addressId, addressData) => {
       }
     }
     const addressCount = await Address.countDocuments({ userId });
-    
+
     const isDefaultValue =
       addressData?.isDefault === true || addressData?.isDefault === "true";
 

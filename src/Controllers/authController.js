@@ -32,6 +32,12 @@ export const Register = async (req, res) => {
       phoneNumber,
       imageUrl
     );
+    if (data.EC !== 0) {
+      return res.status(data.EC).json({
+        statusCode: data.EC,
+        message: data.EM,
+      });
+    }
     if (data.EC === 0) {
       return res.status(200).json({
         statusCode: 200,
@@ -182,14 +188,14 @@ export const requestPasswordReset = async (req, res) => {
         data: response,
       });
     } else {
-      return res.status(400).json({
-        statusCode: 400,
+      return res.status(404).json({
+        statusCode: 404,
         message: response.EM,
       });
     }
   } catch (error) {
-    return res.status(400).json({
-      statusCode: 400,
+    return res.status(500).json({
+      statusCode: 500,
       message: "Lỗi server",
       error: error.message,
     });
@@ -205,8 +211,8 @@ export const resetPassword = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return res.status(400).json({
-      statusCode: 400,
+    return res.status(500).json({
+      statusCode: 500,
       message: "Lỗi server",
       error: error.message,
     });
