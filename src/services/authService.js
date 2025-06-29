@@ -449,7 +449,7 @@ export const updatePasswordService = async (
   }
   if (user.googleId || user.facebookId) {
     return {
-      EC: 422,
+      EC: 403,
       EM: "Tài khoản của bạn đăng nhập bằng bên thứ 3, không thể đổi mật khẩu.",
     };
   }

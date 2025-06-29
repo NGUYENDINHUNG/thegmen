@@ -301,6 +301,6 @@ export const updatePassword = async (req, res) => {
       message: "Cập nhật mật khẩu thành công",
     });
   } catch (error) {
-    res.status(400).json({ status: 400, message: error.message });
+    res.status(500).json({ status: 500, message: error.message });
   }
 };
