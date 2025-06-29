@@ -90,7 +90,7 @@ export const CreateProduct = async (req, res) => {
     console.error("CreateProduct error:", error);
     return res.status(500).json({
       statusCode: 500,
-      message: error.message || "Tạo sản phẩm thất bại",
+      message: "Tạo sản phẩm thất bại",
     });
   }
 };
@@ -158,7 +158,7 @@ export const UpdateProduct = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
-      message: error.message || "Cập nhật sản phẩm thất bại",
+      message: "Cập nhật sản phẩm thất bại",
     });
   }
 };
@@ -186,7 +186,7 @@ export const GetOnProduct = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
-      message: error.message || "Lấy sản phẩm thất bại",
+      message: "Lấy sản phẩm thất bại",
     });
   }
 };
@@ -216,7 +216,7 @@ export const GetAllProducts = async (req, res) => {
     console.error("GetAllProducts error:", error);
     return res.status(500).json({
       statusCode: 500,
-      message: error.message || "Lấy tất cả sản phẩm thất bại",
+      message: "Lấy tất cả sản phẩm thất bại",
     });
   }
 };
@@ -239,10 +239,9 @@ export const SoftDeleteProduct = async (req, res) => {
       data: deletedProduct,
     });
   } catch (error) {
-    console.error("Controller error:", error.message);
     return res.status(500).json({
       statusCode: 500,
-      message: error.message || "Xóa sản phẩm thất bại",
+      message:  "Xóa sản phẩm thất bại",
     });
   }
 };
@@ -259,7 +258,7 @@ export const RestoreProduct = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
-      message: error.message || "Khôi phục sản phẩm thất bại",
+      message:  "Khôi phục sản phẩm thất bại",
     });
   }
 };
@@ -290,7 +289,7 @@ export const FilterProducts = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
-      message: error.message || "Lọc sản phẩm thất bại",
+      message: "Lọc sản phẩm thất bại",
     });
   }
 };
@@ -317,7 +316,7 @@ export const GetRelatedProducts = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
-      message: error.message || "Lỗi server, vui lòng thử lại sau",
+      message:  "Lỗi server, vui lòng thử lại sau",
       data: null,
     });
   }
@@ -340,9 +339,10 @@ export const getTrendingProducts = async (req, res) => {
       data: result.data,
     });
   } catch (error) {
+    console.log("««««« error »»»»»", error);
     return res.status(500).json({
       statusCode: 500,
-      message: error.message || "Lỗi server",
+      message: "Lỗi server",
       data: null,
     });
   }

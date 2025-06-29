@@ -71,7 +71,7 @@ export const CreateProductService = async (productData) => {
     console.log("Error in CreateProductService:", error);
     return {
       EC: 500,
-      EM: error.message || "Lỗi server, vui lòng thử lại sau",
+      EM: "Lỗi server, vui lòng thử lại sau",
     };
   }
 };
@@ -599,9 +599,8 @@ export const getTrendingProductsService = async (type, userId) => {
   } catch (error) {
     console.log("Error in getTrendingProductsService:", error);
     return {
-      statusCode: 500,
-      message: "Lỗi server",
-      data: null,
+      EC: 500,
+      EM: "Lỗi server",
     };
   }
 };

@@ -16,7 +16,7 @@ export const getFavorites = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       statusCode: 500,
-      message: error.message || "Lấy danh sách yêu thích thất bại",
+      message:  "Lấy danh sách yêu thích thất bại",
     });
   }
 };
@@ -39,10 +39,11 @@ export const addFavorite = async (req, res) => {
       data: favorite.DT,
     });
   } catch (error) {
+    console.log("««««« error »»»»»", error);
     return res.status(500).json({
       statusCode: 500,
       message:
-        error.message || "Thêm sản phẩm vào danh sách yêu thích thất bại",
+       "Thêm sản phẩm vào danh sách yêu thích thất bại",
     });
   }
 };
@@ -66,7 +67,7 @@ export const removeFavorite = async (req, res) => {
     return res.status(500).json({
       statusCode: 500,
       message:
-        error.message || "Xóa sản phẩm khỏi danh sách yêu thích thất bại",
+        "Xóa sản phẩm khỏi danh sách yêu thích thất bại",
     });
   }
 };
