@@ -32,7 +32,7 @@ export const addFavoriteService = async (userId, productIdentifier) => {
 
   if (!product) {
     return {
-      EC: 422,
+      EC: 404,  
       EM: "Sản phẩm không tồn tại",
     };
   }
@@ -44,7 +44,7 @@ export const addFavoriteService = async (userId, productIdentifier) => {
 
   if (existingFavorite) {
     return {
-      EC: 422,
+      EC: 409,  
       EM: "Sản phẩm đã có trong danh sách yêu thích",
     };
   }
@@ -54,7 +54,11 @@ export const addFavoriteService = async (userId, productIdentifier) => {
     productId: product._id,
   });
 
-  return favorite;
+  return {
+    EC: 0,
+    EM: "Thành công",
+    DT: favorite,
+  };
 };
 export const removeFavoriteService = async (userId, productIdentifier) => {
   let product;
@@ -67,7 +71,7 @@ export const removeFavoriteService = async (userId, productIdentifier) => {
 
   if (!product) {
     return {
-      EC: 422,
+      EC: 404,  // ✅ Đổi thành 404
       EM: "Sản phẩm không tồn tại",
     };
   }
@@ -79,7 +83,7 @@ export const removeFavoriteService = async (userId, productIdentifier) => {
 
   if (!favorite) {
     return {
-      EC: 422,
+      EC: 404,  // ✅ Đổi thành 404
       EM: "Sản phẩm không có trong danh sách yêu thích",
     };
   }
@@ -88,4 +92,10 @@ export const removeFavoriteService = async (userId, productIdentifier) => {
     userId,
     productId: product._id,
   });
+
+  // ✅ Trả về format đúng
+  return {
+    EC: 0,
+    EM: "Xóa thành công",
+  };
 };
