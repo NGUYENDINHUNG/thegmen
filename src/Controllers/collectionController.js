@@ -8,17 +8,16 @@ import {
   RemoveProductFromCollectionService,
   GetAllCollectionsService,
   GetProductsByCollectionSlugService,
-} from "../services/conllectionService.js";
+} from "../services/collectionService.js";
 import { uploadSingleFile } from "../services/fileService.js";
 
 export const CreateCollection = async (req, res) => {
   try {
     const { name, subTitle, description } = req.body;
-    let imageUrl = " ";
-    if (!req.files || Object.keys(req.files).length === 0) {
-      console.log("No files were uploaded.");
-    } else {
-      let results = await uploadSingleFile(req.files.images);
+    let imageUrl = "";
+    
+    if (req.files?.images) {
+      const results = await uploadSingleFile(req.files.images);
       imageUrl = results.path;
     }
 
@@ -55,7 +54,7 @@ export const UpdateCollection = async (req, res) => {
     };
 
     let imageUrl = "";
-    if (req.files && req.files.images) {
+    if (req.files?.images) {
       const results = await uploadSingleFile(req.files.images);
       imageUrl = results.path;
     }
@@ -79,7 +78,6 @@ export const UpdateCollection = async (req, res) => {
 export const GetCollectionById = async (req, res) => {
   try {
     const slug = req.params.slug;
-    console.log(slug);
     const collection = await GetCollectionByIdService(slug);
 
     if (!collection) {
@@ -206,20 +204,16 @@ export const RemoveProductFromCollection = async (req, res) => {
 export const GetProductsByCollectionSlug = async (req, res) => {
   try {
     const { slug } = req.params;
-    const { pageSize, currentPage } = req.query;
-    const products = await GetProductsByCollectionSlugService(
-      slug,
-      pageSize,
-      currentPage
-    );
+    const products = await GetProductsByCollectionSlugService(slug);
+
     return res.status(200).json({
       statusCode: 200,
       message: "Lấy sản phẩm theo bộ sưu tập thành công",
       data: products,
     });
   } catch (error) {
-    return res.status(404).json({
-      statusCode: 404,
+    return res.status(500).json({
+      statusCode: 500,
       message: error.message || "Lấy sản phẩm theo bộ sưu tập thất bại",
       error: error,
     });

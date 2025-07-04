@@ -176,7 +176,7 @@ export const getDetailOrderService = async (orderId) => {
       status: order.status,
       orderCode: order.orderCode,
       createdAt: order.createdAt,
-      address: order.shippingAddress.address,
+      address: order.shippingAddress,
       paymentMethod: order.paymentMethod,
       totalItems: order.items.reduce((total, item) => total + item.quantity, 0),
       originalTotal,
@@ -208,6 +208,7 @@ export const createOrderService = async (userId, addressId) => {
     if (!address) {
       throw new Error("Địa chỉ không tồn tại");
     }
+    console.log(address);
     // 2. Lấy thông tin người dùng
     const user = await User.findById(userId);
     if (!user || !user.email) {
@@ -290,9 +291,14 @@ export const createOrderService = async (userId, addressId) => {
             discountAmount: totals.discountAmount,
           }
         : null,
-      shippingAddress: {
-        address: address.address,
-      },
+        shippingAddress: {
+          fullName: address.fullname,
+          phoneNumber: address.phoneNumber,
+          province: address.provinceName,
+          district: address.districtName,
+          ward: address.wardName,
+          address: address.address,
+        },
       orderCode,
       status: "pending",
       paymentMethod: "COD",

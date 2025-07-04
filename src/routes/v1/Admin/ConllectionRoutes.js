@@ -6,39 +6,44 @@ import {
   RestoreCollection,
   AddProductToCollection,
   RemoveProductFromCollection,
-} from "../../../controllers/conllectionController.js";
+} from "../../../controllers/collectionController.js";
 
 import checkPermission from "../../../middleware/checkPermission.js";
 
 const CollectionRouter = express.Router();
 
+// RESTful endpoints
 CollectionRouter.post(
-  "/create",
+  "/",
   checkPermission("Create_Collection"),
   CreateCollection
 );
+
 CollectionRouter.put(
-  "/update/:slug",
+  "/:id",
   checkPermission("Update_Collection"),
   UpdateCollection
 );
-CollectionRouter.put(
-  "/softDelete/:slug",
+
+CollectionRouter.delete(
+  "/:id",
   checkPermission("SoftDelete_Collection"),
   SoftDeleteCollection
 );
-CollectionRouter.put(
-  "/restore/:collectionId",
+
+CollectionRouter.post(
+  "/:id/restore",
   checkPermission("Restore_Collection"),
   RestoreCollection
 );
+
 CollectionRouter.post(
-  "/addProduct",
- // checkPermission("AddProduct_Collection"),
+  "/:id/products",
   AddProductToCollection
 );
-CollectionRouter.post(
-  "/removeProduct",
+
+CollectionRouter.delete(
+  "/:id/products/:productId",
   checkPermission("RemoveProduct_Collection"),
   RemoveProductFromCollection
 );

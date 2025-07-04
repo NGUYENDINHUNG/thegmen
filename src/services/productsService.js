@@ -540,7 +540,7 @@ export const getTrendingProductsService = async (type, userId) => {
     // Lấy thông tin sản phẩm
     const products = await Product.find(query)
       .select("name price discount finalPrice avatar type slug categories")
-      .populate("categories", "name")
+      .populate("categories", "name slug")
       .lean();
 
 

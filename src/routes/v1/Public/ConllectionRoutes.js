@@ -3,7 +3,7 @@ import {
   GetCollectionById,
   GetAllCollections,
   GetProductsByCollectionSlug,
-} from "../../../controllers/conllectionController.js";
+} from "../../../controllers/collectionController.js";
 
 const CollectionRouter = express.Router();
 

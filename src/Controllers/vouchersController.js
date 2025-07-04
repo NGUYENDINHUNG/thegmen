@@ -5,42 +5,53 @@ import {
   removeVoucherFromCartService,
   updateVoucherService,
   validateAndApplyVoucherForCartService,
-} from "../services/vouchersSevice.js";
+} from "../services/vouchersService.js";
 
 export const createVoucher = async (req, res) => {
   try {
     const voucher = await createVoucherService(req.body);
-    res
-      .status(200)
-      .json({ status: 200, message: "Tạo voucher thành công", data: voucher });
+    return res.status(201).json({
+      statusCode: 201,
+      message: "Tạo voucher thành công",
+      data: voucher,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message || "Lỗi tạo voucher" });
+    return res.status(400).json({
+      statusCode: 400,
+      message: error.message || "Tạo voucher thất bại",
+    });
   }
 };
 
 export const getAllVouchers = async (req, res) => {
   try {
     const vouchers = await getAllVouchersService();
-    res
-      .status(200)
-      .json({ message: "Lấy danh sách voucher thành công", data: vouchers });
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Lấy danh sách voucher thành công",
+      data: vouchers,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: error.message || "Lỗi lấy danh sách voucher" });
+    return res.status(500).json({
+      statusCode: 500,
+      message: "Lỗi khi lấy danh sách voucher",
+    });
   }
 };
+
 export const updateVoucher = async (req, res) => {
   try {
     const voucher = await updateVoucherService(req.params.id, req.body);
-    if (!voucher) {
-      return res.status(404).json({ message: "Không tìm thấy voucher" });
-    }
-    res
-      .status(200)
-      .json({ message: "Cập nhật voucher thành công", data: voucher });
+    return res.status(200).json({
+      statusCode: 200,
+      message: "Cập nhật voucher thành công",
+      data: voucher,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message || "Lỗi cập nhật voucher" });
+    return res.status(400).json({
+      statusCode: 400,
+      message: error.message || "Cập nhật voucher thất bại",
+    });
   }
 };
 
@@ -69,7 +80,7 @@ export const applyVoucherToCart = async (req, res) => {
     );
 
     return res.status(200).json({
-      status: 200,
+      statusCode: 200,
       message: "Áp dụng voucher thành công",
       data: {
         voucher: {
@@ -88,26 +99,27 @@ export const applyVoucherToCart = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Không thể áp dụng voucher",
+    return res.status(400).json({
+      statusCode: 400,
+      message: error.message || "Áp dụng voucher thất bại",
     });
   }
 };
+
 export const removeVoucherFromCart = async (req, res) => {
   try {
     const userId = req.user._id;
     const result = await removeVoucherFromCartService(userId);
 
     return res.status(200).json({
-      status: 200,
-      message: "Xóa voucher thành công",
+      statusCode: 200,
+      message: "Xóa voucher khỏi giỏ hàng thành công",
       data: result,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Không thể xóa voucher",
+    return res.status(400).json({
+      statusCode: 400,
+      message: error.message || "Xóa voucher thất bại",
     });
   }
 };

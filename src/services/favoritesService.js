@@ -11,7 +11,7 @@ export const getFavoritesService = async (userId) => {
       path: "categories",
       select: "name slug",
     },
-  });
+  }).lean();
 
   const userFavorites = {
     userId,
@@ -71,7 +71,7 @@ export const removeFavoriteService = async (userId, productIdentifier) => {
 
   if (!product) {
     return {
-      EC: 404,  // ✅ Đổi thành 404
+      EC: 404,  
       EM: "Sản phẩm không tồn tại",
     };
   }

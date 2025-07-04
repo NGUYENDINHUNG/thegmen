@@ -1,7 +1,7 @@
 import Cart from "../models/cartModel.schema.js";
 import Variants from "../models/variantsModel.schema.js";
 import Product from "../models/productModel.schema.js";
-import { validateAndApplyVoucherForCartService } from "../services/vouchersSevice.js";
+import { validateAndApplyVoucherForCartService } from "./vouchersService.js";
 
 export const calculateCartTotals = (cart) => {
   let totalPrice = 0;
@@ -269,7 +269,20 @@ export const getCartByUserService = async (userId) => {
       },
     ]);
 
-    if (!cart) return null;
+    if (!cart) {
+      return {
+        cart: {
+          _id: null,
+          items: [],
+        },
+        item: 0,
+        totalPrice: 0,
+        selectedItemsCount: 0,
+        discountAmount: 0,
+        finalAmount: 0,
+        voucherInfo: null,
+      };
+    }
 
     // Sử dụng hàm calculateCartTotals để tính toán các giá trị
     const totals = calculateCartTotals(cart);
