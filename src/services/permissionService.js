@@ -1,4 +1,4 @@
-import Permission from "../models/Permission.js";
+import Permission from "../models/permission.js";
 import aqp from "api-query-params";
 //import apiError from "../constants/apiError.js";
 export const createPermissionService = async (permissionData) => {
